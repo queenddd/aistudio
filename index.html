@@ -12,27 +12,27 @@
   --text:#e6edf3;--t2:#8b949e;--t3:#484f58;--r:10px;--r2:6px;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);height:100vh;display:flex;flex-direction:column;overflow:hidden;font-size:14px;}
 
 /* HEADER */
-.hdr{background:var(--s1);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:100;}
+.hdr{background:var(--s1);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:52px;flex-shrink:0;z-index:100;}
 .logo{font-weight:800;font-size:17px;background:linear-gradient(135deg,var(--a1),var(--a4));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
 
 /* TABS */
-.tabs-bar{background:var(--s1);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 10px;scrollbar-width:none;}
+.tabs-bar{background:var(--s1);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 10px;scrollbar-width:none;flex-shrink:0;}
 .tabs-bar::-webkit-scrollbar{display:none;}
 .tab{padding:11px 14px;cursor:pointer;font-size:12px;font-weight:600;color:var(--t3);border-bottom:2px solid transparent;white-space:nowrap;transition:color .2s,border-color .2s;user-select:none;}
 .tab:hover{color:var(--t2);}
 .tab.on{color:var(--a1);border-bottom-color:var(--a1);}
 
-/* LAYOUT */
-.main{display:flex;height:calc(100vh - 93px);}
+/* LAYOUT FIXED */
+.main{display:flex;flex:1;overflow:hidden;position:relative;}
 .panel{display:none;width:100%;height:100%;}
 .panel.on{display:flex;}
-.side{width:290px;min-width:290px;background:var(--s1);border-right:1px solid var(--border);overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
-.content{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px;}
+.side{width:290px;min-width:290px;background:var(--s1);border-right:1px solid var(--border);overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;height:100%;}
+.content{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px;height:100%;}
 
-/* IMAGE PANEL — full width no sidebar */
+/* IMAGE PANEL */
 .img-full{flex:1;overflow-y:auto;padding:20px;display:flex;justify-content:center;}
 .img-inner{width:100%;max-width:620px;display:flex;flex-direction:column;gap:16px;}
 
@@ -131,7 +131,7 @@ select option{background:var(--s2);}
 .ms{background:#0d2015;border:1px solid #1a5c2e;color:var(--a3);}
 .mi{background:#0d1a30;border:1px solid #1a3a6c;color:var(--a1);}
 
-/* EMPTY STATE */
+/* EMPTY STATE Fixed alignment */
 .empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--t3);padding:40px;text-align:center;}
 .empty span{font-size:40px;opacity:.2;}
 .empty h3{font-weight:700;font-size:14px;color:var(--t2);}
@@ -153,10 +153,10 @@ select option{background:var(--s2);}
 canvas{display:none;}
 
 @media(max-width:700px){
-.side{width:100%;min-width:unset;border-right:none;border-bottom:1px solid var(--border);max-height:42vh;}
-.panel.on{flex-direction:column;}
-.main{height:auto;}
-.f2{grid-template-columns:1fr;}
+body{overflow:auto;height:auto;}
+.main{flex-direction:column;height:auto;overflow:visible;}
+.side{width:100%;min-width:unset;border-right:none;border-bottom:1px solid var(--border);height:auto;}
+.content{height:auto;overflow:visible;}
 }
 </style>
 
@@ -183,7 +183,7 @@ canvas{display:none;}
     <div class="side">
       <div class="card"><div class="ct">📝 Article Details</div>
         <div class="frow">
-          <div><label>Topic / Title</label><input type="text" id="a-topic" placeholder="e.g. Best SEO Strategies 2025"></div>
+          <div><label>Topic / Title</label><input type="text" id="a-topic" placeholder="e.g. Best SEO Strategies"></div>
           <div><label>Keywords</label><input type="text" id="a-kw" placeholder="e.g. SEO, rankings, traffic"></div>
           <div><label>Audience</label><input type="text" id="a-aud" placeholder="e.g. Small business owners"></div>
           <div class="f2">
@@ -220,7 +220,7 @@ canvas{display:none;}
       <div class="card"><div class="ct">📝📝 Bulk Topics</div>
         <div class="frow">
           <div><label>Topics — one per line</label>
-            <textarea id="ba-topics" placeholder="Best SEO Strategies 2025&#10;How to Start a Blog&#10;Content Marketing Tips&#10;Email Marketing Guide" style="min-height:130px;"></textarea>
+            <textarea id="ba-topics" placeholder="Best SEO Strategies&#10;How to Start a Blog&#10;Content Marketing Tips" style="min-height:130px;"></textarea>
           </div>
           <div><label>Audience</label><input type="text" id="ba-aud" placeholder="e.g. Digital marketers"></div>
           <div><label>Tone</label>
@@ -283,7 +283,7 @@ canvas{display:none;}
       </div>
     </div>
     <div class="content" id="l-body">
-      <div class="empty"><span>📋</span><h3>Listicle Generator</h3><p>Choose format (10 Best, 20 Top, 50 Best...), enter your topic and generate.</p></div>
+      <div class="empty"><span>📋</span><h3>Listicle Generator</h3><p>Choose format, enter your topic and generate.</p></div>
     </div>
   </div>
 
@@ -301,7 +301,7 @@ canvas{display:none;}
           </div>
           <div id="bl-custom-wrap" style="display:none;"><label>Custom Prefix</label><input type="text" id="bl-custom" placeholder="7 Best"></div>
           <div><label>Topics — one per line</label>
-            <textarea id="bl-topics" placeholder="Project Management Tools&#10;Email Marketing Software&#10;CRM Platforms&#10;Design Tools" style="min-height:120px;"></textarea>
+            <textarea id="bl-topics" placeholder="Project Management Tools&#10;Email Marketing Software" style="min-height:120px;"></textarea>
           </div>
           <div><label>Audience</label><input type="text" id="bl-aud" placeholder="e.g. Business owners"></div>
         </div>
@@ -390,7 +390,7 @@ canvas{display:none;}
           </div>
           <div id="bi-note" style="display:none;"></div>
           <div><label>Prompts — one per line</label>
-            <textarea id="bi-prompts" placeholder="A professional office workspace&#10;Modern city skyline at sunset&#10;Fresh coffee being poured" style="min-height:140px;"></textarea>
+            <textarea id="bi-prompts" placeholder="A professional office workspace&#10;Modern city skyline at sunset" style="min-height:140px;"></textarea>
           </div>
           <div class="f2">
             <div><label>Size</label>
@@ -418,7 +418,9 @@ canvas{display:none;}
     </div>
   </div>
 
-</div><div class="overlay" id="settings-overlay">
+</div>
+
+<div class="overlay" id="settings-overlay">
   <div class="modal">
     <div class="mhdr">
       <div class="mtitle">⚙ Settings</div>
@@ -426,10 +428,10 @@ canvas{display:none;}
     </div>
     <div class="mbody">
       <div class="sg"><div class="sgt">🔑 API Keys</div>
-        <div><label>Anthropic — Claude</label><input type="password" id="s-claude" placeholder="sk-ant-..."></div>
-        <div><label>OpenAI — GPT + DALL-E</label><input type="password" id="s-openai" placeholder="sk-..."></div>
-        <div><label>Groq — Free LLaMA 3</label><input type="password" id="s-groq" placeholder="gsk_..."></div>
-        <div><label>Google Gemini — Free Tier</label><input type="password" id="s-gemini" placeholder="AIza..."></div>
+        <div><label>Anthropic (Claude)</label><input type="password" id="s-claude" placeholder="sk-ant-..."></div>
+        <div><label>OpenAI (GPT + DALL-E)</label><input type="password" id="s-openai" placeholder="sk-..."></div>
+        <div><label>Groq</label><input type="password" id="s-groq" placeholder="gsk_..."></div>
+        <div><label>Google Gemini</label><input type="password" id="s-gemini" placeholder="AIza..."></div>
         <div><label>Mistral AI</label><input type="password" id="s-mistral" placeholder="..."></div>
         <div><label>Cohere</label><input type="password" id="s-cohere" placeholder="..."></div>
         <div><label>Stability AI</label><input type="password" id="s-stability" placeholder="sk-..."></div>
@@ -439,13 +441,12 @@ canvas{display:none;}
       <div class="sg"><div class="sgt">🤖 Article Provider</div>
         <div><label>Select Provider</label>
           <select id="s-prov">
-            <option value="claude">Claude (Anthropic) — Paid</option>
-            <option value="gpt4">GPT-4 Turbo (OpenAI) — Paid</option>
-            <option value="gpt35">GPT-3.5 Turbo (OpenAI) — Paid</option>
-            <option value="groq">Groq / LLaMA 3 — Free</option>
-            <option value="gemini">Google Gemini Flash — Free</option>
-            <option value="mistral">Mistral AI — Free Tier</option>
-            <option value="cohere">Cohere Command R — Free Tier</option>
+            <option value="claude">Claude (Anthropic)</option>
+            <option value="openai">OpenAI (GPT)</option>
+            <option value="groq">Groq</option>
+            <option value="gemini">Google Gemini</option>
+            <option value="mistral">Mistral AI</option>
+            <option value="cohere">Cohere</option>
           </select>
         </div>
       </div>
@@ -459,7 +460,7 @@ canvas{display:none;}
       </div>
       <div class="sg"><div class="sgt">🖼 Default Image Style</div>
         <div><label>Global Image Instructions</label>
-          <textarea id="s-imgstyle" style="min-height:75px;" placeholder="e.g. Photorealistic stock photo, natural lighting, no text, no AI artifacts..."></textarea>
+          <textarea id="s-imgstyle" style="min-height:75px;" placeholder="e.g. Photorealistic stock photo, natural lighting, no text..."></textarea>
         </div>
       </div>
       <button class="btn bp bw" id="saveSettings">✦ Save Settings</button>
@@ -469,7 +470,6 @@ canvas{display:none;}
 </div>
 
 <script>
-// ── HELPERS ──────────────────────────────────────────────
 const $ = id => document.getElementById(id);
 const ls = k => { try{return localStorage.getItem(k);}catch{return null;} };
 const lss = (k,v) => { try{localStorage.setItem(k,v);}catch{} };
@@ -478,7 +478,6 @@ const show = (id, html) => { const e=$(id); if(!e) return; e.style.display='bloc
 const hide = id => { const e=$(id); if(e) e.style.display='none'; };
 const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 
-// ── STATE ─────────────────────────────────────────────────
 const S = {
   article:{outline:[],chunks:[],imgPrompts:[]},
   listicle:{outline:[],chunks:[],imgPrompts:[]},
@@ -490,11 +489,9 @@ const S = {
   lastPrompt:''
 };
 
-// ── DEFAULT PROMPTS ────────────────────────────────────────
-const WP1 = ()=>`Write this article section as an experienced human writer with deep expertise. Use natural flowing prose, short paragraphs (2-3 sentences), active voice. Avoid AI phrases like "In conclusion", "It is worth noting", "Delve into". Write like explaining to a smart friend.`;
-const WP2 = ()=>`Rewrite this content to sound even more human and engaging. Vary sentence length — mix short punchy sentences with longer ones. Add personality. Use contractions. Make it feel written by a passionate expert. Keep all HTML formatting intact.`;
+const WP1 = ()=>`Write this article section as an experienced human writer with deep expertise. Use natural flowing prose, short paragraphs (2-3 sentences), active voice. Avoid AI phrases like "In conclusion", "It is worth noting". Write like explaining to a smart friend.`;
+const WP2 = ()=>`Rewrite this content to sound even more human and engaging. Vary sentence length. Add personality. Use contractions. Keep all HTML formatting intact.`;
 
-// ── SETTINGS ──────────────────────────────────────────────
 function loadSettings(){
   ['claude','openai','groq','gemini','mistral','cohere','stability','hf','replicate'].forEach(k=>{
     const el=$('s-'+k); if(el) el.value=ls('k_'+k)||'';
@@ -517,13 +514,11 @@ function saveSettings(){
   setTimeout(()=>hide('s-status'),2500);
 }
 
-// ── TABS ──────────────────────────────────────────────────
 function switchTab(idx){
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', +t.dataset.tab===idx));
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', +p.dataset.panel===idx));
 }
 
-// ── LISTICLE TYPE CHANGE ───────────────────────────────────
 function handleLstType(prefix){
   const v=$( prefix+'-type').value;
   $(prefix+'-custom-wrap').style.display = v==='Custom'?'block':'none';
@@ -536,7 +531,6 @@ function getLstTitle(prefix){
   return t+' '+topic;
 }
 
-// ── IMAGE PROVIDER NOTES ───────────────────────────────────
 const provNotes = {
   dalle:'🔑 Uses your OpenAI API key from Settings.',
   stability:'🔑 Uses your Stability AI key from Settings.',
@@ -557,63 +551,66 @@ function setBiProv(prov, noteId){
   if(n){show(noteId,`<div class="msg mi">${n}</div>`);}else{hide(noteId);}
 }
 
-// ── AI CALL ───────────────────────────────────────────────
+/* MODEL AGNOSTIC AI CALL FIXES */
 async function callAI(system, user){
   const prov = ls('art_prov')||'claude';
 
   if(prov==='claude'){
-    const key=ls('k_claude'); if(!key) throw new Error('Claude API key missing. Add it in Settings.');
+    const key=ls('k_claude'); if(!key) throw new Error('Claude API key missing.');
     const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:3000,system,messages:[{role:'user',content:user}]})});
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({model:'claude-3-5-sonnet-latest',max_tokens:3000,system,messages:[{role:'user',content:user}]})});
     if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Claude API error');}
     return (await r.json()).content[0].text;
   }
-  if(prov==='gpt4'||prov==='gpt35'){
-    const key=ls('k_openai'); if(!key) throw new Error('OpenAI API key missing. Add it in Settings.');
-    const model=prov==='gpt4'?'gpt-4-turbo-preview':'gpt-3.5-turbo';
+  if(prov==='openai'){
+    const key=ls('k_openai'); if(!key) throw new Error('OpenAI API key missing.');
     const r=await fetch('https://api.openai.com/v1/chat/completions',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-      body:JSON.stringify({model,max_tokens:3000,messages:[{role:'system',content:system},{role:'user',content:user}]})});
+      body:JSON.stringify({model:'gpt-4o',max_tokens:3000,messages:[{role:'system',content:system},{role:'user',content:user}]})});
     if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'OpenAI error');}
     return (await r.json()).choices[0].message.content;
   }
   if(prov==='groq'){
-    const key=ls('k_groq'); if(!key) throw new Error('Groq API key missing. Add it in Settings.');
+    const key=ls('k_groq'); if(!key) throw new Error('Groq API key missing.');
     const r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-      body:JSON.stringify({model:'llama3-70b-8192',max_tokens:3000,messages:[{role:'system',content:system},{role:'user',content:user}]})});
+      body:JSON.stringify({model:'llama-3.3-70b-versatile',max_tokens:3000,messages:[{role:'system',content:system},{role:'user',content:user}]})});
     if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Groq error');}
     return (await r.json()).choices[0].message.content;
   }
   if(prov==='gemini'){
-    const key=ls('k_gemini'); if(!key) throw new Error('Gemini API key missing. Add it in Settings.');
-    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`,{method:'POST',
+    const key=ls('k_gemini'); if(!key) throw new Error('Gemini API key missing.');
+    const r=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${key}`,{method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({contents:[{parts:[{text:system+'\n\n'+user}]}],generationConfig:{maxOutputTokens:3000}})});
+      body:JSON.stringify({contents:[{parts:[{text:system+'\n\n'+user}]}]})});
     if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Gemini error');}
     return (await r.json()).candidates[0].content.parts[0].text;
   }
   if(prov==='mistral'){
-    const key=ls('k_mistral'); if(!key) throw new Error('Mistral API key missing. Add it in Settings.');
+    const key=ls('k_mistral'); if(!key) throw new Error('Mistral API key missing.');
     const r=await fetch('https://api.mistral.ai/v1/chat/completions',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-      body:JSON.stringify({model:'mistral-small-latest',max_tokens:3000,messages:[{role:'system',content:system},{role:'user',content:user}]})});
+      body:JSON.stringify({model:'mistral-large-latest',max_tokens:3000,messages:[{role:'system',content:system},{role:'user',content:user}]})});
     if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'Mistral error');}
     return (await r.json()).choices[0].message.content;
   }
   if(prov==='cohere'){
-    const key=ls('k_cohere'); if(!key) throw new Error('Cohere API key missing. Add it in Settings.');
-    const r=await fetch('https://api.cohere.ai/v1/chat',{method:'POST',
+    const key=ls('k_cohere'); if(!key) throw new Error('Cohere API key missing.');
+    const r=await fetch('https://api.cohere.com/v1/chat',{method:'POST',
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},
-      body:JSON.stringify({model:'command-r',message:user,preamble:system,max_tokens:3000})});
+      body:JSON.stringify({model:'command-r-plus',message:user,preamble:system,max_tokens:3000})});
     if(!r.ok){const e=await r.json();throw new Error(e.message||'Cohere error');}
     return (await r.json()).text;
   }
-  throw new Error('No article provider configured. Open Settings to set one.');
+  throw new Error('No article provider configured.');
 }
 
-// ── PROGRESS ──────────────────────────────────────────────
 function mkProg(id, steps){
   const c=$(id); c.style.display='block';
   c.innerHTML=`<div class="prog">
@@ -623,7 +620,6 @@ function mkProg(id, steps){
   </div>`;
 }
 
-// ── OUTLINE & CHUNK ───────────────────────────────────────
 function setStep(id, idx, total, lbl){
   const b=$(id+'-b'); if(b) b.style.width=Math.round((idx+1)/total*100)+'%';
   for(let i=0;i<total;i++){
@@ -637,12 +633,12 @@ function setStep(id, idx, total, lbl){
 
 async function genOutline(topic, kw, aud, tone, isListicle, lstTitle){
   const prompt = isListicle
-    ? `You are an SEO expert. Generate a 15-part listicle outline for "${lstTitle}". Part 1=Intro, 2-14=list items, 15=Conclusion. Return ONLY a JSON array of 15 objects: {num,title,type,summary}. No markdown.`
-    : `You are an SEO expert. Generate a 15-part article outline for the topic below. Return ONLY a JSON array of 15 objects: {num,title,type,summary}. No markdown.`;
+    ? `You are an SEO expert. Generate a 15-part listicle outline for "${lstTitle}". Part 1=Intro, 2-14=list items, 15=Conclusion. Return ONLY a JSON array of 15 objects: {"num":1,"title":"Title","type":"intro","summary":"Text"}. No markdown formatting blocks.`
+    : `You are an SEO expert. Generate a 15-part article outline for the topic below. Return ONLY a JSON array of 15 objects: {"num":1,"title":"Title","type":"body","summary":"Text"}. No markdown formatting blocks.`;
   const raw = await callAI(prompt, isListicle
     ? `Listicle: ${lstTitle}\nKeywords: ${kw}\nAudience: ${aud}`
     : `Topic: ${topic}\nKeywords: ${kw}\nAudience: ${aud}\nTone: ${tone}`);
-  return JSON.parse(raw.replace(/```json|```/g,'').trim());
+  return JSON.parse(raw.replace(/```json|```/gi,'').trim());
 }
 
 async function processChunk(outline, from, to, topic, aud, tone, imgStyle, isListicle, pid, stepOff, totalSteps){
@@ -653,22 +649,21 @@ async function processChunk(outline, from, to, topic, aud, tone, imgStyle, isLis
 
   setStep(pid, stepOff, totalSteps, `✍ Writing sections ${from}-${to}`);
   const pass1 = await callAI(
-    `${wp1}\n\nTopic: "${topic}". Audience: ${aud}. Tone: ${tone}.${isListicle?' This is a listicle — number each item clearly.':''}`,
+    `${wp1}\n\nTopic: "${topic}". Audience: ${aud}. Tone: ${tone}.${isListicle?' This is a listicle — number items.':''}`,
     `Write content for:\n\n${secTxt}\n\nUse HTML (h2, p, ul, li, strong, em).`
   );
 
   setStep(pid, stepOff+1, totalSteps, `🔄 Rewriting sections ${from}-${to}`);
-  const pass2 = await callAI(wp2, `Rewrite:\n\n${pass1}\n\nKeep all HTML. Return only rewritten HTML.`);
+  const pass2 = await callAI(wp2, `Rewrite:\n\n${pass1}\n\nKeep HTML. Return only rewritten HTML.`);
 
   const imgP = await callAI(
-    `Write one image generation prompt. ${iStyle?'Style: '+iStyle:'Photorealistic stock photo style.'} Return ONLY the prompt text.`,
+    `Write one image generation prompt. ${iStyle?'Style: '+iStyle:'Photorealistic style.'} Return ONLY the prompt text.`,
     `Image for "${topic}" sections ${from}-${to}: ${secs.map(s=>s.title).join(', ')}`
   );
 
   return {content:pass2, imgPrompt:imgP.trim()};
 }
 
-// ── RENDER ────────────────────────────────────────────────
 function renderOutline(outline, bodyId){
   const el=document.createElement('div'); el.className='obox';
   el.innerHTML='<div style="font-weight:700;font-size:13px;margin-bottom:9px;">📋 15-Section SEO Outline</div>'+
@@ -684,14 +679,13 @@ function renderChunk(from, to, content, imgPrompt, bodyId, badge, badgeCls){
   $(bodyId).appendChild(el);
 }
 
-// ── SINGLE ARTICLE ────────────────────────────────────────
 async function runArticle(){
   const topic=val('a-topic'); if(!topic){alert('Enter a topic.');return;}
   const kw=val('a-kw'),aud=val('a-aud'),tone=val('a-tone'),imgStyle=val('a-imgstyle');
   const btn=$('a-btn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Generating...';
   $('a-body').innerHTML=''; hide('a-exp');
   S.article={outline:[],chunks:[],imgPrompts:[]};
-  const steps=['📋 Generating outline','✍ Write 1-3','🔄 Rewrite 1-3','✍ Write 4-6','🔄 Rewrite 4-6','✍ Write 7-9','🔄 Rewrite 7-9','✍ Write 10-12','🔄 Rewrite 10-12','✍ Write 13-15','🔄 Rewrite 13-15'];
+  const steps=['📋 Outline','✍ 1-3','🔄 1-3','✍ 4-6','🔄 4-6','✍ 7-9','🔄 7-9','✍ 10-12','🔄 10-12','✍ 13-15','🔄 13-15'];
   mkProg('a-prog',steps);
   try{
     setStep('a-prog',0,steps.length,'📋 Generating outline');
@@ -708,14 +702,13 @@ async function runArticle(){
   btn.disabled=false; btn.innerHTML='✦ Generate Article';
 }
 
-// ── BULK ARTICLES ─────────────────────────────────────────
 async function runBulkArticles(){
   const raw=val('ba-topics'); if(!raw){alert('Enter topics.');return;}
   const topics=raw.split('\n').map(t=>t.trim()).filter(Boolean);
   const aud=val('ba-aud'),tone=val('ba-tone'),imgStyle=val('ba-imgstyle');
   const btn=$('ba-btn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Generating...';
   $('ba-body').innerHTML=''; hide('ba-exp'); S.bulkArticles=[];
-  const steps=topics.flatMap((t,i)=>['📋 Outline: '+t.slice(0,30),'✍ Write 1-3','🔄 Rewrite 1-3','✍ Write 4-6','🔄 Rewrite 4-6','✍ Write 7-9','🔄 Rewrite 7-9','✍ Write 10-12','🔄 Rewrite 10-12','✍ Write 13-15','🔄 Rewrite 13-15']);
+  const steps=topics.flatMap((t,i)=>['📋 Outline: '+t.slice(0,20),'✍ Write 1-3','🔄 Rewrite 1-3','✍ Write 4-6','🔄 Rewrite 4-6','✍ Write 7-9','🔄 Rewrite 7-9','✍ Write 10-12','🔄 Rewrite 10-12','✍ Write 13-15','🔄 Rewrite 13-15']);
   mkProg('ba-prog',steps);
   let gs=0;
   for(let ti=0;ti<topics.length;ti++){
@@ -746,16 +739,15 @@ async function runBulkArticles(){
   btn.disabled=false; btn.innerHTML='✦ Generate All Articles';
 }
 
-// ── SINGLE LISTICLE ───────────────────────────────────────
 async function runListicle(){
   const topic=val('l-topic'); if(!topic){alert('Enter a topic.');return;}
   const title=getLstTitle('l'),kw=val('l-kw'),aud=val('l-aud'),tone=val('l-tone'),imgStyle=val('l-imgstyle');
   const btn=$('l-btn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Generating...';
   $('l-body').innerHTML=''; hide('l-exp'); S.listicle={outline:[],chunks:[],imgPrompts:[]};
-  const steps=['📋 Generating outline','✍ Write 1-3','🔄 Rewrite 1-3','✍ Write 4-6','🔄 Rewrite 4-6','✍ Write 7-9','🔄 Rewrite 7-9','✍ Write 10-12','🔄 Rewrite 10-12','✍ Write 13-15','🔄 Rewrite 13-15'];
+  const steps=['📋 Outline','✍ 1-3','🔄 1-3','✍ 4-6','🔄 4-6','✍ 7-9','🔄 7-9','✍ 10-12','🔄 10-12','✍ 13-15','🔄 13-15'];
   mkProg('l-prog',steps);
   try{
-    setStep('l-prog',0,steps.length,'📋 Generating listicle outline');
+    setStep('l-prog',0,steps.length,'📋 Generating outline');
     const outline=await genOutline(topic,kw,aud,tone,true,title);
     S.listicle.outline=outline; renderOutline(outline,'l-body');
     for(let i=0;i<5;i++){
@@ -769,7 +761,6 @@ async function runListicle(){
   btn.disabled=false; btn.innerHTML='✦ Generate Listicle';
 }
 
-// ── BULK LISTICLES ────────────────────────────────────────
 async function runBulkListicles(){
   const raw=val('bl-topics'); if(!raw){alert('Enter topics.');return;}
   const topics=raw.split('\n').map(t=>t.trim()).filter(Boolean);
@@ -777,7 +768,7 @@ async function runBulkListicles(){
   const aud=val('bl-aud'),imgStyle=val('bl-imgstyle');
   const btn=$('bl-btn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Generating...';
   $('bl-body').innerHTML=''; hide('bl-exp'); S.bulkListicles=[];
-  const steps=topics.flatMap(t=>['📋 Outline: '+pfx+' '+t.slice(0,20),'✍ Write 1-3','🔄 Rewrite 1-3','✍ Write 4-6','🔄 Rewrite 4-6','✍ Write 7-9','🔄 Rewrite 7-9','✍ Write 10-12','🔄 Rewrite 10-12','✍ Write 13-15','🔄 Rewrite 13-15']);
+  const steps=topics.flatMap(t=>['📋 Outline: '+pfx+' '+t.slice(0,15),'✍ Write 1-3','🔄 Rewrite 1-3','✍ Write 4-6','🔄 Rewrite 4-6','✍ Write 7-9','🔄 Rewrite 7-9','✍ Write 10-12','🔄 Rewrite 10-12','✍ Write 13-15','🔄 Rewrite 13-15']);
   mkProg('bl-prog',steps);
   let gs=0;
   for(let ti=0;ti<topics.length;ti++){
@@ -808,7 +799,6 @@ async function runBulkListicles(){
   btn.disabled=false; btn.innerHTML='✦ Generate All Listicles';
 }
 
-// ── EXPORT ────────────────────────────────────────────────
 const slug = s => s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'').slice(0,50);
 
 function buildHTML(data,title){
@@ -816,8 +806,7 @@ function buildHTML(data,title){
 <style>body{font-family:Georgia,serif;max-width:820px;margin:40px auto;padding:0 20px;line-height:1.8;color:#222;}
 h1{font-size:2em;margin-bottom:14px;}h2{font-size:1.4em;margin-top:28px;margin-bottom:10px;}
 p{margin-bottom:14px;}ul,ol{margin:14px 0;padding-left:26px;}li{margin-bottom:7px;}
-.ip{background:#f5f0ff;border-left:4px solid #7c6fff;padding:10px 14px;margin:16px 0;font-style:italic;color:#555;font-size:.85em;font-family:sans-serif;}</style></head><body>
-
+.ip{background:#f5f0ff;border-left:4px solid #7c6fff;padding:10px 14px;margin:16px 0;font-style:italic;color:#555;font-size:.85em;}</style></head><body>
 <h1>${esc(title)}</h1>
 ${data.chunks.map((c,i)=>{const f=i*3+1,t=i*3+3;return c+`\n<div class="ip">📷 Image Prompt (${f}-${t}): ${esc(data.imgPrompts[i]||'')}</div>`;}).join('\n')}</body></html>`;
 }
@@ -851,14 +840,14 @@ function dlBlob(content,name,type){
 function exportSingle(type,fmt){
   const data=type==='article'?S.article:S.listicle;
   const title=type==='article'?val('a-topic'):getLstTitle('l');
-  if(!data.chunks.length){alert('Nothing to export yet.');return;}
+  if(!data.chunks.length){alert('Nothing to export.');return;}
   if(fmt==='html') dlBlob(buildHTML(data,title),slug(title)+'.html','text/html');
   else dlBlob(buildRTF(data,title),slug(title)+'.rtf','application/rtf');
 }
 
 function exportBulk(type,mode){
   const list=type==='article'?S.bulkArticles:S.bulkListicles;
-  if(!list.length){alert('Nothing to export yet.');return;}
+  if(!list.length){alert('Nothing to export.');return;}
   if(mode==='separate'){
     list.forEach((d,i)=>setTimeout(()=>{
       dlBlob(buildRTF(d,d.title),slug(d.title)+'.rtf','application/rtf');
@@ -870,39 +859,38 @@ function exportBulk(type,mode){
 h1{font-size:2em;margin-bottom:14px;}h2{font-size:1.4em;margin-top:28px;}p{margin-bottom:14px;}
 .sep{border:none;border-top:3px solid #7c6fff;margin:50px 0;}</style></head><body>
 ${list.map((d,i)=>`${i?'<hr class="sep">':''}<h1>${esc(d.title)}</h1>${d.chunks.join('\n')}`).join('\n')}</body></html>`;
-    dlBlob(html,'combined-articles.html','text/html');
+    dlBlob(html,'combined-content.html','text/html');
   }
 }
 
-// ── IMAGE GENERATION ──────────────────────────────────────
 async function fetchImg(prompt,size,style,prov){
   const fp=`${prompt}, ${style} style`;
   const [w,h]=size.split('x').map(Number);
   if(prov==='pollinations') return `https://image.pollinations.ai/prompt/${encodeURIComponent(fp)}?width=${w}&height=${h}&nologo=true&seed=${Date.now()}`;
   if(prov==='dalle'){
     const key=ls('k_openai'); if(!key) throw new Error('OpenAI key missing.');
-    const r=await fetch('https://api.openai.com/v1/images/generations',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({prompt:fp,n:1,size:w>=1024?'1024x1024':'512x512',response_format:'url'})});
+    const r=await fetch('https://api.openai.com/v1/images/generations',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({prompt:fp,n:1,size:'1024x1024'})});
     if(!r.ok){const e=await r.json();throw new Error(e.error?.message||'DALL-E error');}
     return (await r.json()).data[0].url;
   }
   if(prov==='stability'){
     const key=ls('k_stability'); if(!key) throw new Error('Stability key missing.');
-    const r=await fetch('https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'Accept':'application/json'},body:JSON.stringify({text_prompts:[{text:fp,weight:1}],cfg_scale:7,height:Math.min(h,1024),width:Math.min(w,1024),samples:1,steps:30})});
+    const r=await fetch('https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'Accept':'application/json'},body:JSON.stringify({text_prompts:[{text:fp,weight:1}],height:1024,width:1024,samples:1})});
     if(!r.ok){const e=await r.json();throw new Error(e.message||'Stability error');}
     return 'data:image/png;base64,'+(await r.json()).artifacts[0].base64;
   }
   if(prov==='huggingface'){
     const key=ls('k_hf'); if(!key) throw new Error('HuggingFace key missing.');
-    const r=await fetch('https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({inputs:fp,parameters:{width:Math.min(w,1024),height:Math.min(h,1024)}})});
+    const r=await fetch('https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0',{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({inputs:fp})});
     if(!r.ok){const e=await r.json();throw new Error(e.error||'HuggingFace error');}
     return URL.createObjectURL(await r.blob());
   }
   if(prov==='replicate'){
     const key=ls('k_replicate'); if(!key) throw new Error('Replicate key missing.');
-    const r=await fetch('https://api.replicate.com/v1/models/stability-ai/sdxl/predictions',{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({input:{prompt:fp,width:Math.min(w,1024),height:Math.min(h,1024)}})});
+    const r=await fetch('https://api.replicate.com/v1/predictions',{method:'POST',headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'},body:JSON.stringify({version:"v1",input:{prompt:fp}})});
     if(!r.ok){const e=await r.json();throw new Error(e.detail||'Replicate error');}
     const pred=await r.json();
-    for(let i=0;i<30;i++){
+    for(let i=0;i<20;i++){
       await new Promise(res=>setTimeout(res,2000));
       const poll=await fetch('https://api.replicate.com/v1/predictions/'+pred.id,{headers:{'Authorization':'Bearer '+key}});
       const res=await poll.json();
@@ -946,19 +934,18 @@ function dlCleanImg(){
   const c=$('img-canvas');
   if(!c.width){const a=document.createElement('a');a.href=$('img-result').src;a.download='image.png';a.click();return;}
   c.toBlob(blob=>{
-    if(!blob){alert('Could not export. Right-click to save instead.');return;}
+    if(!blob){alert('Could not export.');return;}
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='clean-img-'+Date.now()+'.png';document.body.appendChild(a);a.click();document.body.removeChild(a);
   },'image/png');
 }
 
-// ── BULK IMAGES ───────────────────────────────────────────
 async function runBulkImages(){
   const raw=val('bi-prompts'); if(!raw){alert('Enter prompts.');return;}
   const prompts=raw.split('\n').map(p=>p.trim()).filter(Boolean);
   const size=val('bi-size')||'1024x1024', style=val('bi-style')||'Photorealistic';
   const btn=$('bi-btn'); btn.disabled=true; btn.innerHTML='<span class="spin"></span> Generating...';
   $('bi-body').innerHTML=''; hide('bi-exp'); S.bulkImages=[];
-  const steps=prompts.map((p,i)=>`🖼 Image ${i+1}: ${p.slice(0,35)}`);
+  const steps=prompts.map((p,i)=>`🖼 Image ${i+1}`);
   mkProg('bi-prog',steps);
   const grid=document.createElement('div'); grid.className='bigrid'; $('bi-body').appendChild(grid);
   prompts.forEach((p,i)=>{
@@ -992,7 +979,7 @@ async function runBulkImages(){
 }
 
 async function dlBulkZip(){
-  if(!window.JSZip){alert('JSZip not loaded. Check internet connection.');return;}
+  if(!window.JSZip){alert('JSZip not loaded.');return;}
   const zip=new JSZip(); const folder=zip.folder('images');
   for(let i=0;i<S.bulkImages.length;i++){
     const img=S.bulkImages[i]; if(!img.url) continue;
@@ -1012,64 +999,47 @@ function dlBulkOne(){
   });
 }
 
-// ── EVENT LISTENERS ───────────────────────────────────────
 document.addEventListener('DOMContentLoaded', ()=>{
   loadSettings();
-
-  // TABS
-  document.querySelectorAll('.tab').forEach(t=>{
-    t.addEventListener('click',()=>switchTab(+t.dataset.tab));
-  });
-
-  // SETTINGS
+  document.querySelectorAll('.tab').forEach(t=>{ t.addEventListener('click',()=>switchTab(+t.dataset.tab)); });
   $('settingsBtn').addEventListener('click',()=>{ loadSettings(); $('settings-overlay').classList.add('on'); });
   $('closeSettings').addEventListener('click',()=>$('settings-overlay').classList.remove('on'));
   $('settings-overlay').addEventListener('click',e=>{ if(e.target===$('settings-overlay')) $('settings-overlay').classList.remove('on'); });
   $('saveSettings').addEventListener('click',saveSettings);
 
-  // ARTICLE
   $('a-btn').addEventListener('click',runArticle);
   $('a-exp-rtf').addEventListener('click',()=>exportSingle('article','rtf'));
   $('a-exp-html').addEventListener('click',()=>exportSingle('article','html'));
 
-  // BULK ARTICLES
   $('ba-btn').addEventListener('click',runBulkArticles);
   $('ba-exp-sep').addEventListener('click',()=>exportBulk('article','separate'));
   $('ba-exp-comb').addEventListener('click',()=>exportBulk('article','combined'));
 
-  // LISTICLE TYPE
   $('l-type').addEventListener('change',()=>handleLstType('l'));
   $('bl-type').addEventListener('change',()=>handleLstType('bl'));
 
-  // LISTICLE
   $('l-btn').addEventListener('click',runListicle);
   $('l-exp-rtf').addEventListener('click',()=>exportSingle('listicle','rtf'));
   $('l-exp-html').addEventListener('click',()=>exportSingle('listicle','html'));
 
-  // BULK LISTICLES
   $('bl-btn').addEventListener('click',runBulkListicles);
   $('bl-exp-sep').addEventListener('click',()=>exportBulk('listicle','separate'));
   $('bl-exp-comb').addEventListener('click',()=>exportBulk('listicle','combined'));
 
-  // IMAGE PROVIDERS (single)
   document.querySelectorAll('#img-provs .pvb').forEach(b=>{
     b.addEventListener('click',()=>{
       document.querySelectorAll('#img-provs .pvb').forEach(x=>x.classList.remove('on'));
-      b.classList.add('on');
-      setImgProv(b.dataset.prov,'img-note');
+      b.classList.add('on'); setImgProv(b.dataset.prov,'img-note');
     });
   });
 
-  // IMAGE PROVIDERS (bulk)
   document.querySelectorAll('#bi-provs .pvb').forEach(b=>{
     b.addEventListener('click',()=>{
       document.querySelectorAll('#bi-provs .pvb').forEach(x=>x.classList.remove('on'));
-      b.classList.add('on');
-      setBiProv(b.dataset.bprov,'bi-note');
+      b.classList.add('on'); setBiProv(b.dataset.bprov,'bi-note');
     });
   });
 
-  // SINGLE IMAGE
   $('img-btn').addEventListener('click',runSingleImage);
   $('img-dl-btn').addEventListener('click',dlCleanImg);
   $('img-copy-prompt').addEventListener('click',()=>{
@@ -1079,17 +1049,12 @@ document.addEventListener('DOMContentLoaded', ()=>{
     });
   });
 
-  // BULK IMAGE DOWNLOAD BUTTONS (delegated)
   $('bi-body').addEventListener('click',e=>{
-    const btn=e.target.closest('[data-dl]');
-    if(!btn) return;
-    const idx=+btn.dataset.dl;
-    const img=S.bulkImages[idx];
-    if(!img||!img.url) return;
+    const btn=e.target.closest('[data-dl]'); if(!btn) return;
+    const idx=+btn.dataset.dl; const img=S.bulkImages[idx]; if(!img||!img.url) return;
     const a=document.createElement('a');a.href=img.url;a.download=`image-${idx+1}.png`;document.body.appendChild(a);a.click();document.body.removeChild(a);
   });
 
-  // BULK IMAGE EXPORT
   $('bi-zip').addEventListener('click',dlBulkZip);
   $('bi-one').addEventListener('click',dlBulkOne);
 });
