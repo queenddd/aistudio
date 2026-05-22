@@ -1,290 +1,11 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Content Studio Pro</title>
-<style>
-:root{
-  --bg:#080c10;--s1:#0d1117;--s2:#161b22;--s3:#21262d;--s4:#30363d;
-  --border:#30363d;--a1:#58a6ff;--a2:#f78166;--a3:#3fb950;--a4:#d2a8ff;
-  --text:#e6edf3;--t2:#8b949e;--t3:#484f58;--r:10px;--r2:6px;
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:system-ui,-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;}
-.hdr{background:var(--s1);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:100;}
-.logo{font-weight:800;font-size:17px;color:var(--a1);}
-.tabs-bar{background:var(--s1);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 8px;scrollbar-width:none;}
-.tabs-bar::-webkit-scrollbar{display:none;}
-.tab{padding:11px 14px;cursor:pointer;font-size:12px;font-weight:600;color:var(--t3);border-bottom:2px solid transparent;white-space:nowrap;user-select:none;}
-.tab:hover{color:var(--t2);}
-.tab.on{color:var(--a1);border-bottom-color:var(--a1);}
-.main{display:flex;height:calc(100vh - 94px);overflow:hidden;}
-.panel{display:none;width:100%;height:100%;overflow:hidden;}
-.panel.on{display:flex;}
-.panel-col{display:flex;width:100%;height:100%;align-items:flex-start;}
-.side{width:290px;min-width:290px;background:var(--s1);border-right:1px solid var(--border);overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
-.body{overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px;flex:1;min-height:0;}
-.img-panel{flex:1;overflow-y:auto;padding:20px;display:flex;justify-content:center;}
-.img-inner{width:100%;max-width:600px;display:flex;flex-direction:column;gap:16px;}
-label{display:block;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;}
-input,textarea,select{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:inherit;font-size:13px;padding:8px 10px;outline:none;}
-input:focus,textarea:focus,select:focus{border-color:var(--a1);}
-textarea{resize:vertical;line-height:1.5;}
-select option{background:var(--s2);}
-.frow{display:flex;flex-direction:column;gap:9px;}
-.f2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 15px;border-radius:var(--r2);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;border:none;white-space:nowrap;}
-.bp{background:var(--a1);color:#0d1117;}.bp:hover{opacity:.9;}
-.bp:disabled{opacity:.4;cursor:not-allowed;}
-.bs{background:var(--s3);color:var(--text);border:1px solid var(--border);}.bs:hover{background:var(--s4);}
-.bg{background:#0d2b1a;color:var(--a3);border:1px solid #1a5c2e;}
-.bsm{padding:6px 11px;font-size:12px;}
-.bw{width:100%;}
-.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:13px;}
-.ct{font-weight:700;font-size:13px;margin-bottom:10px;}
-.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;}
-.bb{background:#0d2040;color:var(--a1);}
-.bp2{background:#1a0d30;color:var(--a4);}
-.bg2{background:#0d2015;color:var(--a3);}
-.br2{background:#2b0a0a;color:var(--a2);}
-.prog{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
-.prog-title{font-weight:700;font-size:13px;margin-bottom:12px;}
-.prog-track{background:var(--s3);border-radius:20px;height:5px;margin-bottom:12px;overflow:hidden;}
-.prog-fill{height:100%;background:linear-gradient(90deg,var(--a1),var(--a4));border-radius:20px;transition:width .4s;width:0%;}
-.prog-steps{display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto;}
-.pstep{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t3);padding:4px 7px;border-radius:4px;}
-.pstep.act{color:var(--a1);background:#0d1a30;}
-.pstep.done{color:var(--a3);}
-.pdot{width:6px;height:6px;border-radius:50%;background:var(--border);flex-shrink:0;}
-.pstep.act .pdot{background:var(--a1);}
-.pstep.done .pdot{background:var(--a3);}
-.obox{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:13px;}
-.oitem{display:flex;align-items:flex-start;gap:9px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;}
-.oitem:last-child{border-bottom:none;}
-.onum{font-weight:700;color:var(--a1);font-size:11px;min-width:24px;}
-.otext{color:var(--t2);line-height:1.4;}
-.chunk{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
-.chdr{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:var(--s3);border-bottom:1px solid var(--border);}
-.cbody{padding:13px;font-size:13px;line-height:1.7;color:var(--t2);max-height:260px;overflow-y:auto;}
-.ipbox{margin:10px 13px 13px;padding:10px;background:#100d20;border:1px solid #2a1f50;border-radius:var(--r2);font-size:12px;color:#9080c0;line-height:1.5;}
-.ipl{font-weight:700;font-size:10px;color:var(--a4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;}
-.bacard{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
-.bahdr{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:var(--s3);border-bottom:1px solid var(--border);}
-.babody{padding:13px;}
-.provs{display:flex;flex-wrap:wrap;gap:6px;}
-.pvb{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--s2);color:var(--t2);font-family:inherit;font-weight:600;font-size:11px;cursor:pointer;}
-.pvb.on{background:var(--a1);color:#0d1117;border-color:var(--a1);}
-.imgprev{width:100%;aspect-ratio:1;max-width:480px;background:var(--s2);border:2px dashed var(--border);border-radius:var(--r);display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0 auto;}
-.imgprev img{width:100%;height:100%;object-fit:contain;display:none;}
-.imgph{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--t3);font-size:12px;text-align:center;padding:20px;}
-.bigrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
-.bicard{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
-.bicard img{width:100%;aspect-ratio:1;object-fit:cover;display:block;}
-.bicardinfo{padding:7px 9px;}
-.bicardinfo p{font-size:11px;color:var(--t2);margin-bottom:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:999;overflow-y:auto;padding:20px;}
-.overlay.on{display:block;}
-.modal-wrap{display:flex;align-items:flex-start;justify-content:center;min-height:100%;}
-.modal{background:var(--s1);border:1px solid var(--border);border-radius:14px;width:100%;max-width:560px;margin:auto;}
-.mhdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--s1);border-radius:14px 14px 0 0;}
-.mtitle{font-weight:800;font-size:15px;}
-.mbody{padding:20px;display:flex;flex-direction:column;gap:16px;}
-.sgt{font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--a1);padding-bottom:6px;border-bottom:1px solid var(--border);}
-.sg{display:flex;flex-direction:column;gap:9px;}
-.msg{padding:8px 11px;border-radius:var(--r2);font-size:12px;font-weight:500;}
-.me{background:#200d0d;border:1px solid #5c1a1a;color:var(--a2);}
-.ms{background:#0d2015;border:1px solid #1a5c2e;color:var(--a3);}
-.mi{background:#0d1a30;border:1px solid #1a3a6c;color:var(--a1);}
-.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block;}
-@keyframes sp{to{transform:rotate(360deg);}}
-.exprow{display:flex;gap:7px;flex-wrap:wrap;}
-::-webkit-scrollbar{width:3px;height:3px;}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
-canvas{display:none;}
-@media(max-width:700px){
-.side{width:100%;min-width:unset;border-right:none;border-bottom:1px solid var(--border);}
-.panel-col{flex-direction:column;}
-.main{height:auto;overflow:auto;}
-.panel{height:auto;}
-.panel.on{display:block;}
-.body{flex:0 0 auto;min-height:0;padding:8px;}
-.img-panel{padding:12px;}
-.f2{grid-template-columns:1fr;}
-}
-</style>
-</head>
-<body>
-
-<div class="hdr">
-  <div class="logo">✦ Content Studio Pro</div>
-  <button class="btn bs bsm" id="btn-settings">⚙ Settings</button>
-</div>
-
-<div class="tabs-bar">
-  <div class="tab on" data-tab="0">📝 Article</div>
-  <div class="tab" data-tab="1">📝📝 Bulk Articles</div>
-  <div class="tab" data-tab="2">📋 Listicle</div>
-  <div class="tab" data-tab="3">📋📋 Bulk Listicles</div>
-  <div class="tab" data-tab="4">🖼 Image</div>
-  <div class="tab" data-tab="5">🖼🖼 Bulk Images</div>
-</div>
-
-<div class="main">
-
-  <div class="panel on" data-panel="0">
-    <div class="panel-col">
-      <div class="side">
-        <div class="card"><div class="ct">📝 Article Details</div>
-          <div class="frow">
-            <div><label>Topic</label><input type="text" id="a-topic" placeholder="e.g. Best SEO Strategies 2025"></div>
-            <div><label>Keywords</label><input type="text" id="a-kw" placeholder="e.g. SEO, rankings, traffic"></div>
-            <div><label>Audience</label><input type="text" id="a-aud" placeholder="e.g. Small business owners"></div>
-            <div class="f2">
-              <div><label>Tone</label>
-                <select id="a-tone"><option>Professional</option><option>Conversational</option><option>Educational</option><option>Authoritative</option><option>Friendly</option></select>
-              </div>
-              <div><label>Word Count</label>
-                <select id="a-wc"><option>1000-1500</option><option>1500-2000</option><option>2000-2500</option><option>2500-3000</option></select>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="card"><div class="ct">🖼 Image Style</div>
-          <label>Subject / Style Preferences</label>
-          <textarea id="a-imgstyle" placeholder="e.g. African female influencer, Lagos setting, iPhone camera, natural lighting, photorealistic..." style="min-height:70px;"></textarea>
-        </div>
-        <button class="btn bp bw" id="btn-a-gen">✦ Generate Article</button>
-        <div id="a-prog" style="display:none;"></div>
-        <div id="a-exp" style="display:none;">
-          <div class="card"><div class="ct">💾 Export</div>
-            <div class="exprow">
-              <button class="btn bg bsm" id="btn-a-rtf">⬇ .docx (RTF)</button>
-              <button class="btn bs bsm" id="btn-a-html">⬇ HTML</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="body" id="a-body"></div>
-    </div>
-  </div>
-
-  <div class="panel" data-panel="1">
-    <div class="panel-col">
-      <div class="side">
-        <div class="card"><div class="ct">📝📝 Bulk Topics</div>
-          <div class="frow">
-            <div><label>Topics — one per line</label>
-              <textarea id="ba-topics" placeholder="Best SEO Strategies 2025&#10;How to Start a Blog&#10;Content Marketing Tips" style="min-height:120px;"></textarea>
-            </div>
-            <div><label>Audience</label><input type="text" id="ba-aud" placeholder="e.g. Digital marketers"></div>
-            <div><label>Tone</label>
-              <select id="ba-tone"><option>Professional</option><option>Conversational</option><option>Educational</option><option>Authoritative</option><option>Friendly</option></select>
-            </div>
-          </div>
-        </div>
-        <div class="card"><div class="ct">🖼 Image Style</div>
-          <textarea id="ba-imgstyle" placeholder="e.g. Photorealistic, iPhone camera, natural lighting..." style="min-height:60px;"></textarea>
-        </div>
-        <button class="btn bp bw" id="btn-ba-gen">✦ Generate All Articles</button> <div id="ba-prog" style="display:none;"></div>
-        <div id="ba-exp" style="display:none;">
-          <div class="card"><div class="ct">💾 Export All</div>
-            <div class="exprow">
-              <button class="btn bg bsm" id="btn-ba-sep">⬇ Separate Files</button>
-              <button class="btn bs bsm" id="btn-ba-comb">⬇ Combined File</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="body" id="ba-body"></div>
-    </div>
-  </div>
-
-  <div class="panel" data-panel="2">
-    <div class="panel-col">
-      <div class="side">
-        <div class="card"><div class="ct">📋 Listicle Details</div>
-          <div class="frow">
-            <div><label>Format</label>
-              <select id="l-type">
-                <option value="10 Best">10 Best</option><option value="15 Best">15 Best</option>
-                <option value="20 Top">20 Top</option><option value="25 Best">25 Best</option>
-                <option value="30 Top">30 Top</option><option value="50 Best">50 Best</option>
-                <option value="Custom">Custom...</option>
-              </select>
-            </div>
-            <div id="l-custom-wrap" style="display:none;"><label>Custom prefix</label><input type="text" id="l-custom" placeholder="7 Best"></div>
-            <div><label>Topic</label><input type="text" id="l-topic" placeholder="e.g. Project Management Tools"></div>
-            <div><label>Keywords</label><input type="text" id="l-kw" placeholder="e.g. project management"></div>
-            <div><label>Audience</label><input type="text" id="l-aud" placeholder="e.g. Remote managers"></div>
-            <div><label>Tone</label>
-              <select id="l-tone"><option>Professional</option><option>Conversational</option><option>Educational</option><option>Authoritative</option><option>Friendly</option></select>
-            </div>
-          </div>
-        </div>
-        <div class="card"><div class="ct">🖼 Image Style</div>
-          <textarea id="l-imgstyle" placeholder="e.g. Product screenshot, clean background..." style="min-height:60px;"></textarea>
-        </div>
-        <button class="btn bp bw" id="btn-l-gen">✦ Generate Listicle</button>
-        <div id="l-prog" style="display:none;"></div>
-        <div id="l-exp" style="display:none;">
-          <div class="card"><div class="ct">💾 Export</div>
-            <div class="exprow">
-              <button class="btn bg bsm" id="btn-l-rtf">⬇ .docx (RTF)</button>
-              <button class="btn bs bsm" id="btn-l-html">⬇ HTML</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="body" id="l-body"></div>
-    </div>
-  </div>
-
-  <div class="panel" data-panel="3">
-    <div class="panel-col">
-      <div class="side">
-        <div class="card"><div class="ct">📋📋 Bulk Listicles</div>
-          <div class="frow">
-            <div><label>Format</label>
-              <select id="bl-type">
-                <option value="10 Best">10 Best</option><option value="15 Best">15 Best</option>
-                <option value="20 Top">20 Top</option><option value="25 Best">25 Best</option>
-                <option value="30 Top">30 Top</option><option value="50 Best">50 Best</option>
-                <option value="Custom">Custom...</option>
-              </select>
-            </div>
-            <div id="bl-custom-wrap" style="display:none;"><label>Custom prefix</label><input type="text" id="bl-custom" placeholder="7 Best"></div>
-            <div><label>Topics — one per line</label>
-              <textarea id="bl-topics" placeholder="Project Management Tools&#10;Email Marketing Software&#10;CRM Platforms" style="min-height:110px;"></textarea>
-            </div>
-            <div><label>Audience</label><input type="text" id="bl-aud" placeholder="e.g. Business owners"></div>
-          </div>
-        </div>
-        <div class="card"><div class="ct">🖼 Image Style</div>
-          <textarea id="bl-imgstyle" placeholder="e.g. Product mockup, clean..." style="min-height:60px;"></textarea>
-        </div>
-        <button class="btn bp bw" id="btn-bl-gen">✦ Generate All Listicles</button>
-        <div id="bl-prog" style="display:none;"></div>
-        <div id="bl-exp" style="display:none;">
-          <div class="card"><div class="ct">💾 Export All</div>
-            <div class="exprow">
-              <button class="btn bg bsm" id="btn-bl-sep">⬇ Separate Files</button>
-              <button class="btn bs bsm" id="btn-bl-comb">⬇ Combined File</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="body" id="bl-body"></div>
-    </div>
-  </div>
-
-  <div class="panel" data-panel="4">
+<div class="panel" data-panel="4">
     <div class="img-panel">
       <div class="img-inner">
         <div>
           <div style="font-weight:800;font-size:17px;margin-bottom:3px;">🖼 AI Image Generator</div>
           <div style="font-size:11px;color:var(--t3);">Ultra-realistic prompt generation → Canvas capture → Clean PNG</div>
         </div>
+
         <div class="card frow">
           <div><label>Provider</label>
             <div class="provs" id="img-provs">
@@ -296,6 +17,7 @@ canvas{display:none;}
             </div>
           </div>
           <div id="img-note" style="display:none;"></div>
+
           <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:12px;">
             <div style="font-weight:700;font-size:12px;margin-bottom:10px;color:var(--a4);">✦ Ultra-Realistic Prompt Builder</div>
             <div class="frow">
@@ -333,6 +55,7 @@ canvas{display:none;}
               <div><label>Mood / Story</label><input type="text" id="img-mood" placeholder='e.g. "just woke up but still fine"'></div>
             </div>
           </div>
+
           <div style="display:flex;gap:8px;">
             <button class="btn bp" id="btn-img-build" style="flex:1;">✦ Build &amp; Generate</button>
             <button class="btn bs bsm" id="btn-img-preview-prompt">👁 Preview Prompt</button>
@@ -340,6 +63,7 @@ canvas{display:none;}
           <div id="img-prompt-preview" style="display:none;background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);padding:12px;font-size:12px;color:var(--t2);line-height:1.6;white-space:pre-wrap;max-height:200px;overflow-y:auto;"></div>
           <div id="img-status" style="display:none;"></div>
         </div>
+
         <div class="imgprev" id="img-preview">
           <div class="imgph" id="img-ph">
             <div style="font-size:48px;opacity:.2;">🖼</div>
@@ -467,19 +191,33 @@ function show(id,html){ var e=ge(id); if(!e)return; e.style.display='block'; if(
 function hide(id){ var e=ge(id); if(e)e.style.display='none'; }
 function escH(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// ── TABS NAVIGATION ──────────────────────────
+// ── TABS NAVIGATION FIX ─────────────────────────
 function switchTab(idx){
   var tabs = document.querySelectorAll('.tab');
   var panels = document.querySelectorAll('.panel');
-  for(var i=0; i<tabs.length; i++) {
-    tabs[i].classList.toggle('on', parseInt(tabs[i].getAttribute('data-tab')) === idx);
-  }
-  for(var j=0; j<panels.length; j++) {
-    panels[j].classList.toggle('on', parseInt(panels[j].getAttribute('data-panel')) === idx);
-  }
+  tabs.forEach(function(tab) {
+    tab.classList.toggle('on', parseInt(tab.getAttribute('data-tab')) === idx);
+  });
+  panels.forEach(function(panel) {
+    panel.classList.toggle('on', parseInt(panel.getAttribute('data-panel')) === idx);
+  });
 }
 
-// ── SETTINGS MANAGEMENT ──────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  var tabs = document.querySelectorAll('.tab');
+  tabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var idx = parseInt(this.getAttribute('data-tab'));
+      switchTab(idx);
+    });
+  });
+
+  // Settings Panel Triggers
+  if(ge('btn-settings')) ge('btn-settings').addEventListener('click', openSettings);
+  if(ge('btn-close-settings')) ge('btn-close-settings').addEventListener('click', closeSettings);
+  if(ge('btn-save-settings')) ge('btn-save-settings').addEventListener('click', saveSettings);
+});
+
 function loadSettings(){
   var keys=['claude','openai','groq','gemini','mistral','cohere','stability','hf','replicate'];
   for(var i=0;i<keys.length;i++){ var el=ge('s-'+keys[i]); if(el)el.value=ls('k_'+keys[i])||''; }
@@ -503,95 +241,6 @@ function closeSettings(){ ge('overlay-settings').classList.remove('on'); }
 
 function WP1(){ return 'Write this article section as an experienced human writer. Use natural flowing prose, short paragraphs (2-3 sentences), active voice. Avoid AI phrases like "In conclusion", "It is worth noting", "Delve into". Write like explaining to a smart friend.'; }
 function WP2(){ return 'Rewrite this content to sound even more human and engaging. Vary sentence length - mix short punchy sentences with longer ones. Add personality. Use contractions naturally. Make it feel written by a passionate expert. Keep all HTML formatting intact.'; }
-
-// ── LISTICLE HELPERS ─────────────────────────
-function handleLstType(prefix){
-  ge(prefix+'-custom-wrap').style.display=ge(prefix+'-type').value==='Custom'?'block':'none';
-}
-function getLstTitle(prefix){
-  var t=ge(prefix+'-type').value, topic=gv(prefix+'-topic');
-  return (t==='Custom'?(gv(prefix+'-custom')||'10 Best'):t)+' '+topic;
-}
-
-// ── PROVIDERS NOTIFICATIONS ──────────────────
-var provNotes={dalle:'🔑 Uses your OpenAI API key.',stability:'🔑 Uses your Stability AI key.',huggingface:'🔑 Uses your Hugging Face key.',replicate:'🔑 Uses your Replicate key.',pollinations:''};
-function setProvUI(groupId,prov,noteId){
-  var btns=document.querySelectorAll('#'+groupId+' .pvb');
-  for(var i=0;i<btns.length;i++) btns[i].classList.remove('on');
-  var note=provNotes[prov]||'';
-  if(note){show(noteId,'<div class="msg mi">'+note+'</div>');}else{hide(noteId);}
-}
-
-// ── API ENGINE ───────────────────────────────
-var FALLBACKS = {
-  claude: ['claude-3-5-sonnet-20241022','claude-3-sonnet-20240229'],
-  openai: ['gpt-4o','gpt-4-turbo'],
-  groq: ['llama3-70b-8192','mixtral-8x7b-32768'],
-  gemini: ['gemini-1.5-flash','gemini-1.5-pro'],
-  mistral: ['mistral-small-latest','open-mistral-7b'],
-  cohere: ['command-r-plus','command']
-};
-
-async function getBestModel(prov){
-  var fallback = FALLBACKS[prov] ? FALLBACKS[prov][0] : '';
-  try {
-    var key = ls('k_'+prov) || '';
-    if(!key) return fallback;
-    if(prov==='openai'){
-      var r = await fetch('[https://api.openai.com/v1/models](https://api.openai.com/v1/models)',{headers:{'Authorization':'Bearer '+key}});
-      if(r.ok){
-        var d = await r.json();
-        var match = (d.data||[]).find(m => m.id === 'gpt-4o');
-        if(match) return match.id;
-      }
-    }
-  } catch(e) {}
-  return fallback;
-}
-
-// Placeholder Generation Actions to make layout functional
-function buildAndGenerate(){ alert("Generating image prompt using built rules..."); }
-function previewPrompt(){ show('img-prompt-preview', 'Preview Generated System Text Rules'); }
-function dlCleanImg(){ alert("Strips metadata and fetches clean PNG context canvas."); }
-
-// Setup event maps on DOM load
-document.addEventListener('DOMContentLoaded', function() {
-  var tabs = document.querySelectorAll('.tab');
-  tabs.forEach(function(tab) {
-    tab.addEventListener('click', function() {
-      var idx = parseInt(this.getAttribute('data-tab'));
-      switchTab(idx);
-    });
-  });
-
-  if(ge('btn-settings')) ge('btn-settings').addEventListener('click', openSettings);
-  if(ge('btn-close-settings')) ge('btn-close-settings').addEventListener('click', closeSettings);
-  if(ge('btn-save-settings')) ge('btn-save-settings').addEventListener('click', saveSettings);
-
-  var imgBtns=document.querySelectorAll('#img-provs .pvb');
-  imgBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
-      G.imgProv = this.getAttribute('data-p');
-      setProvUI('img-provs', G.imgProv, 'img-note');
-      this.classList.add('on');
-    });
-  });
-
-  var biBtns=document.querySelectorAll('#bi-provs .pvb');
-  biBtns.forEach(btn => {
-    btn.addEventListener('click', function() {
-      G.biProv = this.getAttribute('data-bp');
-      setProvUI('bi-provs', G.biProv, 'bi-note');
-      this.classList.add('on');
-    });
-  });
-
-  if(ge('btn-img-build')) ge('btn-img-build').addEventListener('click', buildAndGenerate);
-  if(ge('btn-img-preview-prompt')) ge('btn-img-preview-prompt').addEventListener('click', previewPrompt);
-  if(ge('btn-img-dl')) ge('btn-img-dl').addEventListener('click', dlCleanImg);
-  if(ge('l-type')) ge('l-type').addEventListener('change', () => handleLstType('l'));
-  if(ge('bl-type')) ge('bl-type').addEventListener('change', () => handleLstType('bl'));
-});
 </script>
 </body>
 </html>
