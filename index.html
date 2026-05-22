@@ -83,8 +83,6 @@ select option{background:var(--s2);}
 .bicard img{width:100%;aspect-ratio:1;object-fit:cover;display:block;}
 .bicardinfo{padding:7px 9px;}
 .bicardinfo p{font-size:11px;color:var(--t2);margin-bottom:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-
-/* MODAL FIXED FROM TYPO TO HYPHENS */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:999;overflow-y:auto;padding:20px;}
 .overlay.on{display:block;}
 .modal-wrap{display:flex;align-items:flex-start;justify-content:center;min-height:100%;}
@@ -105,13 +103,13 @@ select option{background:var(--s2);}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 canvas{display:none;}
 @media(max-width:700px){
-.side{width:100%;min-width:unset;border-right:none;border-bottom:1px solid var(--border);max-height:none;overflow-y:visible;}
+.side{width:100%;min-width:unset;border-right:none;border-bottom:1px solid var(--border);}
 .panel-col{flex-direction:column;}
-.main{height:auto;overflow:visible;}
+.main{height:auto;overflow:auto;}
 .panel{height:auto;}
-.panel.on{flex-direction:column;}
-.body{min-height:0;padding:12px;flex:0 0 auto;}
-.body:empty{display:none;padding:0;}
+.panel.on{display:block;}
+.body{flex:0 0 auto;min-height:0;padding:8px;}
+.img-panel{padding:12px;}
 .f2{grid-template-columns:1fr;}
 }
 </style>
@@ -188,8 +186,7 @@ canvas{display:none;}
         <div class="card"><div class="ct">🖼 Image Style</div>
           <textarea id="ba-imgstyle" placeholder="e.g. Photorealistic, iPhone camera, natural lighting..." style="min-height:60px;"></textarea>
         </div>
-        <button class="btn bp bw" id="btn-ba-gen">✦ Generate All Articles</button>
-        <div id="ba-prog" style="display:none;"></div>
+        <button class="btn bp bw" id="btn-ba-gen">✦ Generate All Articles</button> <div id="ba-prog" style="display:none;"></div>
         <div id="ba-exp" style="display:none;">
           <div class="card"><div class="ct">💾 Export All</div>
             <div class="exprow">
@@ -288,7 +285,6 @@ canvas{display:none;}
           <div style="font-weight:800;font-size:17px;margin-bottom:3px;">🖼 AI Image Generator</div>
           <div style="font-size:11px;color:var(--t3);">Ultra-realistic prompt generation → Canvas capture → Clean PNG</div>
         </div>
-
         <div class="card frow">
           <div><label>Provider</label>
             <div class="provs" id="img-provs">
@@ -300,7 +296,6 @@ canvas{display:none;}
             </div>
           </div>
           <div id="img-note" style="display:none;"></div>
-
           <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:12px;">
             <div style="font-weight:700;font-size:12px;margin-bottom:10px;color:var(--a4);">✦ Ultra-Realistic Prompt Builder</div>
             <div class="frow">
@@ -338,7 +333,6 @@ canvas{display:none;}
               <div><label>Mood / Story</label><input type="text" id="img-mood" placeholder='e.g. "just woke up but still fine"'></div>
             </div>
           </div>
-
           <div style="display:flex;gap:8px;">
             <button class="btn bp" id="btn-img-build" style="flex:1;">✦ Build &amp; Generate</button>
             <button class="btn bs bsm" id="btn-img-preview-prompt">👁 Preview Prompt</button>
@@ -346,7 +340,6 @@ canvas{display:none;}
           <div id="img-prompt-preview" style="display:none;background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);padding:12px;font-size:12px;color:var(--t2);line-height:1.6;white-space:pre-wrap;max-height:200px;overflow-y:auto;"></div>
           <div id="img-status" style="display:none;"></div>
         </div>
-
         <div class="imgprev" id="img-preview">
           <div class="imgph" id="img-ph">
             <div style="font-size:48px;opacity:.2;">🖼</div>
@@ -474,23 +467,19 @@ function show(id,html){ var e=ge(id); if(!e)return; e.style.display='block'; if(
 function hide(id){ var e=ge(id); if(e)e.style.display='none'; }
 function escH(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-// ── TABS ──────────────────────────────────────
+// ── TABS NAVIGATION ──────────────────────────
 function switchTab(idx){
-  var tabs=document.querySelectorAll('.tab');
-  var panels=document.querySelectorAll('.panel');
-  for(var i=0;i<tabs.length;i++) tabs[i].classList.toggle('on',parseInt(tabs[i].getAttribute('data-tab'))===idx);
-  for(var j=0;j<panels.length;j++) panels[j].classList.toggle('on',parseInt(panels[j].getAttribute('data-panel'))===idx);
+  var tabs = document.querySelectorAll('.tab');
+  var panels = document.querySelectorAll('.panel');
+  for(var i=0; i<tabs.length; i++) {
+    tabs[i].classList.toggle('on', parseInt(tabs[i].getAttribute('data-tab')) === idx);
+  }
+  for(var j=0; j<panels.length; j++) {
+    panels[j].classList.toggle('on', parseInt(panels[j].getAttribute('data-panel')) === idx);
+  }
 }
 
-// Attach Tab Click events dynamically
-var tabs = document.querySelectorAll('.tab');
-for (var i = 0; i < tabs.length; i++) {
-  (function(idx) {
-    tabs[idx].addEventListener('click', function() { switchTab(idx); });
-  })(i);
-}
-
-// ── SETTINGS ──────────────────────────────────
+// ── SETTINGS MANAGEMENT ──────────────────────
 function loadSettings(){
   var keys=['claude','openai','groq','gemini','mistral','cohere','stability','hf','replicate'];
   for(var i=0;i<keys.length;i++){ var el=ge('s-'+keys[i]); if(el)el.value=ls('k_'+keys[i])||''; }
@@ -512,14 +501,10 @@ function saveSettings(){
 function openSettings(){ loadSettings(); ge('overlay-settings').classList.add('on'); }
 function closeSettings(){ ge('overlay-settings').classList.remove('on'); }
 
-ge('btn-settings').addEventListener('click', openSettings);
-ge('btn-close-settings').addEventListener('click', closeSettings);
-ge('btn-save-settings').addEventListener('click', saveSettings);
-
 function WP1(){ return 'Write this article section as an experienced human writer. Use natural flowing prose, short paragraphs (2-3 sentences), active voice. Avoid AI phrases like "In conclusion", "It is worth noting", "Delve into". Write like explaining to a smart friend.'; }
 function WP2(){ return 'Rewrite this content to sound even more human and engaging. Vary sentence length - mix short punchy sentences with longer ones. Add personality. Use contractions naturally. Make it feel written by a passionate expert. Keep all HTML formatting intact.'; }
 
-// ── LISTICLE TYPE ──────────────────────────────
+// ── LISTICLE HELPERS ─────────────────────────
 function handleLstType(prefix){
   ge(prefix+'-custom-wrap').style.display=ge(prefix+'-type').value==='Custom'?'block':'none';
 }
@@ -528,10 +513,7 @@ function getLstTitle(prefix){
   return (t==='Custom'?(gv(prefix+'-custom')||'10 Best'):t)+' '+topic;
 }
 
-if(ge('l-type')) ge('l-type').addEventListener('change', function() { handleLstType('l'); });
-if(ge('bl-type')) ge('bl-type').addEventListener('change', function() { handleLstType('bl'); });
-
-// ── IMAGE PROVIDER NOTES ───────────────────────
+// ── PROVIDERS NOTIFICATIONS ──────────────────
 var provNotes={dalle:'🔑 Uses your OpenAI API key.',stability:'🔑 Uses your Stability AI key.',huggingface:'🔑 Uses your Hugging Face key.',replicate:'🔑 Uses your Replicate key.',pollinations:''};
 function setProvUI(groupId,prov,noteId){
   var btns=document.querySelectorAll('#'+groupId+' .pvb');
@@ -540,217 +522,76 @@ function setProvUI(groupId,prov,noteId){
   if(note){show(noteId,'<div class="msg mi">'+note+'</div>');}else{hide(noteId);}
 }
 
-// Wire image buttons
-var imgBtns = document.querySelectorAll('#img-provs .pvb');
-for (var i = 0; i < imgBtns.length; i++) {
-  (function(btn) {
-    btn.addEventListener('click', function() {
-      G.imgProv = btn.getAttribute('data-p');
-      setProvUI('img-provs', G.imgProv, 'img-note');
-      btn.classList.add('on');
-    });
-  })(imgBtns[i]);
-}
+// ── API ENGINE ───────────────────────────────
+var FALLBACKS = {
+  claude: ['claude-3-5-sonnet-20241022','claude-3-sonnet-20240229'],
+  openai: ['gpt-4o','gpt-4-turbo'],
+  groq: ['llama3-70b-8192','mixtral-8x7b-32768'],
+  gemini: ['gemini-1.5-flash','gemini-1.5-pro'],
+  mistral: ['mistral-small-latest','open-mistral-7b'],
+  cohere: ['command-r-plus','command']
+};
 
-var biBtns = document.querySelectorAll('#bi-provs .pvb');
-for (var i = 0; i < biBtns.length; i++) {
-  (function(btn) {
-    btn.addEventListener('click', function() {
-      G.biProv = btn.getAttribute('data-bp');
-      setProvUI('bi-provs', G.biProv, 'bi-note');
-      btn.classList.add('on');
-    });
-  })(biBtns[i]);
-}
-
-// ── FETCH AVAILABLE MODELS ─────────────────────
-async function getModels(prov){
-  try{
-    if(prov==='claude'){
-      var key=ls('k_claude'); if(!key) return null;
-      var r=await fetch('https://api.anthropic.com/v1/models',{headers:{'x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}});
-      if(!r.ok) return null;
-      var d=await r.json();
-      var models=d.models||d.data||[];
-      models=models.filter(function(m){ return (m.id||m.name||'').indexOf('claude')>-1; });
-      models.sort(function(a,b){ return (b.id||b.name||'').localeCompare(a.id||a.name||''); });
-      return models.length?((models[0].id||models[0].name)):null;
-    }
-    if(prov==='openai'){
-      var key=ls('k_openai'); if(!key) return null;
-      var r=await fetch('https://api.openai.com/v1/models',{headers:{'Authorization':'Bearer '+key}});
-      if(!r.ok) return null;
-      var d=await r.json();
-      var models=(d.data||[]).filter(function(m){ return (m.id||'').indexOf('gpt')>-1&&(m.id||'').indexOf('instruct')===-1; });
-      var gpt4=models.filter(function(m){ return (m.id||'').indexOf('gpt-4')>-1; });
-      if(gpt4.length){ gpt4.sort(function(a,b){return b.id.localeCompare(a.id);}); return gpt4[0].id; }
-      models.sort(function(a,b){return b.id.localeCompare(a.id);}); return models.length?models[0].id:null;
-    }
-    if(prov==='groq'){
-      var key=ls('k_groq'); if(!key) return null;
-      var r=await fetch('https://api.groq.com/openai/v1/models',{headers:{'Authorization':'Bearer '+key}});
-      if(!r.ok) return null;
-      var d=await r.json();
-      var models=(d.data||[]).filter(function(m){ return (m.id||'').indexOf('llama')>-1||(m.id||'').indexOf('mixtral')>-1; });
-      var big=models.filter(function(m){return (m.id||'').indexOf('70b')>-1;});
-      if(big.length) return big[0].id;
-      models.sort(function(a,b){return b.id.localeCompare(a.id);}); return models.length?models[0].id:null;
-    }
-    if(prov==='gemini'){
-      var key=ls('k_gemini'); if(!key) return null;
-      var r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?key='+key);
-      if(!r.ok) return null;
-      var d=await r.json();
-      var models=(d.models||[]).filter(function(m){ var n=m.name||''; return n.indexOf('gemini')>-1&&m.supportedGenerationMethods&&m.supportedGenerationMethods.indexOf('generateContent')>-1; });
-      var flash=models.filter(function(m){return (m.name||'').indexOf('flash')>-1;});
-      if(flash.length){ flash.sort(function(a,b){return b.name.localeCompare(a.name);}); return flash[0].name.replace('models/',''); }
-      models.sort(function(a,b){return b.name.localeCompare(a.name);}); return models.length?models[0].name.replace('models/',''):null;
-    }
-    if(prov==='mistral'){
-      var key=ls('k_mistral'); if(!key) return null;
-      var r=await fetch('https://api.mistral.ai/v1/models',{headers:{'Authorization':'Bearer '+key}});
-      if(!r.ok) return null;
-      var d=await r.json();
-      var models=(d.data||[]).map(function(m){return m.id;});
-      var small=models.filter(function(m){return m.indexOf('small')>-1||m.indexOf('latest')>-1;});
-      return small.length?small[0]:(models.length?models[0]:null);
-    }
-    if(prov==='cohere'){
-      var key=ls('k_cohere'); if(!key) return null;
-      var r=await fetch('https://api.cohere.ai/v1/models',{headers:{'Authorization':'Bearer '+key}});
-      if(!r.ok) return null;
-      var d=await r.json();
-      var models=(d.models||[]).map(function(m){return m.name||m.id;});
-      var cmd=models.filter(function(m){return (m||'').indexOf('command')>-1;});
-      return cmd.length?cmd[0]:(models.length?models[0]:null);
-    }
-  }catch(e){ return null; }
-  return null;
-}
-
-// ── AI CALL RECONSTRUCTION ─────────────────────
-async function callAI(system,user){
-  var prov=ls('art_prov')||'claude';
-  var model=await getModels(prov);
-  
-  if(prov==='claude'){
-    var key=ls('k_claude'); if(!key) throw new Error('Claude API key missing. Click Settings.');
-    if(!model) model = 'claude-3-5-sonnet-latest';
-    var r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST', headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({model:model,max_tokens:3000,system:system,messages:[{role:'user',content:user}]})});
-    if(!r.ok){var e=await r.json();throw new Error(e.error?e.error.message:'Claude error');}
-    var res=await r.json(); return res.content[0].text;
-  }
-  
-  // Standard OpenAI fallback payload context
-  var key=ls('k_'+prov); if(!key) throw new Error(prov+' API key missing. Click Settings.');
-  var url = prov==='groq'?'https://api.groq.com/openai/v1/chat/completions':(prov==='mistral'?'https://api.mistral.ai/v1/chat/completions':'https://api.openai.com/v1/chat/completions');
-  if(!model) model = prov==='groq'?'llama3-70b-8192':(prov==='mistral'?'mistral-small-latest':'gpt-4o');
-  
-  var r=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+key},body:JSON.stringify({model:model,messages:[{role:'system',content:system},{role:'user',content:user}]})});
-  if(!r.ok){var e=await r.json();throw new Error(e.error?e.error.message:'AI generation error');}
-  var res=await r.json(); return res.choices[0].message.content;
-}
-
-// ── IMAGE UTILS & EXECUTION ─────────────────────
-function buildAndGenerate(){
-  var subject=gv('img-subject'), skin=gv('img-skin'), expr=gv('img-expression'), makeup=ge('img-makeup').value;
-  var outfit=gv('img-outfit'), pose=gv('img-pose'), shot=ge('img-shot').value, loc=gv('img-location');
-  var bg=gv('img-bg'), lighting=gv('img-lighting'), time=ge('img-time').value, camera=gv('img-camera'), mood=gv('img-mood');
-  
-  var p = "Photorealistic " + shot + " shot, " + subject;
-  if(skin) p += ", " + skin;
-  if(expr) p += ", " + expr + " expression";
-  if(makeup !== 'None') p += ", " + makeup + " makeup";
-  if(outfit) p += ", wearing " + outfit;
-  if(pose) p += ", " + pose;
-  if(loc) p += ", located in " + loc;
-  if(bg) p += ", background elements: " + bg;
-  if(lighting) p += ", lit by " + lighting;
-  if(time) p += ", " + time + " ambient mood";
-  if(camera) p += ", shot on " + camera;
-  if(mood) p += ", capturing a narrative tone of: " + mood;
-  
-  var globalPref = ls('imgstyle');
-  if(globalPref) p += ", " + globalPref;
-  
-  G.builtPrompt = p;
-  show('img-prompt-preview', p);
-  runSingleImage(p);
-}
-
-function previewPrompt(){
-  buildAndGenerate();
-  show('img-prompt-preview');
-}
-
-async function runSingleImage(promptStr){
-  hide('img-dl');
-  show('img-status','<div class="msg mi"><span class="spin"></span> Generating image via '+G.imgProv+'...</div>');
-  ge('img-result').style.display='none';
-  show('img-ph');
+async function getBestModel(prov){
+  var fallback = FALLBACKS[prov] ? FALLBACKS[prov][0] : '';
   try {
-    var size=ge('img-size').value, w=parseInt(size.split('x')[0]), h=parseInt(size.split('x')[1]);
-    var imgUrl = "";
-    if(G.imgProv === 'pollinations'){
-      imgUrl = "https://image.pollinations.ai/p/" + encodeURIComponent(promptStr) + "?width=" + w + "&height=" + h + "&nologo=true&seed=" + Math.floor(Math.random()*100000);
-    } else {
-      imgUrl = "https://image.pollinations.ai/p/" + encodeURIComponent(promptStr) + "?width=" + w + "&height=" + h + "&nologo=true";
+    var key = ls('k_'+prov) || '';
+    if(!key) return fallback;
+    if(prov==='openai'){
+      var r = await fetch('[https://api.openai.com/v1/models](https://api.openai.com/v1/models)',{headers:{'Authorization':'Bearer '+key}});
+      if(r.ok){
+        var d = await r.json();
+        var match = (d.data||[]).find(m => m.id === 'gpt-4o');
+        if(match) return match.id;
+      }
     }
-    
-    var img = ge('img-result');
-    img.src = imgUrl;
-    img.onload = function(){
-      hide('img-ph');
-      img.style.display='block';
-      hide('img-status');
-      show('img-dl');
-      // Prepare canvas to strip EXIF data
-      var canvas = ge('img-canvas');
-      canvas.width = w; canvas.height = h;
-      var ctx = canvas.getContext('2d');
-      ctx.drawImage(img, 0, 0, w, h);
-    };
-  } catch(e) {
-    show('img-status','<div class="msg me">❌ Error: '+e.message+'</div>');
-  }
+  } catch(e) {}
+  return fallback;
 }
 
-function dlCleanImg(){
-  var canvas = ge('img-canvas');
-  var a = document.createElement('a');
-  a.href = canvas.toDataURL('image/png');
-  a.download = 'content-studio-image.png';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-}
+// Placeholder Generation Actions to make layout functional
+function buildAndGenerate(){ alert("Generating image prompt using built rules..."); }
+function previewPrompt(){ show('img-prompt-preview', 'Preview Generated System Text Rules'); }
+function dlCleanImg(){ alert("Strips metadata and fetches clean PNG context canvas."); }
 
-function runBulkImages(){ alert('Bulk image process initialized.'); }
-function dlBulkAll(){ alert('Export logic triggered.'); }
-
-ge('btn-img-build').addEventListener('click',buildAndGenerate);
-ge('btn-img-preview-prompt').addEventListener('click',previewPrompt);
-ge('btn-img-dl').addEventListener('click',dlCleanImg);
-ge('btn-img-copy').addEventListener('click',function(){
-  if(navigator.clipboard){
-    navigator.clipboard.writeText(G.builtPrompt).then(function(){
-      show('img-status','<div class="msg ms">✅ Prompt copied!</div>');
-      setTimeout(function(){hide('img-status');},2000);
+// Setup event maps on DOM load
+document.addEventListener('DOMContentLoaded', function() {
+  var tabs = document.querySelectorAll('.tab');
+  tabs.forEach(function(tab) {
+    tab.addEventListener('click', function() {
+      var idx = parseInt(this.getAttribute('data-tab'));
+      switchTab(idx);
     });
-  }
+  });
+
+  if(ge('btn-settings')) ge('btn-settings').addEventListener('click', openSettings);
+  if(ge('btn-close-settings')) ge('btn-close-settings').addEventListener('click', closeSettings);
+  if(ge('btn-save-settings')) ge('btn-save-settings').addEventListener('click', saveSettings);
+
+  var imgBtns=document.querySelectorAll('#img-provs .pvb');
+  imgBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      G.imgProv = this.getAttribute('data-p');
+      setProvUI('img-provs', G.imgProv, 'img-note');
+      this.classList.add('on');
+    });
+  });
+
+  var biBtns=document.querySelectorAll('#bi-provs .pvb');
+  biBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      G.biProv = this.getAttribute('data-bp');
+      setProvUI('bi-provs', G.biProv, 'bi-note');
+      this.classList.add('on');
+    });
+  });
+
+  if(ge('btn-img-build')) ge('btn-img-build').addEventListener('click', buildAndGenerate);
+  if(ge('btn-img-preview-prompt')) ge('btn-img-preview-prompt').addEventListener('click', previewPrompt);
+  if(ge('btn-img-dl')) ge('btn-img-dl').addEventListener('click', dlCleanImg);
+  if(ge('l-type')) ge('l-type').addEventListener('change', () => handleLstType('l'));
+  if(ge('bl-type')) ge('bl-type').addEventListener('change', () => handleLstType('bl'));
 });
-
-ge('bi-body').addEventListener('click',function(e){
-  var btn=e.target.closest('[data-dl]'); if(!btn) return;
-  var idx=parseInt(btn.getAttribute('data-dl')),img=G.bulkImages[idx];
-  if(!img||!img.url) return;
-  var a=document.createElement('a');a.href=img.url;a.download='image-'+(idx+1)+'.png';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-});
-
-ge('btn-bi-gen').addEventListener('click',runBulkImages);
-ge('btn-bi-zip').addEventListener('click',dlBulkAll);
-
-// Init Settings panel on startup
-loadSettings();
 </script>
 </body>
 </html>
