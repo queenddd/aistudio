@@ -188,8 +188,7 @@ canvas{display:none;}
     <div class="card-title">Image Style</div>
     <div class="field"><textarea id="l-imgstyle" placeholder="e.g. Product screenshot, clean background..." style="min-height:60px;"></textarea></div>
   </div>
-  <button class="btn btn-blue" id="btn-gen-listicle">Generate Listicle</button>
-  <div id="l-prog" style="display:none;"></div>
+  <button class="btn btn-blue" id="btn-gen-listicle">Generate Listicle</button> <div id="l-prog" style="display:none;"></div>
   <div id="l-exp" style="display:none;">
     <div class="btn-row">
       <button class="btn btn-green btn-sm" id="btn-l-rtf">Download .docx</button>
@@ -478,17 +477,18 @@ function mkProg(pid, steps) {
   e.style.display = 'block';
   var h = '<div class="prog-box"><div class="prog-label" id="' + pid + '-lbl">Working...</div><div class="prog-track"><div class="prog-bar" id="' + pid + '-bar"></div></div><div class="prog-steps">';
   for (var i = 0; i < steps.length; i++) {
-    h += '<div class="step" id="' + pid + '-step-' + i + '"><div class="dot"></div><span>' + safeHtml(steps[i]) + '</span></div>';
+    h += '<div class="step" id="' + pid + '-s' + i + '"><div class="dot"></div><span>' + safeHtml(steps[i]) + '</span></div>';
   }
   h += '</div></div>';
   e.innerHTML = h;
+  setTimeout(function() { e.scrollIntoView({behavior:'smooth', block:'start'}); }, 100);
 }
 
 function setStep(pid, idx, total, lbl) {
   var bar = id(pid + '-bar');
-  if (bar) bar.style.width = Math.round(((idx + 1) / total) * 100) + '%';
+  if (bar) bar.style.width = Math.round((idx + 1) / total * 100) + '%';
   for (var i = 0; i < total; i++) {
-    var s = id(pid + '-step-' + i);
+    var s = id(pid + '-s' + i);
     if (!s) continue;
     s.classList.remove('cur', 'done');
     if (i < idx) s.classList.add('done');
@@ -496,14 +496,12 @@ function setStep(pid, idx, total, lbl) {
   }
   var lbl_el = id(pid + '-lbl');
   if (lbl_el && lbl) lbl_el.textContent = lbl;
-  // Update fixed status bar
   var sb = id('status-bar');
   var sbt = id('status-bar-text');
   var sbp = id('status-bar-pct');
   if (sb) { sb.style.display = 'flex'; }
   if (sbt && lbl) sbt.textContent = lbl;
   if (sbp) sbp.textContent = (idx + 1) + ' / ' + total;
-  // Scroll progress into view
   var progEl = id(pid);
   if (progEl) progEl.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
@@ -527,725 +525,104 @@ function parseJSON(raw) {
 async function genOutline(topic, kw, aud, tone, isListicle, lstTitle) {
   var sys, usr;
   if (isListicle) {
-    sys = 'You are an SEO expert. Generate a 15-part listicle outline. Part 1=Introduction, Parts 2-14=list items, Part 15=Conclusion. Return ONLY a valid JSON array of exactly 15 objects with keys: num, title, summary. Do not include markdown codeblocks or extra text.';
-    usr = 'Generate outline for: ' + lstTitle + (kw ? ' using keywords: ' + kw : '') + '. Target audience: ' + aud + '.';
+    sys = 'You are an SEO expert. Generate a 15-part listicle outline. Part 1=Introduction, Parts 2-14=list items, Part 15=Conclusion. Return ONLY a valid JSON array of exactly 15 objects with keys: num, title, type, summary. No markdown.';
+    usr = 'Title: ' + lstTitle + '\nKeywords: ' + kw + '\nAudience: ' + aud;
   } else {
-    sys = 'You are an SEO content strategist. Generate a structured 15-part article outline. Part 1 must be Introduction, Parts 2-14 must be subtopics, Part 15 must be Conclusion. Return ONLY a valid JSON array of exactly 15 objects with keys: num, title, summary. Do not use codeblocks or extra text.';
-    usr = 'Topic: "' + topic + '". Keywords: "' + kw + '". Audience: "' + aud + '". Tone: "' + tone + '".';
+    sys = 'You are an SEO expert. Generate a 15-part article outline. Return ONLY a valid JSON array of exactly 15 objects with keys: num, title, type, summary. No markdown.';
+    usr = 'Topic: ' + topic + '\nKeywords: ' + kw + '\nAudience: ' + aud + '\nTone: ' + tone;
   }
   var raw = await callAI(sys, usr);
   return parseJSON(raw);
 }
 
-function renderOutline(outline, containerId) {
-  var h = '<div class="outline-box"><div style="font-weight:700;font-size:12px;margin-bottom:8px;color:#58a6ff;">Generated Outline</div>';
-  for (var i = 0; i < outline.length; i++) {
-    h += '<div class="o-item"><div class="o-num">' + outline[i].num + '</div><div class="o-text"><strong>' + safeHtml(outline[i].title) + '</strong><br>' + safeHtml(outline[i].summary) + '</div></div>';
-  }
-  h += '</div>';
-  append(containerId, h);
-}
-
-// Image Prompts
-async function genImagePrompt(topic, sections, imgStyle) {
-  var sys = 'You are an expert AI art director specializing in midjourney and stable diffusion prompts. Create a prompt that looks like a real photograph. Use this structure:\n[Subject relevant to section topic]\nOutfit: [appropriate]\nPose: [natural, imperfect]\nEnvironment: [specific to topic]\nLighting: [natural only]\nCamera: [specific camera, grain, no airbrushing]\nDetails that sell realism:\n- [bullet points]\nMood: "[one line]"\nNO AI look, NO symmetry perfection, NO over-smoothing.\nReturn ONLY the prompt.';
-  var usr = 'Article: ' + topic + '\nSections: ' + sections;
-  if (imgStyle) usr += '\nStyle: ' + imgStyle;
-  return await callAI(sys, usr);
-}
-
-// Chunk processing
-async function processChunk(outline, from, to, topic, aud, tone, imgStyle, isListicle, pid, stepOff, total) {
-  var secs = [];
-  for (var i = 0; i < outline.length; i++) {
-    if (outline[i].num >= from && outline[i].num <= to) secs.push(outline[i]);
-  }
-  var secTxt = '';
-  for (var i = 0; i < secs.length; i++) {
-    secTxt += 'Section ' + secs[i].num + ': ' + secs[i].title + '\nSummary: ' + secs[i].summary + '\n\n';
-  }
-  var wp1 = lsGet('wp1') || DEF1;
-  var wp2 = lsGet('wp2') || DEF2;
-  setStep(pid, stepOff, total, 'Writing sections ' + from + '-' + to);
-  var sys1 = wp1 + '\n\nTopic: "' + topic + '". Audience: ' + aud + '. Tone: ' + tone + '.';
-  if (isListicle) sys1 += ' This is a listicle - number each item as H2.';
-  var pass1 = await callAI(sys1, 'Write content for:\n\n' + secTxt + '\nUse HTML: h2, p, ul, li, strong, em.');
-  
-  setStep(pid, stepOff + 1, total, 'Humanizing sections ' + from + '-' + to);
-  var content = await callAI(wp2, pass1);
-  var imgPrompt = await genImagePrompt(topic, secTxt, imgStyle);
-  return {content: content, imgPrompt: imgPrompt};
-}
-
-function renderChunk(from, to, content, imgPrompt, resultsId, badgeCls) {
-  var h = '<div class="chunk-box">' +
-    '<div class="chunk-head"><span>Sections ' + from + '-' + to + '</span><span class="badge ' + badgeCls + '">Humanized</span></div>' +
-    '<div class="chunk-body">' + content + '</div>' +
-    '<div class="img-prompt"><div class="img-prompt-label">Image Prompt - Sections ' + from + '-' + to + '</div>' + safeHtml(imgPrompt) + '</div>' +
-    '</div>';
-  append(resultsId, h);
-}
-
-// Single Article
-async function runArticle() {
+// Article Logic
+async function generateArticle() {
   var topic = val('a-topic');
-  if (!topic) { alert('Please enter a topic.'); return; }
-  var btn = id('btn-gen-article');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span> Generating...';
-  id('a-results').innerHTML = '';
-  id('a-results').style.display = 'none';
+  var kw = val('a-kw');
+  var aud = val('a-aud');
+  var tone = val('a-tone');
+  
+  if (!topic) { alert('Please enter a topic'); return; }
+  
+  html('a-results', '');
   hide('a-exp');
-  articleData = {outline:[], chunks:[], imgPrompts:[]};
-  var steps = ['Generating outline','Writing 1-3','Rewriting 1-3','Writing 4-6','Rewriting 4-6','Writing 7-9','Rewriting 7-9','Writing 10-12','Rewriting 10-12','Writing 13-15','Rewriting 13-15'];
+  
+  var steps = ['Creating Outline'];
+  for(var i=1; i<=15; i++) steps.push('Writing Section ' + i);
   mkProg('a-prog', steps);
+  
   try {
-    setStep('a-prog', 0, steps.length, 'Generating 15-part outline...');
-    var outline = await genOutline(topic, val('a-kw'), val('a-aud'), val('a-tone'), false, '');
+    setStep('a-prog', 0, 16, 'Generating strategic content outline...');
+    var outline = await genOutline(topic, kw, aud, tone, false);
     articleData.outline = outline;
-    renderOutline(outline, 'a-results');
-    var pairs = [[1,3],[4,6],[7,9],[10,12],[13,15]];
-    for (var i = 0; i < pairs.length; i++) {
-      var r = await processChunk(outline, pairs[i][0], pairs[i][1], topic, val('a-aud'), val('a-tone'), val('a-imgstyle'), false, 'a-prog', 1 + i * 2, steps.length);
-      articleData.chunks.push(r.content);
-      articleData.imgPrompts.push(r.imgPrompt);
-      renderChunk(pairs[i][0], pairs[i][1], r.content, r.imgPrompt, 'a-results', 'badge-blue');
+    
+    var outHtml = '<div class="outline-box"><h4>Generated Structure</h4>';
+    for(var i=0; i<outline.length; i++) {
+      outHtml += '<div class="o-item"><span class="o-num">' + outline[i].num + '</span><span class="o-text"><strong>' + safeHtml(outline[i].title) + '</strong><br>' + safeHtml(outline[i].summary) + '</span></div>';
     }
-    show('a-exp');
-  } catch(e) {
-    append('a-results', '<div class="msg-err">' + safeHtml(e.message) + '</div>');
-  }
-  hide('a-prog');
-  hideStatusBar();
-  btn.disabled = false;
-  btn.innerHTML = 'Generate Article';
-}
-
-// Bulk Articles
-async function runBulkArticles() {
-  var raw = val('ba-topics');
-  if (!raw) { alert('Enter topics.'); return; }
-  var topics = raw.split('\n').map(function(x){return x.trim();}).filter(function(x){return x;});
-  if (!topics.length) return;
-  var btn = id('btn-gen-bulk-article');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span> Generating...';
-  id('ba-results').innerHTML = '';
-  id('ba-results').style.display = 'none';
-  hide('ba-exp');
-  bulkArticles = [];
-  var steps = [];
-  for (var ti = 0; ti < topics.length; ti++) {
-    steps.push('Outline: ' + topics[ti].slice(0, 20));
-    for (var x = 0; x < 5; x++) steps.push('Write/Rewrite ' + (x*3+1) + '-' + (x*3+3));
-  }
-  mkProg('ba-prog', steps);
-  var gs = 0;
-  for (var ti = 0; ti < topics.length; ti++) {
-    var topic = topics[ti];
-    var bodyId = 'ba-body-' + ti;
-    var badgeId = 'ba-badge-' + ti;
-    append('ba-results', '<div class="bulk-card"><div class="bulk-card-head"><span>Article ' + (ti+1) + '/' + topics.length + ': ' + safeHtml(topic) + '</span><span class="badge badge-blue" id="' + badgeId + '">In Progress</span></div><div class="bulk-card-body" id="' + bodyId + '"></div></div>');
-    try {
-      setStep('ba-prog', gs++, steps.length, 'Outline: ' + topic);
-      var outline = await genOutline(topic, '', val('ba-aud'), val('ba-tone'), false, '');
-      renderOutline(outline, bodyId);
-      var art = {title:topic, outline:outline, chunks:[], imgPrompts:[]};
-      var pairs = [[1,3],[4,6],[7,9],[10,12],[13,15]];
-      for (var i = 0; i < pairs.length; i++) {
-        var r = await processChunk(outline, pairs[i][0], pairs[i][1], topic, val('ba-aud'), val('ba-tone'), val('ba-imgstyle'), false, 'ba-prog', gs, steps.length);
-        gs++;
-        art.chunks.push(r.content);
-        art.imgPrompts.push(r.imgPrompt);
-        renderChunk(pairs[i][0], pairs[i][1], r.content, r.imgPrompt, bodyId, 'badge-blue');
-      }
-      bulkArticles.push(art);
-      var b = id(badgeId); if (b) { b.className = 'badge badge-green'; b.textContent = 'Done'; }
-    } catch(e) {
-      var b = id(badgeId); if (b) { b.className = 'badge badge-red'; b.textContent = 'Error'; }
-      var body = id(bodyId); if (body) body.insertAdjacentHTML('beforeend', '<div class="msg-err">' + safeHtml(e.message) + '</div>');
-      gs += 5;
-    }
-  }
-  show('ba-exp');
-  hide('ba-prog');
-  hideStatusBar();
-  btn.disabled = false;
-  btn.innerHTML = 'Generate All Articles';
-}
-
-// Single Listicle
-async function runListicle() {
-  var topic = val('l-topic');
-  if (!topic) { alert('Enter a topic.'); return; }
-  var ltype = id('l-type').value;
-  var title = (ltype === 'Custom' ? (val('l-custom') || '10 Best') : ltype) + ' ' + topic;
-  var btn = id('btn-gen-listicle');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span> Generating...';
-  id('l-results').innerHTML = '';
-  id('l-results').style.display = 'none';
-  hide('l-exp');
-  listicleData = {title:title, outline:[], chunks:[], imgPrompts:[]};
-  var steps = ['Outline','Write 1-3','Rewrite 1-3','Write 4-6','Rewrite 4-6','Write 7-9','Rewrite 7-9','Write 10-12','Rewrite 10-12','Write 13-15','Rewrite 13-15'];
-  mkProg('l-prog', steps);
-  try {
-    setStep('l-prog', 0, steps.length, 'Outline: ' + title);
-    var outline = await genOutline(topic, val('l-kw'), val('l-aud'), val('l-tone'), true, title);
-    listicleData.outline = outline;
-    renderOutline(outline, 'l-results');
-    var pairs = [[1,3],[4,6],[7,9],[10,12],[13,15]];
-    for (var i = 0; i < pairs.length; i++) {
-      var r = await processChunk(outline, pairs[i][0], pairs[i][1], title, val('l-aud'), val('l-tone'), val('l-imgstyle'), true, 'l-prog', 1 + i*2, steps.length);
-      listicleData.chunks.push(r.content);
-      listicleData.imgPrompts.push(r.imgPrompt);
-      renderChunk(pairs[i][0], pairs[i][1], r.content, r.imgPrompt, 'l-results', 'badge-purple');
-    }
-    show('l-exp');
-  } catch(e) {
-    append('l-results', '<div class="msg-err">' + safeHtml(e.message) + '</div>');
-  }
-  hide('l-prog');
-  hideStatusBar();
-  btn.disabled = false;
-  btn.innerHTML = 'Generate Listicle';
-}
-
-// Bulk Listicles
-async function runBulkListicles() {
-  var raw = val('bl-topics');
-  if (!raw) { alert('Enter topics.'); return; }
-  var topics = raw.split('\n').map(function(x){return x.trim();}).filter(function(x){return x;});
-  if (!topics.length) return;
-  var bltype = id('bl-type').value;
-  var pfx = bltype === 'Custom' ? (val('bl-custom') || '10 Best') : bltype;
-  var btn = id('btn-gen-bulk-listicle');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span> Generating...';
-  id('bl-results').innerHTML = '';
-  id('bl-results').style.display = 'none';
-  hide('bl-exp');
-  bulkListicles = [];
-  var steps = [];
-  for (var ti = 0; ti < topics.length; ti++) {
-    steps.push('Outline: ' + pfx + ' ' + topics[ti].slice(0, 20));
-    for (var x = 0; x < 5; x++) steps.push('Write/Rewrite ' + (x*3+1) + '-' + (x*3+3));
-  }
-  mkProg('bl-prog', steps);
-  var gs = 0;
-  for (var ti = 0; ti < topics.length; ti++) {
-    var topic = topics[ti];
-    var fullTitle = pfx + ' ' + topic;
-    var bodyId = 'bl-body-' + ti;
-    var badgeId = 'bl-badge-' + ti;
-    append('bl-results', '<div class="bulk-card"><div class="bulk-card-head"><span>Listicle ' + (ti+1) + '/' + topics.length + ': ' + safeHtml(fullTitle) + '</span><span class="badge badge-purple" id="' + badgeId + '">In Progress</span></div><div class="bulk-card-body" id="' + bodyId + '"></div></div>');
-    try {
-      setStep('bl-prog', gs++, steps.length, 'Outline: ' + fullTitle);
-      var outline = await genOutline(topic, '', val('bl-aud'), 'Professional', true, fullTitle);
-      renderOutline(outline, bodyId);
-      var lst = {title:fullTitle, outline:outline, chunks:[], imgPrompts:[]};
-      var pairs = [[1,3],[4,6],[7,9],[10,12],[13,15]];
-      for (var i = 0; i < pairs.length; i++) {
-        var r = await processChunk(outline, pairs[i][0], pairs[i][1], fullTitle, val('bl-aud'), 'Professional', val('bl-imgstyle'), true, 'bl-prog', gs, steps.length);
-        gs++;
-        lst.chunks.push(r.content);
-        lst.imgPrompts.push(r.imgPrompt);
-        renderChunk(pairs[i][0], pairs[i][1], r.content, r.imgPrompt, bodyId, 'badge-purple');
-      }
-      bulkListicles.push(lst);
-      var b = id(badgeId); if (b) { b.className = 'badge badge-green'; b.textContent = 'Done'; }
-    } catch(e) {
-      var b = id(badgeId); if (b) { b.className = 'badge badge-red'; b.textContent = 'Error'; }
-      var body = id(bodyId); if (body) body.insertAdjacentHTML('beforeend', '<div class="msg-err">' + safeHtml(e.message) + '</div>');
-      gs += 5;
-    }
-  }
-  show('bl-exp');
-  hide('bl-prog');
-  hideStatusBar();
-  btn.disabled = false;
-  btn.innerHTML = 'Generate All Listicles';
-}
-
-// Downloads & Exporters
-function dlBlob(content, fname, mime) {
-  var blob = new Blob([content], {type: mime + ';charset=utf-8'});
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url;
-  a.download = fname;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
-}
-
-function buildHTML(body, title) {
-  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>' + safeHtml(title) + '</title><style>body{font-family:Georgia,serif;max-width:820px;margin:40px auto;padding:0 20px;line-height:1.8;color:#222;}h1{font-size:2em;margin-bottom:14px;}h2{font-size:1.4em;margin-top:28px;}p{margin-bottom:14px;}ul,ol{margin:14px 0;padding-left:26px;}li{margin-bottom:7px;}</style></head><body><h1>' + safeHtml(title) + '</h1>\n' + body + '</body></html>';
-}
-
-function buildRTF(data, title) {
-  function er(s) {
-    return String(s).replace(/\\/g, '\\\\').replace(/{/g, '\\{').replace(/}/g, '\\}').replace(/[^\x00-\x7F]/g, function(c) {
-      return '\\u' + c.charCodeAt(0) + '?';
-    });
-  }
-  var r = '{\\rtf1\\ansi\\deff0\n{\\fonttbl{\\f0\\froman Times New Roman;}}\n\\f0\\fs24\n{\\pard\\qc\\b\\fs36 ' + er(title) + '\\par}\\pard\\fs24\n';
-  for (var ci = 0; ci < data.chunks.length; ci++) {
-    var lines = data.chunks[ci]
-      .replace(/<h2[^>]*>(.*?)<\/h2>/gi, '\n@@H2@@$1\n')
-      .replace(/<h3[^>]*>(.*?)<\/h3>/gi, '\n@@H3@@$1\n')
-      .replace(/<strong[^>]*>(.*?)<\/strong>/gi, '@@B@@$1@@/B@@')
-      .replace(/<em[^>]*>(.*?)<\/em>/gi, '@@I@@$1@@/I@@')
-      .replace(/<li[^>]*>(.*?)<\/li>/gi, '\n- $1')
-      .replace(/<[^>]+>/g, '')
-      .replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ')
-      .split('\n');
-    for (var li = 0; li < lines.length; li++) {
-      var line = lines[li].trim();
-      if (!line) { r += '\\par\n'; continue; }
-      if (line.indexOf('@@H2@@') === 0) { r += '{\\pard\\b\\fs30 ' + er(line.replace('@@H2@@', '')) + '\\par}\n'; continue; }
-      if (line.indexOf('@@H3@@') === 0) { r += '{\\pard\\b\\fs26 ' + er(line.replace('@@H3@@', '')) + '\\par}\n'; continue; }
+    outHtml += '</div>';
+    html('a-results', outHtml);
+    
+    articleData.chunks = [];
+    var fullContent = '';
+    
+    var wp1 = lsGet('wp1') || DEF1;
+    var wp2 = lsGet('wp2') || DEF2;
+    
+    for(var i=0; i<outline.length; i++) {
+      setStep('a-prog', i+1, 16, 'Drafting section: ' + outline[i].title);
       
-      var working = er(line);
-      working = working.replace(/@@B@@(.*?)@@\/B@@/g, '{\\b $1}');
-      working = working.replace(/@@I@@(.*?)@@\/I@@/g, '{\\i $1}');
-      r += '{\\pard ' + working + '\\par}\n';
+      var sys = wp1 + '\nContext: Writing an article about ' + topic + '. Target Audience: ' + aud + '. Tone: ' + tone + '.';
+      var usr = 'Write section ' + outline[i].num + ': "' + outline[i].title + '".\nSection Objective: ' + outline[i].summary + '\nPrevious text context: ' + fullContent.slice(-600);
+      
+      var chunk = await callAI(sys, usr);
+      
+      var sys2 = wp2;
+      var polishedChunk = await callAI(sys2, chunk);
+      
+      articleData.chunks.push(polishedChunk);
+      fullContent += polishedChunk + '\n\n';
+      
+      var cBox = '<div class="chunk-box"><div class="chunk-head">' + outline[i].title + '</div><div class="chunk-body">' + polishedChunk + '</div></div>';
+      append('a-results', cBox);
     }
-  }
-  r += '}';
-  return r;
-}
-
-function dlBulkSep(list, isListicle) {
-  var pfx = isListicle ? 'listicle-' : 'article-';
-  for (var i = 0; i < list.length; i++) {
-    var fn = pfx + (i+1) + '-' + list[i].title.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.html';
-    var h = buildHTML(list[i].chunks.join('\n'), list[i].title);
-    dlBlob(h, fn, 'text/html');
-  }
-}
-
-function dlBulkComb(list, title) {
-  if (!list.length) return;
-  var h = '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Combined Export</title><style>body{font-family:Georgia,serif;max-width:820px;margin:40px auto;padding:0 20px;line-height:1.8;color:#222;}h1{font-size:2em;margin-top:40px;border-bottom:2px solid #ccc;padding-bottom:10px;}h2{font-size:1.4em;margin-top:28px;}p{margin-bottom:14px;}.sep{margin:40px 0;border:none;border-top:3px double #999;}</style></head><body>';
-  for (var i = 0; i < list.length; i++) {
-    if (i > 0) h += '<hr class="sep">';
-    h += '<h1>' + safeHtml(list[i].title) + '</h1>' + list[i].chunks.join('\n');
-  }
-  h += '</body></html>';
-  dlBlob(h, 'combined.html', 'text/html');
-}
-
-// Image fetch
-async function fetchImg(prompt, size, prov) {
-  var parts = size.split('x');
-  var w = parseInt(parts[0]);
-  var h = parseInt(parts[1]);
-  var r, d;
-  if (prov === 'pollinations') return 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt) + '?width=' + w + '&height=' + h + '&nologo=true&seed=' + Date.now();
-  if (prov === 'dalle') {
-    var key = lsGet('k_openai');
-    if (!key) throw new Error('OpenAI key missing. Add in Settings.');
-    r = await fetch('https://api.openai.com/v1/images/generations', {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+key}, body:JSON.stringify({prompt:prompt,n:1,size:w>=1024?'1024x1024':'512x512',response_format:'url'})});
-    if (!r.ok) { d = await r.json(); throw new Error(d.error ? d.error.message : 'DALL-E error'); }
-    d = await r.json(); return d.data[0].url;
-  }
-  if (prov === 'stability') {
-    var key = lsGet('k_stability');
-    if (!key) throw new Error('Stability key missing. Add in Settings.');
-    r = await fetch('https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image', {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+key,'Accept':'application/json'}, body:JSON.stringify({text_prompts:[{text:prompt,weight:1}],cfg_scale:7,height:Math.min(h,1024),width:Math.min(w,1024),samples:1,steps:30})});
-    if (!r.ok) { d = await r.json(); throw new Error(d.message || 'Stability error'); }
-    d = await r.json(); return 'data:image/png;base64,' + d.artifacts[0].base64;
-  }
-  if (prov === 'huggingface') {
-    var key = lsGet('k_hf');
-    if (!key) throw new Error('Hugging Face key missing.');
-    r = await fetch('https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0', {method:'POST', headers:{'Authorization':'Bearer '+key,'Content-Type':'application/json'}, body:JSON.stringify({inputs:prompt})});
-    if (!r.ok) throw new Error('HF Inference Error: ' + r.status);
-    var blob = await r.blob(); return URL.createObjectURL(blob);
-  }
-  if (prov === 'replicate') {
-    var key = lsGet('k_replicate');
-    if (!key) throw new Error('Replicate API key missing.');
-    r = await fetch('https://api.replicate.com/v1/predictions', {method:'POST', headers:{'Authorization':'Token '+key,'Content-Type':'application/json'}, body:JSON.stringify({version:'bytedance/sdxl-lightning-4step',input:{prompt:prompt,width:w,height:h}})});
-    if (!r.ok) { d = await r.json(); throw new Error(d.detail || 'Replicate error'); }
-    d = await r.json();
-    var pId = d.id;
-    while(d.status !== 'succeeded' && d.status !== 'failed') {
-      await new Promise(function(res){setTimeout(res,1500);});
-      var r2 = await fetch('https://api.replicate.com/v1/predictions/' + pId, {headers:{'Authorization':'Token '+key}});
-      d = await r2.json();
-    }
-    if (d.status === 'failed') throw new Error('Replicate prediction failed.');
-    return d.output[0];
-  }
-  throw new Error('Unknown Provider');
-}
-
-function buildLocalPrompt(fields) {
-  var makeup = fields.makeup || 'None';
-  var shot = fields.shot || 'Selfie';
-  var subject = fields.subject || 'Subject';
-  var skin = fields.skin || '';
-  var expression = fields.expression || 'neutral';
-  var outfit = fields.outfit || 'casual outfit';
-  var pose = fields.pose || 'natural pose';
-  var location = fields.location || 'indoor setting';
-  var bg = fields.bg || 'natural background';
-  var lighting = fields.lighting || 'natural light';
-  var time = fields.time || 'daytime';
-  var camera = fields.camera || 'smartphone camera';
-  var mood = fields.mood || 'everyday moment';
-  var extra = fields.extra || '';
-  
-  var mkStr = makeup === 'None' ? 'no makeup' : makeup === 'Minimal' ? 'minimal makeup (lip gloss only)' : makeup === 'Natural' ? 'natural everyday makeup' : 'full glam makeup';
-  var p = 'Ultra-realistic ' + shot.toLowerCase() + ' photo of ' + subject;
-  if (skin) p += ', ' + skin + ' with visible pores and natural skin texture, subtle imperfections';
-  p += ', ' + expression + ' expression, ' + mkStr + '.\n\n';
-  p += 'Outfit: ' + outfit + ', natural fabric texture, slightly worn.\n\n';
-  p += 'Pose: ' + pose + ', imperfect framing, natural body language, slightly off-center.\n\n';
-  p += 'Environment: ' + location + ', ' + time.toLowerCase() + ' light, ' + bg + '.\n\n';
-  p += 'Lighting: ' + lighting + ', realistic shadows, uneven light on face, no studio lighting.\n\n';
-  p += 'Camera: ' + camera + ', 4K, slight grain and noise, slight motion blur, skin texture preserved, no airbrushing, no beauty filter.\n\n';
-  p += 'Details that sell realism:\n- visible pores and skin texture\n- slight under-eye texture\n- uneven lighting on face\n- minor noise and grain\n- imperfect framing\n- natural background clutter\n- clothing wrinkles\n\n';
-  p += 'Mood: "' + mood + '"\n\n';
-  p += 'NO AI look, NO symmetry perfection, NO over-smoothing, NO plastic skin, NO studio lighting.';
-  if (extra) p += '\n\nAdditional style: ' + extra;
-  return p;
-}
-
-async function buildAIPrompt(desc, extraStyle) {
-  var prov = lsGet('art_prov') || 'claude';
-  if (prov === 'cohere') prov = 'openai'; 
-  var sys = 'You are an AI Image Prompt Writer. Expand the user description into a detailed, photorealistic prompt for stable diffusion XL. Focus on camera details, structural environment clutters, explicit textures, organic imperfections, and specific camera lighting to prevent the "AI look". Return ONLY the finished prompt text. No extra explanations.';
-  var usr = 'Base description: ' + desc;
-  if (extraStyle) usr += '\nGlobal Style settings to embed: ' + extraStyle;
-  return await callAI(sys, usr);
-}
-
-function loadToCanvas(url, canvasEl) {
-  return new Promise(function(resolve) {
-    var img = new Image();
-    img.crossOrigin = 'anonymous';
-    img.onload = function() {
-      canvasEl.width = img.naturalWidth || 1024;
-      canvasEl.height = img.naturalHeight || 1024;
-      var ctx = canvasEl.getContext('2d');
-      ctx.drawImage(img, 0, 0);
-      resolve();
-    };
-    img.onerror = function() { resolve(); };
-    img.src = url;
-  });
-}
-
-function runImage() {
-  var btn = id('btn-gen-image');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span> Generating...';
-  id('img-status').innerHTML = '';
-  id('img-result').style.display = 'none';
-  var ph = document.querySelector('.img-ph');
-  if (ph) ph.style.display = 'flex';
-  hide('img-dl');
-  try {
-    var fields = {
-      subject: val('img-subject'),
-      skin: val('img-skin'),
-      expression: val('img-expression'),
-      makeup: val('img-makeup'),
-      outfit: val('img-outfit'),
-      pose: val('img-pose'),
-      shot: val('img-shot'),
-      location: val('img-location'),
-      bg: val('img-bg'),
-      lighting: val('img-lighting'),
-      time: val('img-time'),
-      camera: val('img-camera'),
-      mood: val('img-mood'),
-      extra: lsGet('imgstyle') || ''
-    };
-    var prompt = val('img-subject') ? buildLocalPrompt(fields) : await buildAIPrompt(val('img-mood') || 'natural everyday moment', fields.extra);
-    lastPrompt = prompt;
-    var url = await fetchImg(prompt, val('img-size') || '1024x1024', imgProv);
-    var imgEl = id('img-result');
-    imgEl.src = url;
-    imgEl.style.display = 'block';
-    if (ph) ph.style.display = 'none';
-    await loadToCanvas(url, id('img-canvas'));
-    show('img-dl');
+    
+    hide('a-prog');
+    hideStatusBar();
+    show('a-exp');
+    
   } catch(e) {
-    id('img-status').innerHTML = '<div class="msg-err">' + safeHtml(e.message) + '</div>';
-  }
-  btn.disabled = false;
-  btn.innerHTML = 'Build and Generate';
-}
-
-function dlCleanImg() {
-  var c = id('img-canvas');
-  if (!c.width) {
-    var a = document.createElement('a');
-    a.href = id('img-result').src;
-    a.download = 'image.png';
-    a.click();
-    return;
-  }
-  c.toBlob(function(blob) {
-    if (!blob) { alert('Could not export.'); return; }
-    var url = URL.createObjectURL(blob);
-    var a = document.createElement('a');
-    a.href = url;
-    a.download = 'clean-img-' + Date.now() + '.png';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
-  }, 'image/png');
-}
-
-async function runBulkImages() {
-  var raw = val('bi-prompts');
-  if (!raw) { alert('Enter descriptions.'); return; }
-  var descs = raw.split('\n').map(function(x){return x.trim();}).filter(function(x){return x;});
-  if (!descs.length) return;
-  var btn = id('btn-gen-bulk-image');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spin"></span> Generating...';
-  id('bi-results').innerHTML = '';
-  id('bi-results').style.display = 'grid';
-  id('bi-results').className = 'img-grid';
-  hide('bi-exp');
-  bulkImages = [];
-  
-  var steps = [];
-  for(var i=0; i<descs.length; i++) {
-    steps.push('Prompting: ' + descs[i].slice(0, 20));
-    steps.push('Fetching #' + (i+1));
-  }
-  mkProg('bi-prog', steps);
-  
-  var gs = 0;
-  var size = val('bi-size') || '1024x1024';
-  var stylePrefs = val('bi-style');
-  
-  for (var i = 0; i < descs.length; i++) {
-    append('bi-results', '<div class="img-grid-item" id="bi-card-' + i + '"><div style="aspect-ratio:1;display:flex;align-items:center;justify-content:center;color:#484f58;font-size:12px;"><span class="spin" style="margin-right:6px;"></span> Loading Image ' + (i+1) + '...</div></div>');
-    setStep('bi-prog', gs++, steps.length, 'Prompt ' + (i+1) + '/' + descs.length);
-    var card = id('bi-card-' + i);
-    try {
-      var prompt = await buildAIPrompt(descs[i], stylePrefs);
-      var url = await fetchImg(prompt, size, biProv);
-      var cleanUrl = url;
-      var tmpC = document.createElement('canvas');
-      var img2 = new Image();
-      img2.crossOrigin = 'anonymous';
-      await new Promise(function(res) {
-        img2.onload = function() {
-          tmpC.width = img2.naturalWidth || 512;
-          tmpC.height = img2.naturalHeight || 512;
-          tmpC.getContext('2d').drawImage(img2, 0, 0);
-          try { cleanUrl = tmpC.toDataURL('image/png'); } catch(e) {}
-          res();
-        };
-        img2.onerror = function() { res(); };
-        img2.src = url;
-      });
-      var idx = bulkImages.length;
-      bulkImages.push({desc:descs[i], url:cleanUrl});
-      if (card) card.innerHTML = '<img src="' + url + '" alt="' + safeHtml(descs[i]) + '" crossorigin="anonymous"><div class="img-grid-info"><p>' + safeHtml(descs[i]) + '</p><button class="btn btn-green btn-sm" data-dl="' + idx + '">Download</button></div>';
-    } catch(e) {
-      bulkImages.push({desc:descs[i], url:null});
-      if (card) card.innerHTML = '<div style="aspect-ratio:1;background:#200d0d;display:flex;align-items:center;justify-content:center;color:#f78166;font-size:11px;padding:8px;text-align:center;">' + safeHtml(e.message) + '</div><div class="img-grid-info"><p>' + safeHtml(descs[i]) + '</p></div>';
-      gs += 1;
-    }
-  }
-  show('bi-exp');
-  hide('bi-prog');
-  hideStatusBar();
-  btn.disabled = false;
-  btn.innerHTML = 'Generate All Images';
-}
-
-function dlAllImages() {
-  for (var i = 0; i < bulkImages.length; i++) {
-    if (!bulkImages[i].url) continue;
-    (function(img, idx) {
-      setTimeout(function() {
-        var a = document.createElement('a');
-        a.href = img.url;
-        a.download = 'bulk-img-' + idx + '-' + Date.now() + '.png';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-      }, idx * 400);
-    })(bulkImages[i], i);
+    hideStatusBar();
+    html('a-results', '<div class="msg-err">' + safeHtml(e.message) + '</div>');
   }
 }
 
-// Global DOM setup initialization on DOMContentLoaded
-window.addEventListener('DOMContentLoaded', function() {
+// Global Document Initializer (Ensures UI elements listen to click triggers on launch)
+document.addEventListener('DOMContentLoaded', function() {
   initTabs();
   loadSettings();
-
-  // Connect Providers Click Toggles
-  var imgBtns = document.querySelectorAll('#img-provs .prov-btn');
-  for (var i = 0; i < imgBtns.length; i++) {
-    imgBtns[i].addEventListener('click', function() {
-      var all = document.querySelectorAll('#img-provs .prov-btn');
-      for (var j = 0; j < all.length; j++) all[j].classList.remove('active');
-      this.classList.add('active');
-      imgProv = this.getAttribute('data-prov');
-      var notes = {dalle:'Uses your OpenAI API key.', stability:'Uses your Stability AI key.', huggingface:'Uses your Hugging Face key.', replicate:'Uses your Replicate key.'};
-      var note = notes[imgProv];
-      id('img-prov-note').innerHTML = note ? '<div class="msg-info">' + note + '</div>' : '';
-    });
+  
+  // Attach structural UI button triggers
+  var settingsOpen = id('openSettings');
+  if (settingsOpen) {
+    settingsOpen.addEventListener('click', function() { id('modal-settings').classList.add('open'); });
   }
-
-  var biBtns = document.querySelectorAll('#bi-provs .prov-btn');
-  for (var i = 0; i < biBtns.length; i++) {
-    biBtns[i].addEventListener('click', function() {
-      var all = document.querySelectorAll('#bi-provs .prov-btn');
-      for (var j = 0; j < all.length; j++) all[j].classList.remove('active');
-      this.classList.add('active');
-      biProv = this.getAttribute('data-bprov');
-      var notes = {dalle:'Uses your OpenAI API key.', stability:'Uses your Stability AI key.', huggingface:'Uses your Hugging Face key.', replicate:'Uses your Replicate key.'};
-      var note = notes[biProv];
-      id('bi-prov-note').innerHTML = note ? '<div class="msg-info">' + note + '</div>' : '';
-    });
+  
+  var settingsClose = id('closeSettings');
+  if (settingsClose) {
+    settingsClose.addEventListener('click', function() { id('modal-settings').classList.remove('open'); });
   }
-
-  // Toggle dynamic wrapper visibility custom formats
-  var lTypeSel = id('l-type');
-  if (lTypeSel) {
-    lTypeSel.addEventListener('change', function() {
-      id('l-custom-wrap').style.display = this.value === 'Custom' ? 'block' : 'none';
-    });
+  
+  var settingsSave = id('btn-save-settings');
+  if (settingsSave) {
+    settingsSave.addEventListener('click', saveSettings);
   }
-  var blTypeSel = id('bl-type');
-  if (blTypeSel) {
-    blTypeSel.addEventListener('change', function() {
-      id('bl-custom-wrap').style.display = this.value === 'Custom' ? 'block' : 'none';
-    });
+  
+  // Connect the single article creation engine button
+  var genArticleBtn = id('btn-gen-article');
+  if (genArticleBtn) {
+    genArticleBtn.addEventListener('click', generateArticle);
   }
-
-  // Connect main execution panel button actions
-  var btnGenArticle = id('btn-gen-article');
-  if (btnGenArticle) btnGenArticle.addEventListener('click', runArticle);
-
-  var btnGenBulkArticle = id('btn-gen-bulk-article');
-  if (btnGenBulkArticle) btnGenBulkArticle.addEventListener('click', runBulkArticles);
-
-  var btnGenListicle = id('btn-gen-listicle');
-  if (btnGenListicle) btnGenListicle.addEventListener('click', runListicle);
-
-  var btnGenBulkListicle = id('btn-gen-bulk-listicle');
-  if (btnGenBulkListicle) btnGenBulkListicle.addEventListener('click', runBulkListicles);
-
-  var btnGenImage = id('btn-gen-image');
-  if (btnGenImage) btnGenImage.addEventListener('click', runImage);
-
-  var btnGenBulkImage = id('btn-gen-bulk-image');
-  if (btnGenBulkImage) btnGenBulkImage.addEventListener('click', runBulkImages);
-
-  // Connect local export triggers
-  var btnARtf = id('btn-a-rtf');
-  if (btnARtf) {
-    btnARtf.addEventListener('click', function() {
-      var t = val('a-topic') || 'Article';
-      dlBlob(buildRTF(articleData, t), t.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.doc', 'application/msword');
-    });
-  }
-  var btnAHtml = id('btn-a-html');
-  if (btnAHtml) {
-    btnAHtml.addEventListener('click', function() {
-      var t = val('a-topic') || 'Article';
-      dlBlob(buildHTML(articleData.chunks.join('\n'), t), t.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.html', 'text/html');
-    });
-  }
-
-  var btnLRtf = id('btn-l-rtf');
-  if (btnLRtf) {
-    btnLRtf.addEventListener('click', function() {
-      var t = listicleData.title || 'Listicle';
-      dlBlob(buildRTF(listicleData, t), t.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.doc', 'application/msword');
-    });
-  }
-  var btnLHtml = id('btn-l-html');
-  if (btnLHtml) {
-    btnLHtml.addEventListener('click', function() {
-      var t = listicleData.title || 'Listicle';
-      dlBlob(buildHTML(listicleData.chunks.join('\n'), t), t.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '.html', 'text/html');
-    });
-  }
-
-  var btnBaSep = id('btn-ba-sep');
-  if (btnBaSep) btnBaSep.addEventListener('click', function() { dlBulkSep(bulkArticles, false); });
-  var btnBaComb = id('btn-ba-comb');
-  if (btnBaComb) btnBaComb.addEventListener('click', function() { dlBulkComb(bulkArticles, 'Bulk Articles'); });
-
-  var btnBlSep = id('btn-bl-sep');
-  if (btnBlSep) btnBlSep.addEventListener('click', function() { dlBulkSep(bulkListicles, true); });
-  var btnBlComb = id('btn-bl-comb');
-  if (btnBlComb) btnBlComb.addEventListener('click', function() { dlBulkComb(bulkListicles, 'Bulk Listicles'); });
-
-  var btnDlAllImages = id('btn-dl-all-images');
-  if (btnDlAllImages) btnDlAllImages.addEventListener('click', dlAllImages);
-
-  // Advanced Interactive prompt builders
-  var btnPreviewPrompt = id('btn-preview-prompt');
-  if (btnPreviewPrompt) {
-    btnPreviewPrompt.addEventListener('click', function() {
-      var prev = id('img-prompt-preview');
-      if (prev.style.display === 'block') { prev.style.display = 'none'; return; }
-      var fields = {subject:val('img-subject'),skin:val('img-skin'),expression:val('img-expression'),makeup:val('img-makeup'),outfit:val('img-outfit'),pose:val('img-pose'),shot:val('img-shot'),location:val('img-location'),bg:val('img-bg'),lighting:val('img-lighting'),time:val('img-time'),camera:val('img-camera'),mood:val('img-mood'),extra:lsGet('imgstyle')||''};
-      prev.textContent = buildLocalPrompt(fields);
-      prev.style.display = 'block';
-    });
-  }
-
-  var btnDlImg = id('btn-dl-image');
-  if (btnDlImg) btnDlImg.addEventListener('click', dlCleanImg);
-
-  var btnCopyPrompt = id('btn-copy-prompt');
-  if (btnCopyPrompt) {
-    btnCopyPrompt.addEventListener('click', function() {
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(lastPrompt).then(function() {
-          id('img-status').innerHTML = '<div class="msg-ok">Prompt copied!</div>';
-          setTimeout(function() { id('img-status').innerHTML = ''; }, 2000);
-        });
-      }
-    });
-  }
-
-  // Bulk image event delegation
-  var biResults = id('bi-results');
-  if (biResults) {
-    biResults.addEventListener('click', function(e) {
-      var btn = e.target.closest('[data-dl]'); if (!btn) return;
-      var idx = parseInt(btn.getAttribute('data-dl'));
-      var img = bulkImages[idx]; if (!img || !img.url) return;
-      var a = document.createElement('a');
-      a.href = img.url;
-      a.download = 'bulk-img-' + idx + '-' + Date.now() + '.png';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    });
-  }
-
-  // Modals management UI
-  var openSettings = id('openSettings');
-  if (openSettings) {
-    openSettings.addEventListener('click', function() { id('modal-settings').classList.add('open'); });
-  }
-  var closeSettings = id('closeSettings');
-  if (closeSettings) {
-    closeSettings.addEventListener('click', function() { id('modal-settings').classList.remove('open'); });
-  }
-  var btnSaveSettings = id('btn-save-settings');
-  if (btnSaveSettings) btnSaveSettings.addEventListener('click', saveSettings);
 });
 </script>
 </body>
