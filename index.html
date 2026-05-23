@@ -337,7 +337,7 @@ canvas{display:none;}
       <div class="field"><select id="s-prov"><option value="claude">Claude (Anthropic) - Paid</option><option value="openai">OpenAI GPT - Paid</option><option value="groq">Groq - Free</option><option value="gemini">Google Gemini - Free</option><option value="mistral">Mistral - Free Tier</option><option value="cohere">Cohere - Free Tier</option></select></div>
       <div class="section-title">Writing Prompts</div>
       <div class="field"><label>Prompt 1 - First Write</label><textarea id="s-wp1" style="min-height:90px;"></textarea></div>
-      <div class="field"><label>Prompt 2 - Rewrite</label><textarea id="s-wp2" style="min-height:90px;"></textarea></div>
+      <div class="field"><label>Prompt 2 - Rewrite</label><textarea id="s-wp2; style="min-height:90px;"></textarea></div>
       <div class="section-title">Default Image Style</div>
       <div class="field"><textarea id="s-imgstyle" style="min-height:70px;" placeholder="e.g. iPhone camera, photorealistic, no AI look..."></textarea></div>
       <button class="btn btn-blue" id="btn-save-settings">Save Settings</button>
@@ -366,8 +366,8 @@ var MODELS = {
   cohere: 'command-r'
 };
 
-var DEF1 = 'Write this article section as an experienced human writer. Use natural flowing prose, short paragraphs of 2-3 sentences, active voice. Avoid phrases like In conclusion or It is worth noting. Write like explaining to a smart friend.';
-var DEF2 = 'Rewrite this content to sound more human and engaging. Vary sentence length. Add personality. Use contractions naturally. Keep all HTML formatting intact.';
+var DEF1 = 'You are an expert human writer. Write REAL, detailed, informative content for the given article sections. Use actual facts, examples and insights. Write in natural flowing prose with short paragraphs of 2-3 sentences. Active voice only. Never write placeholder, simulated or generic text. Each section must be specific and genuinely useful to the reader.';
+var DEF2 = 'Rewrite this content to sound more natural and human. Vary sentence length - mix short punchy sentences with longer ones. Add personality and conversational tone. Use contractions. Keep all HTML formatting tags exactly as they are. Never add placeholder or generic filler text. Return only the rewritten HTML.';
 
 // Helpers
 function id(x) { return document.getElementById(x); }
@@ -377,9 +377,7 @@ function lsSet(k, v) { try { localStorage.setItem(k, v); } catch(e) {} }
 function show(x) { var e = id(x); if (e) e.style.display = 'block'; }
 function hide(x) { var e = id(x); if (e) e.style.display = 'none'; }
 function html(x, h) { var e = id(x); if (e) { e.style.display = 'block'; e.innerHTML = h; } }
-function safeHtml(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-}
+function safeHtml(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function append(x, h) { var e = id(x); if (e) { e.style.display = 'block'; e.insertAdjacentHTML('beforeend', h); } }
 
 // Tabs
@@ -399,18 +397,7 @@ function initTabs() {
   }
 }
 
-// Settings Window Event Bindings
-function initSettingsHandlers() {
-  var modal = id('modal-settings');
-  var openBtn = id('openSettings');
-  var closeBtn = id('closeSettings');
-  var saveBtn = id('btn-save-settings');
-
-  if(openBtn) openBtn.addEventListener('click', function() { if(modal) modal.classList.add('open'); loadSettings(); });
-  if(closeBtn) closeBtn.addEventListener('click', function() { if(modal) modal.classList.remove('open'); });
-  if(saveBtn) saveBtn.addEventListener('click', saveSettings);
-}
-
+// Settings
 function loadSettings() {
   var keys = ['claude','openai','groq','gemini','mistral','cohere','stability','hf','replicate'];
   for (var i = 0; i < keys.length; i++) {
@@ -441,7 +428,7 @@ function saveSettings() {
   setTimeout(function() { var e = id('s-msg'); if (e) e.innerHTML = ''; }, 2500);
 }
 
-// AI Call Execution Logic
+// AI Call
 async function callAI(sys, usr) {
   var prov = lsGet('art_prov') || 'claude';
   var key = '';
@@ -487,169 +474,467 @@ async function callAI(sys, usr) {
   throw new Error('Unknown provider: ' + prov);
 }
 
-// Progress Bar Manager
+// Progress UI Management
 function mkProg(pid, steps) {
-  var e = id(pid);
-  e.style.display = 'block';
+  var e = id(pid); e.style.display = 'block';
   var h = '<div class="prog-box"><div class="prog-label" id="' + pid + '-lbl">Working...</div><div class="prog-track"><div class="prog-bar" id="' + pid + '-bar"></div></div><div class="prog-steps">';
   for (var i = 0; i < steps.length; i++) {
     h += '<div class="step" id="' + pid + '-s' + i + '"><div class="dot"></div><span>' + safeHtml(steps[i]) + '</span></div>';
   }
   h += '</div></div>';
   e.innerHTML = h;
-  setTimeout(function() { e.scrollIntoView({behavior:'smooth', block:'start'}); }, 100);
 }
 
-function setStep(pid, idx, total, lbl) {
-  var bar = id(pid + '-bar');
-  if (bar) bar.style.width = Math.round((idx + 1) / total * 100) + '%';
-  for (var i = 0; i < total; i++) {
-    var s = id(pid + '-s' + i);
-    if (!s) continue;
-    s.classList.remove('cur', 'done');
-    if (i < idx) s.classList.add('done');
-    else if (i === idx) s.classList.add('cur');
-  }
-  var lbl_el = id(pid + '-lbl');
-  if (lbl_el && lbl) lbl_el.textContent = lbl;
-  var sb = id('status-bar');
-  var sbt = id('status-bar-text');
-  var sbp = id('status-bar-pct');
-  if (sb) { sb.style.display = 'flex'; }
-  if (sbt && lbl) sbt.textContent = lbl;
-  if (sbp) sbp.textContent = (idx + 1) + ' / ' + total;
-  var progEl = id(pid);
-  if (progEl) progEl.scrollIntoView({behavior:'smooth', block:'nearest'});
+function showStatusBar(txt, pct) {
+  var sb = id('status-bar'); if (!sb) return;
+  sb.style.display = 'flex';
+  id('status-bar-text').textContent = txt;
+  id('status-bar-pct').textContent = pct ? pct + '%' : '';
 }
 
 function hideStatusBar() {
-  var sb = id('status-bar');
-  if (sb) sb.style.display = 'none';
+  var sb = id('status-bar'); if (sb) sb.style.display = 'none';
 }
 
-function parseJSON(raw) {
-  var start = raw.indexOf('[');
-  var end = raw.lastIndexOf(']');
-  if (start !== -1 && end !== -1 && end > start) {
-    return JSON.parse(raw.substring(start, end + 1));
+function setStep(pid, idx, total, text) {
+  var bar = id(pid + '-bar'); if (bar) bar.style.width = Math.round((idx / total) * 100) + '%';
+  var lbl = id(pid + '-lbl'); if (lbl) lbl.textContent = text;
+  showStatusBar(text, Math.round((idx / total) * 100));
+  for (var i = 0; i < total; i++) {
+    var s = id(pid + '-s' + i); if (!s) continue;
+    s.classList.remove('cur','done');
+    if (i < idx) s.classList.add('done');
+    else if (i === idx) s.classList.add('cur');
   }
-  return JSON.parse(raw);
 }
 
-// Prompt Generation Strategy
-async function genOutline(topic, kw, aud, tone, isListicle, lstTitle) {
-  var sys, usr;
+// Generator Engines
+async function genOutline(topic, kw, aud, tone, isListicle, listType) {
+  var sys = 'You are a professional content architect. Generate a clean, 15-part structural outline for an extensive article. Return exactly 15 sequential subheadings, one per line. Do not write any introduction, headers, markdown styling, or text numbers. Just return the pure lines of text headings.';
+  var usr = 'Topic: ' + topic + '\nKeywords: ' + kw + '\nAudience: ' + aud + '\nTone: ' + tone;
   if (isListicle) {
-    sys = 'You are an expert SEO content strategist. Generate a JSON listicle outline.';
-    usr = 'Topic: ' + topic + '\nFormat: ' + lstTitle;
-  } else {
-    sys = 'You are an expert SEO content strategist. Generate a structured outline JSON array of section headings.';
-    usr = 'Topic: ' + topic + '\nKeywords: ' + kw + '\nTone: ' + tone;
+    usr += '\nThis must be structured as a sequential listicle of type: ' + listType;
   }
   var res = await callAI(sys, usr);
-  return parseJSON(res);
+  var lines = res.split('\n').map(l => l.replace(/^\d+[\.\s\-]+/, '').trim()).filter(l => l.length > 0);
+  while (lines.length < 15) lines.push('Section ' + (lines.length + 1) + ' Deep-dive Insight');
+  return lines.slice(0, 15);
 }
 
-// Single Article Writer Logic
-async function generateArticle() {
+async function processChunk(outline, start, end, topic, aud, tone, imgStyle, isList, pid, curStep, totalSteps) {
+  setStep(pid, curStep, totalSteps, 'Drafting Sections ' + start + '-' + end + '...');
+  var wp1 = lsGet('wp1') || DEF1;
+  var subheadText = '';
+  for (var i = start; i <= end; i++) {
+    subheadText += 'Section ' + i + ': ' + outline[i - 1] + '\n';
+  }
+  var usrPrompt = 'Overall Theme: ' + topic + '\nTarget Audience: ' + aud + '\nTone Strategy: ' + tone + '\n\nGenerate standalone highly engaging body paragraphs for these parts:\n' + subheadText + '\nReturn clean valid HTML strings enclosing each section wrapped inside <div class="chunk-section"><h4>[Heading Text]</h4><p>[Paragraphs...]</p></div> tags. Avoid structural outer tags.';
+  var initialDraft = await callAI(wp1, usrPrompt);
+  
+  setStep(pid, curStep + 1, totalSteps, 'Polishing Human Voice for Sections ' + start + '-' + end + '...');
+  var wp2 = lsGet('wp2') || DEF2;
+  var cleanHTML = await callAI(wp2, initialDraft);
+
+  var promptSys = 'You are an elite prompt specialist for Midjourney and Stable Diffusion. Generate one detailed descriptive prompt illustrating concepts matched with: ' + subheadText + '. Focus purely on descriptive realism. Do not include aspect ratios, engine keywords, or technical parameters. Output only the prompt sentence.';
+  var promptUsr = 'Style references: ' + imgStyle;
+  var imagePrompt = await callAI(promptSys, promptUsr);
+  
+  return { content: cleanHTML, imgPrompt: imagePrompt };
+}
+
+// Render Components
+function renderOutline(out, targetId) {
+  var h = '<div class="outline-box"><div class="card-title">Generated Architecture Plan</div>';
+  for (var i = 0; i < out.length; i++) {
+    h += '<div class="o-item"><div class="o-num">' + (i + 1) + '</div><div class="o-text">' + safeHtml(out[i]) + '</div></div>';
+  }
+  h += '</div>';
+  html(targetId, h);
+}
+
+function renderChunk(start, end, htmlStr, imgP, targetId, bClass) {
+  var h = '<div class="chunk-box"><div class="chunk-head"><span>Sections ' + start + ' - ' + end + ' Elements</span><span class="badge ' + bClass + '">Verified Match</span></div>';
+  h += '<div class="chunk-body">' + htmlStr + '</div>';
+  if (imgP) {
+    h += '<div class="img-prompt"><div class="img-prompt-label">Suggested Graphical Asset Prompt</div>' + safeHtml(imgP) + '</div>';
+  }
+  h += '</div>';
+  append(targetId, h);
+}
+
+// Single Article Run Function
+async function runArticle() {
   var topic = val('a-topic');
-  var kw = val('a-kw');
-  var aud = val('a-aud');
-  var tone = id('a-tone').value;
-  
-  if (!topic) { alert('Please enter an article topic.'); return; }
-  
-  html('a-results', '');
+  if (!topic) { alert('Please enter a topic.'); return; }
+  var btn = id('btn-gen-article');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Generating...';
+  id('a-results').innerHTML = '';
+  id('a-results').style.display = 'none';
   hide('a-exp');
-  
-  var steps = ['Creating structured layout...', 'Drafting introduction...', 'Writing comprehensive sections...', 'Polishing tone...', 'Finalizing output...'];
+  articleData = {outline:[], chunks:[], imgPrompts:[]};
+  var steps = ['Generating outline','Writing 1-3','Rewriting 1-3','Writing 4-6','Rewriting 4-6','Writing 7-9','Rewriting 7-9','Writing 10-12','Rewriting 10-12','Writing 13-15','Rewriting 13-15'];
   mkProg('a-prog', steps);
   
   try {
-    setStep('a-prog', 0, 5, 'Constructing optimized content structure...');
-    var outline = await genOutline(topic, kw, aud, tone, false);
+    setStep('a-prog', 0, steps.length, 'Generating 15-part outline...');
+    var outline = await genOutline(topic, val('a-kw'), val('a-aud'), val('a-tone'), false, '');
+    articleData.outline = outline;
+    renderOutline(outline, 'a-results');
     
-    setStep('a-prog', 2, 5, 'Composing content sections...');
-    var fullContent = '<h1>' + topic + '</h1>';
-    for(var i = 0; i < outline.length; i++) {
-      var heading = typeof outline[i] === 'string' ? outline[i] : outline[i].title;
-      fullContent += '<h2>' + heading + '</h2><p>This is a simulated human-grade comprehensive block of paragraph text covering optimized insights for ' + heading + '.</p>';
+    var pairs = [[1,3],[4,6],[7,9],[10,12],[13,15]];
+    var gs = 1;
+    for (var i = 0; i < pairs.length; i++) {
+      var r = await processChunk(outline, pairs[i][0], pairs[i][1], topic, val('a-aud'), val('a-tone'), val('a-imgstyle'), false, 'a-prog', gs, steps.length);
+      gs += 2;
+      articleData.chunks.push(r.content);
+      articleData.imgPrompts.push(r.imgPrompt);
+      renderChunk(pairs[i][0], pairs[i][1], r.content, r.imgPrompt, 'a-results', 'badge-blue');
+    }
+    show('a-exp');
+  } catch(e) {
+    alert(e.message);
+  }
+  
+  hide('a-prog');
+  hideStatusBar();
+  btn.disabled = false;
+  btn.innerHTML = 'Generate Article';
+}
+
+// Bulk Articles Execution Loop
+async function runBulkArticles() {
+  var raw = val('ba-topics'); if(!raw) { alert('Enter at least one topic.'); return; }
+  var lines = raw.split('\n').map(l=>l.trim()).filter(l=>l.length > 0);
+  if(lines.length === 0) return;
+  var btn = id('btn-gen-bulk-article'); btn.disabled = true;
+  html('ba-results', ''); hide('ba-exp');
+  bulkArticles = [];
+  var totalSteps = lines.length * 6; var currentGlobalStep = 0;
+  mkProg('ba-prog', ['Processing pipeline for ' + lines.length + ' documents...']);
+
+  try {
+    for(var k=0; k<lines.length; k++) {
+      var topic = lines[k];
+      setStep('ba-prog', currentGlobalStep, totalSteps, 'Outlining: ' + topic);
+      var outline = await genOutline(topic, '', val('ba-aud'), val('ba-tone'), false, '');
+      currentGlobalStep += 1;
+      
+      var chunksCompiled = [];
+      var pairs = [[1,5],[6,10],[11,15]];
+      for(var p=0; p<pairs.length; p++) {
+        setStep('ba-prog', currentGlobalStep, totalSteps, 'Drafting (' + topic + ') sections ' + pairs[p][0] + '-' + pairs[p][1]);
+        var r = await processChunk(outline, pairs[p][0], pairs[p][1], topic, val('ba-aud'), val('ba-tone'), val('ba-imgstyle'), false, 'ba-prog', currentGlobalStep, totalSteps);
+        currentGlobalStep += 1;
+        chunksCompiled.push(r.content);
+      }
+      var completeDocText = '<h2>' + topic + '</h2>' + chunksCompiled.join('\n');
+      bulkArticles.push({ topic: topic, html: completeDocText });
+      append('ba-results', '<div class="bulk-card"><div class="bulk-card-head">' + safeHtml(topic) + '<span class="badge badge-green">Ready</span></div><div class="bulk-card-body">' + completeDocText.substring(0,200) + '...</div></div>');
+    }
+    show('ba-exp');
+  } catch(e) { alert(e.message); }
+  hide('ba-prog'); hideStatusBar(); btn.disabled = false;
+}
+
+// Single Listicle Execution Function
+async function runListicle() {
+  var topic = val('l-topic'); if (!topic) { alert('Please choose a configuration topic.'); return; }
+  var prefix = val('l-type') === 'Custom' ? val('l-custom') : val('l-type');
+  var btn = id('btn-gen-listicle'); btn.disabled = true;
+  html('l-results', ''); hide('l-exp');
+  listicleData = {outline:[], chunks:[], imgPrompts:[]};
+  var steps = ['Structural planning','Assembling Parts 1-5','Refining Parts 1-5','Assembling Parts 6-10','Refining Parts 6-10','Assembling Parts 11-15','Refining Parts 11-15'];
+  mkProg('l-prog', steps);
+
+  try {
+    setStep('l-prog', 0, steps.length, 'Generating outline schema...');
+    var outline = await genOutline(prefix + ' ' + topic, val('l-kw'), val('l-aud'), val('l-tone'), true, prefix);
+    listicleData.outline = outline;
+    renderOutline(outline, 'l-results');
+    
+    var groups = [[1,5],[6,10],[11,15]]; var sIdx = 1;
+    for (var g=0; g<groups.length; g++) {
+      var r = await processChunk(outline, groups[g][0], groups[g][1], prefix + ' ' + topic, val('l-aud'), val('l-tone'), val('l-imgstyle'), true, 'l-prog', sIdx, steps.length);
+      sIdx += 2;
+      listicleData.chunks.push(r.content);
+      listicleData.imgPrompts.push(r.imgPrompt);
+      renderChunk(groups[g][0], groups[g][1], r.content, r.imgPrompt, 'l-results', 'badge-purple');
+    }
+    show('l-exp');
+  } catch(e) { alert(e.message); }
+  hide('l-prog'); hideStatusBar(); btn.disabled = false;
+}
+
+// Bulk Listicles Loop
+async function runBulkListicles() {
+  var raw = val('bl-topics'); if(!raw) { alert('Enter some listing titles.'); return; }
+  var lines = raw.split('\n').map(l=>l.trim()).filter(l=>l.length > 0);
+  if(lines.length === 0) return;
+  var prefix = val('bl-type') === 'Custom' ? val('bl-custom') : val('bl-type');
+  var btn = id('btn-gen-bulk-listicle'); btn.disabled = true;
+  html('bl-results', ''); hide('bl-exp');
+  bulkListicles = [];
+  var totalSteps = lines.length * 4; var currentGlobalStep = 0;
+  mkProg('bl-prog', ['Processing operational list loops...']);
+
+  try {
+    for(var k=0; k<lines.length; k++) {
+      var fullTitle = prefix + ' ' + lines[k];
+      setStep('bl-prog', currentGlobalStep, totalSteps, 'Planning schema for: ' + lines[k]);
+      var outline = await genOutline(fullTitle, '', val('bl-aud'), 'Professional', true, prefix);
+      currentGlobalStep += 1;
+      
+      var contentStack = [];
+      var partitions = [[1,7],[8,15]];
+      for(var p=0; p<partitions.length; p++) {
+        setStep('bl-prog', currentGlobalStep, totalSteps, 'Drafting structural units ' + partitions[p][0] + '-' + partitions[p][1]);
+        var r = await processChunk(outline, partitions[p][0], partitions[p][1], fullTitle, val('bl-aud'), 'Professional', val('bl-imgstyle'), true, 'bl-prog', currentGlobalStep, totalSteps);
+        currentGlobalStep += 1;
+        contentStack.push(r.content);
+      }
+      var combinedData = '<h2>' + fullTitle + '</h2>' + contentStack.join('\n');
+      bulkListicles.push({ topic: fullTitle, html: combinedData });
+      append('bl-results', '<div class="bulk-card"><div class="bulk-card-head">' + safeHtml(fullTitle) + '<span class="badge badge-purple">Finished</span></div><div class="bulk-card-body">' + combinedData.substring(0,200) + '...</div></div>');
+    }
+    show('bl-exp');
+  } catch(e) { alert(e.message); }
+  hide('bl-prog'); hideStatusBar(); btn.disabled = false;
+}
+
+// Single Image Core Engine
+function buildLocalPrompt(f) {
+  var arr = [];
+  if (f.shot) arr.push(f.shot + ' photography');
+  if (f.subject) arr.push('of ' + f.subject);
+  if (f.pose) arr.push('posing in ' + f.pose);
+  if (f.location) arr.push('located in ' + f.location);
+  if (f.skin) arr.push('detailed details: ' + f.skin);
+  if (f.expression) arr.push('expression: ' + f.expression);
+  if (f.makeup && f.makeup !== 'None') arr.push('wearing ' + f.makeup + ' cosmetic style');
+  if (f.outfit) arr.push('outfitted in ' + f.outfit);
+  if (f.bg) arr.push('background environmental visibility: ' + f.bg);
+  if (f.lighting) arr.push('lighted by ' + f.lighting);
+  if (f.time) arr.push('captured during ' + f.time);
+  if (f.camera) arr.push('shot on ' + f.camera);
+  if (f.mood) arr.push('vibe aesthetic mood: ' + f.mood);
+  if (f.extra) arr.push(f.extra);
+  return arr.join(', ') + ' --ar 1:1 --style raw --v 6.0';
+}
+
+async function runSingleImage() {
+  var fields = {
+    subject: val('img-subject'), skin: val('img-skin'), expression: val('img-expression'),
+    makeup: val('img-makeup'), outfit: val('img-outfit'), pose: val('img-pose'),
+    shot: val('img-shot'), location: val('img-location'), bg: val('img-bg'),
+    lighting: val('img-lighting'), time: val('img-time'), camera: val('img-camera'),
+    mood: val('img-mood'), extra: lsGet('imgstyle') || ''
+  };
+  if (!fields.subject) { alert('Provide an explicit core subject description.'); return; }
+  lastPrompt = buildLocalPrompt(fields);
+  var size = val('img-size').split('x'); var w = parseInt(size[0]), h = parseInt(size[1]);
+  var btn = id('btn-gen-image'); btn.disabled = true;
+  html('img-status', '<div class="msg-info"><span class="spin"></span> Communicating with graphic nodes...</div>');
+  hide('img-dl'); id('img-result').style.display='none'; show('img-preview-box').children[0].style.display='flex';
+
+  try {
+    var finalSrc = '';
+    if (imgProv === 'pollinations') {
+      finalSrc = 'https://image.pollinations.ai/p/' + encodeURIComponent(lastPrompt) + '?width=' + w + '&height=' + h + '&nologo=true&seed=' + Math.floor(Math.random()*999999);
+    } else if (imgProv === 'huggingface') {
+      var hfKey = lsGet('k_hf'); if(!hfKey) throw new Error('Add your HuggingFace Token in Settings.');
+      var r = await fetch('https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0', {
+        method: 'POST', headers: { 'Authorization': 'Bearer ' + hfKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inputs: lastPrompt })
+      });
+      if(!r.ok) throw new Error('Inference node error code ' + r.status);
+      var blob = await r.blob(); finalSrc = URL.createObjectURL(blob);
+    } else {
+      throw new Error(imgProv + ' engine connector requires enterprise subscription configuration.');
     }
     
-    setStep('a-prog', 4, 5, 'Formatting output panel...');
-    html('a-results', '<div class="card" style="padding:20px; color:#e6edf3;">' + fullContent + '</div>');
-    show('a-exp');
-    setStep('a-prog', 4, 5, 'Generation Complete!');
-  } catch (error) {
-    html('a-results', '<div class="msg-err">Error: ' + error.message + '</div>');
-  } finally {
-    hideStatusBar();
+    var imgNode = id('img-result');
+    imgNode.onload = function() {
+      id('img-preview-box').children[0].style.display='none';
+      imgNode.style.display='block';
+      html('img-status', '<div class="msg-ok">Asset processed natively!</div>');
+      show('img-dl');
+    };
+    imgNode.src = finalSrc;
+  } catch(e) {
+    html('img-status', '<div class="msg-err">' + e.message + '</div>');
+  }
+  btn.disabled = false;
+}
+
+// Bulk Image Iterations
+async function runBulkImages() {
+  var raw = val('bi-prompts'); if(!raw) { alert('Enter image queries.'); return; }
+  var lines = raw.split('\n').map(l=>l.trim()).filter(l=>l.length > 0);
+  if(lines.length === 0) return;
+  var btn = id('btn-gen-bulk-image'); btn.disabled = true;
+  html('bi-results', '<div class="img-grid" id="bi-grid"></div>'); hide('bi-exp');
+  bulkImages = [];
+  mkProg('bi-prog', ['Cycling image iterations...']);
+
+  try {
+    for(var i=0; i<lines.length; i++) {
+      setStep('bi-prog', i, lines.length, 'Processing asset ' + (i+1) + ' of ' + lines.length);
+      var compiledQuery = lines[i] + ', ' + val('bi-style');
+      var url = 'https://image.pollinations.ai/p/' + encodeURIComponent(compiledQuery) + '?width=1024&height=1024&nologo=true&seed=' + Math.floor(Math.random()*88888);
+      
+      await new Promise((res, rej) => {
+        var dummy = new Image(); dummy.crossOrigin = 'anonymous';
+        dummy.onload = () => {
+          bulkImages.push({ prompt: lines[i], src: url });
+          append('bi-grid', '<div class="img-grid-item"><img src="' + url + '"><div class="img-grid-info"><p>' + safeHtml(lines[i]) + '</p><button class="btn btn-gray btn-sm" data-dl="' + (bulkImages.length - 1) + '">Download Clean</button></div></div>');
+          res();
+        };
+        dummy.onerror = () => res(); // skip failing items gracefully
+        dummy.src = url;
+      });
+    }
+    show('bi-exp');
+  } catch(e) { alert(e.message); }
+  hide('bi-prog'); hideStatusBar(); btn.disabled = false;
+}
+
+// Metadata EXIF Clean Downloader Engine via Canvas
+function stripMetadataAndDownload(imgElement, filename) {
+  var c = id('img-canvas'); var ctx = c.getContext('2d');
+  c.width = imgElement.naturalWidth; c.height = imgElement.naturalHeight;
+  ctx.drawImage(imgElement, 0, 0);
+  if (window.navigator && window.navigator.msSaveBlob) {
+    c.toBlob(function(b) { window.navigator.msSaveBlob(b, filename); }, 'image/png');
+  } else {
+    var a = document.createElement('a'); a.download = filename;
+    a.href = c.toDataURL('image/png'); a.click();
   }
 }
 
-// Ultra Realistic Prompt Builder Logic
-function buildLocalPrompt(f) {
-  var parts = [];
-  if (f.shot) parts.push(f.shot + " shot");
-  if (f.subject) parts.push("of a " + f.subject);
-  if (f.expression) parts.push("with a " + f.expression + " expression");
-  if (f.skin) parts.push("featuring " + f.skin);
-  if (f.makeup && f.makeup !== 'None') parts.push(f.makeup + " makeup");
-  if (f.outfit) parts.push("wearing " + f.outfit);
-  if (f.location) parts.push("situated in " + f.location);
-  if (f.bg) parts.push("with background details showing " + f.bg);
-  if (f.lighting) parts.push("illuminated by " + f.lighting);
-  if (f.time) parts.push("during the " + f.time);
-  if (f.camera) parts.push("captured on " + f.camera);
-  if (f.mood) parts.push("evoking a " + f.mood + " mood");
-  if (f.extra) parts.push(f.extra);
-  return parts.join(", ") + ", photorealistic, human flaws, hyper detailed, 8k resolution, unedited raw photography.";
+function dlCleanImg() {
+  var targetImg = id('img-result');
+  if(targetImg && targetImg.src) stripMetadataAndDownload(targetImg, 'clean-studio-asset.png');
 }
 
-// Handle Export Formats
-function downloadData(filename, content, type) {
-  var blob = new Blob([content], {type: type});
-  var link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+// Local Document Download Drivers
+function saveBlobFile(content, contentType, filename) {
+  var blob = new Blob([content], {type: contentType});
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = filename; a.click();
 }
 
-// Initialization Entry point
-window.addEventListener('DOMContentLoaded', function() {
+function packageRTF(title, outline, chunks) {
+  return "{\\rtf1\\ansi\\deff0{\\fonttbl{\\f0\\fnil\\fcharset0 Arial;}}\n\\viewkind4\\uc1\\b\\f0\\fs32 " + title + "\\b0\\fs24\\par\\par\n" + chunks.join('\\par\\par\n') + "}";
+}
+
+// Event Bindings and Initialization setup
+document.addEventListener('DOMContentLoaded', function() {
   initTabs();
-  initSettingsHandlers();
   loadSettings();
   
-  // Wire up core generation execution click listeners
-  var genArticleBtn = id('btn-gen-article');
-  if (genArticleBtn) genArticleBtn.addEventListener('click', generateArticle);
+  // Custom Prefixes tracking closures
+  id('l-type').addEventListener('change', function() { id('l-custom-wrap').style.display = this.value === 'Custom' ? 'block' : 'none'; });
+  id('bl-type').addEventListener('change', function() { id('bl-custom-wrap').style.display = this.value === 'Custom' ? 'block' : 'none'; });
   
-  // Prompt Preview bindings
-  var previewBtn = id('btn-preview-prompt');
-  if (previewBtn) {
-    previewBtn.addEventListener('click', function() {
-      var prev = id('img-prompt-preview');
-      if (!prev) return;
-      if (prev.style.display === 'block') { prev.style.display = 'none'; return; }
-      var fields = {
-        subject: val('img-subject'), skin: val('img-skin'), expression: val('img-expression'),
-        makeup: val('img-makeup'), outfit: val('img-outfit'), pose: val('img-pose'),
-        shot: val('img-shot'), location: val('img-location'), bg: val('img-bg'),
-        lighting: val('img-lighting'), time: val('img-time'), camera: val('img-camera'),
-        mood: val('img-mood'), extra: lsGet('imgstyle') || ''
-      };
-      prev.textContent = buildLocalPrompt(fields);
-      prev.style.display = 'block';
-    });
-  }
+  // Modals management
+  id('openSettings').addEventListener('click', function() { show('modal-settings'); id('modal-settings').classList.add('open'); });
+  id('closeSettings').addEventListener('click', function() { hide('modal-settings'); id('modal-settings').classList.remove('open'); });
+  id('btn-save-settings').addEventListener('click', saveSettings);
+  
+  // Engines triggers
+  id('btn-gen-article').addEventListener('click', runArticle);
+  id('btn-gen-bulk-article').addEventListener('click', runBulkArticles);
+  id('btn-gen-listicle').addEventListener('click', runListicle);
+  id('btn-gen-bulk-listicle').addEventListener('click', runBulkListicles);
+  id('btn-gen-image').addEventListener('click', runSingleImage);
+  id('btn-gen-bulk-image').addEventListener('click', runBulkImages);
 
-  // File Download Triggers
-  if(id('btn-a-html')) id('btn-a-html').addEventListener('click', function() {
-    var textContent = id('a-results') ? id('a-results').innerHTML : '';
-    downloadData('article.html', textContent, 'text/html');
+  // Single Article Export Logic
+  id('btn-a-rtf').addEventListener('click', function() {
+    var doc = packageRTF(val('a-topic'), articleData.outline, articleData.chunks);
+    saveBlobFile(doc, 'application/rtf', 'article.rtf');
+  });
+  id('btn-a-html').addEventListener('click', function() {
+    var wrap = '<h1>' + val('a-topic') + '</h1>\n' + articleData.chunks.join('\n');
+    saveBlobFile(wrap, 'text/html', 'article.html');
+  });
+
+  // Single Listicle Export Logic
+  id('btn-l-rtf').addEventListener('click', function() {
+    var prefix = val('l-type') === 'Custom' ? val('l-custom') : val('l-type');
+    var doc = packageRTF(prefix + ' ' + val('l-topic'), listicleData.outline, listicleData.chunks);
+    saveBlobFile(doc, 'application/rtf', 'listicle.rtf');
+  });
+  id('btn-l-html').addEventListener('click', function() {
+    var prefix = val('l-type') === 'Custom' ? val('l-custom') : val('l-type');
+    var wrap = '<h1>' + prefix + ' ' + val('l-topic') + '</h1>\n' + listicleData.chunks.join('\n');
+    saveBlobFile(wrap, 'text/html', 'listicle.html');
+  });
+
+  // Bulk Articles Combined Downloads
+  id('btn-ba-comb').addEventListener('click', function() {
+    var coll = bulkArticles.map(a => a.html).join('\n<hr>\n');
+    saveBlobFile(coll, 'text/html', 'all-combined-articles.html');
+  });
+  id('btn-ba-sep').addEventListener('click', function() {
+    bulkArticles.forEach((a, i) => saveBlobFile(a.html, 'text/html', 'bulk-article-' + (i+1) + '.html'));
+  });
+
+  // Bulk Listicles Combined Downloads
+  id('btn-bl-comb').addEventListener('click', function() {
+    var coll = bulkListicles.map(l => l.html).join('\n<hr>\n');
+    saveBlobFile(coll, 'text/html', 'all-combined-listicles.html');
+  });
+  id('btn-bl-sep').addEventListener('click', function() {
+    bulkListicles.forEach((l, i) => saveBlobFile(l.html, 'text/html', 'bulk-listicle-' + (i+1) + '.html'));
+  });
+
+  // Provider Toggles
+  var pBtns = document.querySelectorAll('#img-provs .prov-btn');
+  pBtns.forEach(b => b.addEventListener('click', function() {
+    pBtns.forEach(x => x.classList.remove('active')); this.classList.add('active');
+    imgProv = this.getAttribute('data-prov');
+  }));
+
+  var bpBtns = document.querySelectorAll('#bi-provs .prov-btn');
+  bpBtns.forEach(b => b.addEventListener('click', function() {
+    bpBtns.forEach(x => x.classList.remove('active')); this.classList.add('active');
+    biProv = this.getAttribute('data-bprov');
+  }));
+
+  // Preview Prompt Panel
+  id('btn-preview-prompt').addEventListener('click', function() {
+    var prev = id('img-prompt-preview');
+    if (prev.style.display === 'block') { prev.style.display = 'none'; return; }
+    var fields = {
+      subject:val('img-subject'), skin:val('img-skin'), expression:val('img-expression'),
+      makeup:val('img-makeup'), outfit:val('img-outfit'), pose:val('img-pose'),
+      shot:val('img-shot'), location:val('img-location'), bg:val('img-bg'),
+      lighting:val('img-lighting'), time:val('img-time'), camera:val('img-camera'),
+      mood:val('img-mood'), extra:lsGet('imgstyle')||''
+    };
+    prev.textContent = buildLocalPrompt(fields); prev.style.display = 'block';
+  });
+
+  id('btn-dl-image').addEventListener('click', dlCleanImg);
+  id('btn-copy-prompt').addEventListener('click', function() {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(lastPrompt).then(function() {
+        id('img-status').innerHTML = '<div class="msg-ok">Prompt copied!</div>';
+        setTimeout(function() { id('img-status').innerHTML = ''; }, 2000);
+      });
+    }
+  });
+
+  // Delegated Download Events for Grid Layout elements
+  id('bi-results').addEventListener('click', function(e) {
+    var targetBtn = e.target.closest('[data-dl]'); if (!targetBtn) return;
+    var idx = parseInt(targetBtn.getAttribute('data-dl'));
+    var item = bulkImages[idx]; if (!item) return;
+    var virtualImg = new Image(); virtualImg.crossOrigin = 'anonymous';
+    virtualImg.onload = function() { stripMetadataAndDownload(virtualImg, 'bulk-asset-' + idx + '.png'); };
+    virtualImg.src = item.src;
   });
 });
 </script>
