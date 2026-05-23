@@ -399,29 +399,7 @@ function initTabs() {
   }
 }
 
-// Settings Modal Events
-function initSettingsEvents() {
-  var openBtn = id('openSettings');
-  var closeBtn = id('closeSettings');
-  var saveBtn = id('btn-save-settings');
-  var modal = id('modal-settings');
-
-  if (openBtn) {
-    openBtn.addEventListener('click', function() {
-      if (modal) modal.classList.add('open');
-      loadSettings();
-    });
-  }
-  if (closeBtn) {
-    closeBtn.addEventListener('click', function() {
-      if (modal) modal.classList.remove('open');
-    });
-  }
-  if (saveBtn) {
-    saveBtn.addEventListener('click', saveSettings);
-  }
-}
-
+// Settings
 function loadSettings() {
   var keys = ['claude','openai','groq','gemini','mistral','cohere','stability','hf','replicate'];
   for (var i = 0; i < keys.length; i++) {
@@ -500,8 +478,7 @@ async function callAI(sys, usr) {
 
 // Progress
 function mkProg(pid, steps) {
-  var e = id(pid);
-  e.style.display = 'block';
+  var e = id(pid); e.style.display = 'block';
   var h = '<div class="prog-box"><div class="prog-label" id="' + pid + '-lbl">Working...</div><div class="prog-track"><div class="prog-bar" id="' + pid + '-bar"></div></div><div class="prog-steps">';
   for (var i = 0; i < steps.length; i++) {
     h += '<div class="step" id="' + pid + '-s' + i + '"><div class="dot"></div><span>' + safeHtml(steps[i]) + '</span></div>';
@@ -512,33 +489,28 @@ function mkProg(pid, steps) {
 }
 
 function setStep(pid, idx, total, lbl) {
-  var bar = id(pid + '-bar');
-  if (bar) bar.style.width = Math.round((idx + 1) / total * 100) + '%';
+  var bar = id(pid + '-bar'); if (bar) bar.style.width = Math.round((idx + 1) / total * 100) + '%';
   for (var i = 0; i < total; i++) {
-    var s = id(pid + '-s' + i);
-    if (!s) continue;
+    var s = id(pid + '-s' + i); if (!s) continue;
     s.classList.remove('cur', 'done');
     if (i < idx) s.classList.add('done');
     else if (i === idx) s.classList.add('cur');
   }
-  var lbl_el = id(pid + '-lbl');
-  if (lbl_el && lbl) lbl_el.textContent = lbl;
+  var lbl_el = id(pid + '-lbl'); if (lbl_el && lbl) lbl_el.textContent = lbl;
   var sb = id('status-bar');
   var sbt = id('status-bar-text');
   var sbp = id('status-bar-pct');
-  if (sb) { sb.style.display = 'flex'; }
+  if (sb) sb.style.display = 'flex';
   if (sbt && lbl) sbt.textContent = lbl;
   if (sbp) sbp.textContent = (idx + 1) + ' / ' + total;
-  var progEl = id(pid);
-  if (progEl) progEl.scrollIntoView({behavior:'smooth', block:'nearest'});
+  var progEl = id(pid); if (progEl) progEl.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
 function hideStatusBar() {
-  var sb = id('status-bar');
-  if (sb) sb.style.display = 'none';
+  var sb = id('status-bar'); if (sb) sb.style.display = 'none';
 }
 
-// Parse JSON safely - handles markdown fences and extra text
+// Parse JSON safely
 function parseJSON(raw) {
   var t = String.fromCharCode(96);
   var tr = t+t+t;
@@ -560,111 +532,119 @@ function parseJSON(raw) {
   return JSON.parse(raw);
 }
 
-// Image prompt and configuration builder helpers
-function buildLocalPrompt(f) {
+// Global Event Listeners & Initializers Setup
+document.addEventListener("DOMContentLoaded", function() {
+  initTabs();
+  loadSettings();
+
+  var openSettings = id('openSettings');
+  if (openSettings) {
+    openSettings.addEventListener('click', function() {
+      var modal = id('modal-settings');
+      if (modal) modal.classList.add('open');
+    });
+  }
+
+  var closeSettings = id('closeSettings');
+  if (closeSettings) {
+    closeSettings.addEventListener('click', function() {
+      var modal = id('modal-settings');
+      if (modal) modal.classList.remove('open');
+    });
+  }
+
+  var saveBtn = id('btn-save-settings');
+  if (saveBtn) {
+    saveBtn.addEventListener('click', saveSettings);
+  }
+});
+
+// Image logic prompt helper
+function buildLocalPrompt(fields) {
   var p = [];
-  if (f.subject) p.push(f.subject);
-  if (f.skin) p.push(f.skin);
-  if (f.expression) p.push(f.expression + " expression");
-  if (f.makeup && f.makeup !== 'None') p.push(f.makeup + " makeup");
-  if (f.outfit) p.push("wearing " + f.outfit);
-  if (f.pose) p.push(f.pose + " pose");
-  if (f.shot) p.push(f.shot + " shot");
-  if (f.location) p.push("at " + f.location);
-  if (f.bg) p.push("background showing " + f.bg);
-  if (f.lighting) p.push(f.lighting + " lighting");
-  if (f.time) p.push("during " + f.time);
-  if (f.camera) p.push("shot on " + f.camera);
-  if (f.mood) p.push(f.mood + " mood");
-  if (f.extra) p.push(f.extra);
+  if (fields.subject) p.push(fields.subject);
+  if (fields.skin) p.push(fields.skin);
+  if (fields.expression) p.push(fields.expression);
+  if (fields.makeup && fields.makeup !== 'None') p.push(fields.makeup + ' makeup');
+  if (fields.outfit) p.push(fields.outfit);
+  if (fields.pose) p.push(fields.pose);
+  if (fields.shot) p.push(fields.shot + ' shot');
+  if (fields.location) p.push('located in ' + fields.location);
+  if (fields.bg) p.push('background details: ' + fields.bg);
+  if (fields.lighting) p.push(fields.lighting + ' lighting');
+  if (fields.time) p.push('during ' + fields.time);
+  if (fields.camera) p.push('shot on ' + fields.camera);
+  if (fields.mood) p.push('mood is ' + fields.mood);
+  if (fields.extra) p.push(fields.extra);
   return p.join(', ');
 }
 
+function safeClosest(el, selector) {
+  while (el) {
+    if (el.matches && el.matches(selector)) return el;
+    el = el.parentElement;
+  }
+  return null;
+}
+
 function dlCleanImg() {
-  var img = id('img-result');
   var canvas = id('img-canvas');
-  if (!img || !canvas || img.style.display === 'none') return;
-  var ctx = canvas.getContext('2d');
-  canvas.width = img.naturalWidth || img.width;
-  canvas.height = img.naturalHeight || img.height;
-  ctx.drawImage(img, 0, 0);
-  var a = document.createElement('a');
-  a.href = canvas.toDataURL('image/png');
-  a.download = 'csp-cleaned-image.png';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  if (!canvas) return;
+  var link = document.createElement('a');
+  link.download = 'content-studio-image.png';
+  link.href = canvas.toDataURL();
+  link.click();
 }
 
-// Provider Toggle Setup
-function initProviders() {
-  var pBtns = document.querySelectorAll('#img-provs .prov-btn');
-  pBtns.forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      pBtns.forEach(function(b) { b.classList.remove('active'); });
-      this.classList.add('active');
-      imgProv = this.getAttribute('data-prov');
-    });
-  });
-
-  var bpBtns = document.querySelectorAll('#bi-provs .prov-btn');
-  bpBtns.forEach(function(btn) {
-    btn.addEventListener('click', function() {
-      bpBtns.forEach(function(b) { b.classList.remove('active'); });
-      this.classList.add('active');
-      biProv = this.getAttribute('data-bprov');
-    });
+// Bulk image download delegation
+var biResults = id('bi-results');
+if (biResults) {
+  biResults.addEventListener('click', function(e) {
+    var btn = safeClosest(e.target, '[data-dl]'); if (!btn) return;
+    var idx = parseInt(btn.getAttribute('data-dl'));
+    var img = bulkImages[idx]; if (!img) return;
+    var link = document.createElement('a');
+    link.download = 'bulk-image-' + idx + '.png';
+    link.href = img.src;
+    link.click();
   });
 }
 
-// Single Image generation interaction setup
-function initImagePromptBuilder() {
-  var previewBtn = id('btn-preview-prompt');
-  if (previewBtn) {
-    previewBtn.addEventListener('click', function() {
-      var prev = id('img-prompt-preview');
-      if (!prev) return;
-      if (prev.style.display === 'block') { prev.style.display = 'none'; return; }
-      var fields = {
-        subject: val('img-subject'), skin: val('img-skin'), expression: val('img-expression'),
-        makeup: val('img-makeup'), outfit: val('img-outfit'), pose: val('img-pose'),
-        shot: val('img-shot'), location: val('img-location'), bg: val('img-bg'),
-        lighting: val('img-lighting'), time: val('img-time'), camera: val('img-camera'),
-        mood: val('img-mood'), extra: lsGet('imgstyle') || ''
-      };
-      lastPrompt = buildLocalPrompt(fields);
-      prev.textContent = lastPrompt;
-      prev.style.display = 'block';
-    });
-  }
-
-  var dlBtn = id('btn-dl-image');
-  if (dlBtn) dlBtn.addEventListener('click', dlCleanImg);
-
-  var copyBtn = id('btn-copy-prompt');
-  if (copyBtn) {
-    copyBtn.addEventListener('click', function() {
-      if (navigator.clipboard && lastPrompt) {
-        navigator.clipboard.writeText(lastPrompt).then(function() {
-          var status = id('img-status');
-          if (status) {
-            status.innerHTML = '<div class="msg-ok">Prompt copied!</div>';
-            setTimeout(function() { status.innerHTML = ''; }, 2000);
-          }
-        });
-      }
-    });
-  }
+var btnPreviewPrompt = id('btn-preview-prompt');
+if (btnPreviewPrompt) {
+  btnPreviewPrompt.addEventListener('click', function() {
+    var prev = id('img-prompt-preview');
+    if (!prev) return;
+    if (prev.style.display === 'block') { prev.style.display = 'none'; return; }
+    var fields = {
+      subject: val('img-subject'), skin: val('img-skin'), expression: val('img-expression'),
+      makeup: val('img-makeup'), outfit: val('img-outfit'), pose: val('img-pose'),
+      shot: val('img-shot'), location: val('img-location'), bg: val('img-bg'),
+      lighting: val('img-lighting'), time: val('img-time'), camera: val('img-camera'),
+      mood: val('img-mood'), extra: lsGet('imgstyle') || ''
+    };
+    prev.textContent = buildLocalPrompt(fields);
+    prev.style.display = 'block';
+  });
 }
 
-// Document Load Orchestration
-document.addEventListener('DOMContentLoaded', function() {
-  initTabs();
-  initSettingsEvents();
-  initProviders();
-  initImagePromptBuilder();
-  loadSettings();
-});
+var btnDlImage = id('btn-dl-image');
+if (btnDlImage) btnDlImage.addEventListener('click', dlCleanImg);
+
+var btnCopyPrompt = id('btn-copy-prompt');
+if (btnCopyPrompt) {
+  btnCopyPrompt.addEventListener('click', function() {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(lastPrompt).then(function() {
+        var status = id('img-status');
+        if (status) {
+          status.innerHTML = '<div class="msg-ok">Prompt copied!</div>';
+          setTimeout(function() { status.innerHTML = ''; }, 2000);
+        }
+      });
+    }
+  });
+}
 </script>
 </body>
 </html>
