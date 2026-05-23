@@ -163,8 +163,7 @@ canvas{display:none;}
     <div class="card-title">Image Style</div>
     <div class="field"><textarea id="ba-imgstyle" placeholder="e.g. Photorealistic, natural lighting..." style="min-height:60px;"></textarea></div>
   </div>
-  <button class="btn btn-blue" id="btn-gen-bulk-article">Generate All Articles</button>
-  <div id="ba-prog" style="display:none;"></div>
+  <button class="btn btn-blue" id="btn-gen-bulk-article">Generate All Articles</button> <div id="ba-prog" style="display:none;"></div>
   <div id="ba-exp" style="display:none;">
     <div class="btn-row">
       <button class="btn btn-green btn-sm" id="btn-ba-sep">Separate Files</button>
@@ -190,7 +189,8 @@ canvas{display:none;}
     <div class="card-title">Image Style</div>
     <div class="field"><textarea id="l-imgstyle" placeholder="e.g. Product screenshot, clean background..." style="min-height:60px;"></textarea></div>
   </div>
-  <button class="btn btn-blue" id="btn-gen-listicle">Generate Listicle</button> <div id="l-prog" style="display:none;"></div>
+  <button class="btn btn-blue" id="btn-gen-listicle">Generate Listicle</button>
+  <div id="l-prog" style="display:none;"></div>
   <div id="l-exp" style="display:none;">
     <div class="card" style="background:#0d2015;border-color:#1a5c2e;">
       <div class="card-title" style="color:#3fb950;">Listicle Generated! Export Below</div>
@@ -399,7 +399,29 @@ function initTabs() {
   }
 }
 
-// Settings
+// Settings Modal Events
+function initSettingsEvents() {
+  var openBtn = id('openSettings');
+  var closeBtn = id('closeSettings');
+  var saveBtn = id('btn-save-settings');
+  var modal = id('modal-settings');
+
+  if (openBtn) {
+    openBtn.addEventListener('click', function() {
+      if (modal) modal.classList.add('open');
+      loadSettings();
+    });
+  }
+  if (closeBtn) {
+    closeBtn.addEventListener('click', function() {
+      if (modal) modal.classList.remove('open');
+    });
+  }
+  if (saveBtn) {
+    saveBtn.addEventListener('click', saveSettings);
+  }
+}
+
 function loadSettings() {
   var keys = ['claude','openai','groq','gemini','mistral','cohere','stability','hf','replicate'];
   for (var i = 0; i < keys.length; i++) {
@@ -430,7 +452,7 @@ function saveSettings() {
   setTimeout(function() { var e = id('s-msg'); if (e) e.innerHTML = ''; }, 2500);
 }
 
-// AI Call Complete Setup
+// AI Call
 async function callAI(sys, usr) {
   var prov = lsGet('art_prov') || 'claude';
   var key = '';
@@ -440,11 +462,9 @@ async function callAI(sys, usr) {
   else if (prov === 'gemini') key = lsGet('k_gemini') || '';
   else if (prov === 'mistral') key = lsGet('k_mistral') || '';
   else if (prov === 'cohere') key = lsGet('k_cohere') || '';
-  
   if (!key) throw new Error('No API key for ' + prov + '. Open Settings to add your key.');
   var model = MODELS[prov] || 'gpt-4o';
   var r, d;
-  
   if (prov === 'claude') {
     r = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({model:model,max_tokens:3000,system:sys,messages:[{role:'user',content:usr}]})});
     if (!r.ok) { d = await r.json(); throw new Error(d.error ? d.error.message : 'Claude error ' + r.status); }
@@ -480,226 +500,171 @@ async function callAI(sys, usr) {
 
 // Progress
 function mkProg(pid, steps) {
-  var e = id(pid); e.style.display = 'block';
+  var e = id(pid);
+  e.style.display = 'block';
   var h = '<div class="prog-box"><div class="prog-label" id="' + pid + '-lbl">Working...</div><div class="prog-track"><div class="prog-bar" id="' + pid + '-bar"></div></div><div class="prog-steps">';
   for (var i = 0; i < steps.length; i++) {
     h += '<div class="step" id="' + pid + '-s' + i + '"><div class="dot"></div><span>' + safeHtml(steps[i]) + '</span></div>';
   }
   h += '</div></div>';
   e.innerHTML = h;
+  setTimeout(function() { e.scrollIntoView({behavior:'smooth', block:'start'}); }, 100);
 }
 
-function updProg(pid, idx, label, pct) {
-  var lbl = id(pid + '-lbl'); if (lbl && label) lbl.textContent = label;
-  var bar = id(pid + '-bar'); if (bar && pct !== undefined) bar.style.width = pct + '%';
-  for (var i = 0; i <= idx; i++) {
+function setStep(pid, idx, total, lbl) {
+  var bar = id(pid + '-bar');
+  if (bar) bar.style.width = Math.round((idx + 1) / total * 100) + '%';
+  for (var i = 0; i < total; i++) {
     var s = id(pid + '-s' + i);
-    if (s) { s.className = (i === idx) ? 'step cur' : 'step done'; }
+    if (!s) continue;
+    s.classList.remove('cur', 'done');
+    if (i < idx) s.classList.add('done');
+    else if (i === idx) s.classList.add('cur');
   }
+  var lbl_el = id(pid + '-lbl');
+  if (lbl_el && lbl) lbl_el.textContent = lbl;
+  var sb = id('status-bar');
+  var sbt = id('status-bar-text');
+  var sbp = id('status-bar-pct');
+  if (sb) { sb.style.display = 'flex'; }
+  if (sbt && lbl) sbt.textContent = lbl;
+  if (sbp) sbp.textContent = (idx + 1) + ' / ' + total;
+  var progEl = id(pid);
+  if (progEl) progEl.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
 
-// Exporters
-function dlFile(content, name, type) {
-  var b = new Blob([content], {type:type});
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(b); a.download = name;
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+function hideStatusBar() {
+  var sb = id('status-bar');
+  if (sb) sb.style.display = 'none';
 }
 
-function makeDocx(title, bodyHtml) {
-  return '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="utf-8"><title>' + title + '</title><style>body{font-family:Arial,sans-serif;line-height:1.6;}h1,h2,h3{color:#333;}</style></head><body>' + bodyHtml + '</body></html>';
+// Parse JSON safely - handles markdown fences and extra text
+function parseJSON(raw) {
+  var t = String.fromCharCode(96);
+  var tr = t+t+t;
+  while (raw.indexOf(tr) !== -1) {
+    var ti = raw.indexOf(tr);
+    var te = raw.indexOf('\n', ti);
+    raw = raw.substring(0, ti) + (te !== -1 ? raw.substring(te + 1) : raw.substring(ti + 3));
+  }
+  raw = raw.trim();
+  var start = raw.indexOf('[');
+  var end = raw.lastIndexOf(']');
+  if (start === -1 || end === -1) {
+    start = raw.indexOf('{');
+    end = raw.lastIndexOf('}');
+  }
+  if (start !== -1 && end !== -1) {
+    raw = raw.substring(start, end + 1);
+  }
+  return JSON.parse(raw);
 }
 
-// Image Utilities
+// Image prompt and configuration builder helpers
 function buildLocalPrompt(f) {
   var p = [];
   if (f.subject) p.push(f.subject);
   if (f.skin) p.push(f.skin);
-  if (f.expression) p.push(f.expression + ' expression');
-  if (f.makeup && f.makeup !== 'None') p.push(f.makeup + ' makeup');
-  if (f.outfit) p.push('wearing ' + f.outfit);
-  if (f.pose) p.push('pose is ' + f.pose);
-  if (f.shot) p.push(f.shot + ' shot');
-  if (f.location) p.push('located in ' + f.location);
-  if (f.bg) p.push('background features ' + f.bg);
-  if (f.lighting) p.push(f.lighting + ' lighting');
-  if (f.time) p.push('at ' + f.time);
-  if (f.camera) p.push('shot on ' + f.camera);
-  if (f.mood) p.push('mood is ' + f.mood);
+  if (f.expression) p.push(f.expression + " expression");
+  if (f.makeup && f.makeup !== 'None') p.push(f.makeup + " makeup");
+  if (f.outfit) p.push("wearing " + f.outfit);
+  if (f.pose) p.push(f.pose + " pose");
+  if (f.shot) p.push(f.shot + " shot");
+  if (f.location) p.push("at " + f.location);
+  if (f.bg) p.push("background showing " + f.bg);
+  if (f.lighting) p.push(f.lighting + " lighting");
+  if (f.time) p.push("during " + f.time);
+  if (f.camera) p.push("shot on " + f.camera);
+  if (f.mood) p.push(f.mood + " mood");
   if (f.extra) p.push(f.extra);
   return p.join(', ');
 }
 
 function dlCleanImg() {
   var img = id('img-result');
-  var cvs = id('img-canvas');
-  if (!img || img.style.display === 'none') return;
-  cvs.width = img.naturalWidth || 1024;
-  cvs.height = img.naturalHeight || 1024;
-  var ctx = cvs.getContext('2d');
+  var canvas = id('img-canvas');
+  if (!img || !canvas || img.style.display === 'none') return;
+  var ctx = canvas.getContext('2d');
+  canvas.width = img.naturalWidth || img.width;
+  canvas.height = img.naturalHeight || img.height;
   ctx.drawImage(img, 0, 0);
-  cvs.toBlob(function(b) {
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(b);
-    a.download = 'csp-' + Date.now() + '.png';
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  }, 'image/png');
+  var a = document.createElement('a');
+  a.href = canvas.toDataURL('image/png');
+  a.download = 'csp-cleaned-image.png';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
-// Providers Config Initialization
+// Provider Toggle Setup
 function initProviders() {
-  id('img-provs').addEventListener('click', function(e) {
-    var b = e.target.closest('[data-prov]'); if (!b) return;
-    var btns = id('img-provs').querySelectorAll('.prov-btn');
-    for (var i=0; i<btns.length; i++) btns[i].classList.remove('active');
-    b.classList.add('active'); imgProv = b.getAttribute('data-prov');
+  var pBtns = document.querySelectorAll('#img-provs .prov-btn');
+  pBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      pBtns.forEach(function(b) { b.classList.remove('active'); });
+      this.classList.add('active');
+      imgProv = this.getAttribute('data-prov');
+    });
   });
 
-  id('bi-provs').addEventListener('click', function(e) {
-    var b = e.target.closest('[data-bprov]'); if (!b) return;
-    var btns = id('bi-provs').querySelectorAll('.prov-btn');
-    for (var i=0; i<btns.length; i++) btns[i].classList.remove('active');
-    b.classList.add('active'); biProv = b.getAttribute('data-bprov');
+  var bpBtns = document.querySelectorAll('#bi-provs .prov-btn');
+  bpBtns.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      bpBtns.forEach(function(b) { b.classList.remove('active'); });
+      this.classList.add('active');
+      biProv = this.getAttribute('data-bprov');
+    });
   });
 }
 
-// Single Image Core Logic
-async function generateSingleImage() {
-  var fields = {
-    subject: val('img-subject'), skin: val('img-skin'), expression: val('img-expression'),
-    makeup: val('img-makeup'), outfit: val('img-outfit'), pose: val('img-pose'),
-    shot: val('img-shot'), location: val('img-location'), bg: val('img-bg'),
-    lighting: val('img-lighting'), time: val('img-time'), camera: val('img-camera'),
-    mood: val('img-mood'), extra: lsGet('imgstyle')||''
-  };
-  
-  var prompt = buildLocalPrompt(fields);
-  if(!prompt) { html('img-status', '<div class="msg-err">Please fill in at least one description field.</div>'); return; }
-  lastPrompt = prompt;
-  
-  html('img-status', '<div class="msg-info"><div class="spin"></div> Generating image via ' + imgProv + '...</div>');
-  hide('img-dl');
-  
-  var rImg = id('img-result');
-  var pBox = id('img-preview-box');
-  rImg.style.display = 'none';
-  
-  try {
-    var size = val('img-size') || '1024x1024';
-    var w = size.split('x')[0], h = size.split('x')[1];
-    var url = '';
-    
-    if (imgProv === 'pollinations') {
-      url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt) + '?width=' + w + '&height=' + h + '&nologo=true&seed=' + Math.floor(Math.random()*999999);
-    } else {
-      url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(prompt) + '?width=' + w + '&height=' + h + '&nologo=true&private=true';
-    }
-    
-    rImg.src = url;
-    rImg.onload = function() {
-      html('img-status', '<div class="msg-ok">Image generated successfully!</div>');
-      rImg.style.display = 'block';
-      show('img-dl');
-    };
-    rImg.onerror = function() {
-      throw new Error('Image streaming timed out or failed. Please retry.');
-    };
-  } catch(err) {
-    html('img-status', '<div class="msg-err">' + err.message + '</div>');
+// Single Image generation interaction setup
+function initImagePromptBuilder() {
+  var previewBtn = id('btn-preview-prompt');
+  if (previewBtn) {
+    previewBtn.addEventListener('click', function() {
+      var prev = id('img-prompt-preview');
+      if (!prev) return;
+      if (prev.style.display === 'block') { prev.style.display = 'none'; return; }
+      var fields = {
+        subject: val('img-subject'), skin: val('img-skin'), expression: val('img-expression'),
+        makeup: val('img-makeup'), outfit: val('img-outfit'), pose: val('img-pose'),
+        shot: val('img-shot'), location: val('img-location'), bg: val('img-bg'),
+        lighting: val('img-lighting'), time: val('img-time'), camera: val('img-camera'),
+        mood: val('img-mood'), extra: lsGet('imgstyle') || ''
+      };
+      lastPrompt = buildLocalPrompt(fields);
+      prev.textContent = lastPrompt;
+      prev.style.display = 'block';
+    });
+  }
+
+  var dlBtn = id('btn-dl-image');
+  if (dlBtn) dlBtn.addEventListener('click', dlCleanImg);
+
+  var copyBtn = id('btn-copy-prompt');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', function() {
+      if (navigator.clipboard && lastPrompt) {
+        navigator.clipboard.writeText(lastPrompt).then(function() {
+          var status = id('img-status');
+          if (status) {
+            status.innerHTML = '<div class="msg-ok">Prompt copied!</div>';
+            setTimeout(function() { status.innerHTML = ''; }, 2000);
+          }
+        });
+      }
+    });
   }
 }
 
-// Bulk Image Logic
-async function generateBulkImages() {
-  var lines = val('bi-prompts').split('\n');
-  var prompts = [];
-  for(var i=0; i<lines.length; i++) { if(lines[i].trim()) prompts.push(lines[i].trim()); }
-  if(!prompts.length) { alert('Enter at least one description line.'); return; }
-  
-  var gStyle = val('bi-style');
-  var size = val('bi-size') || '1024x1024';
-  var w = size.split('x')[0], h = size.split('x')[1];
-  
-  mkProg('bi-prog', prompts);
-  html('bi-results', '');
-  hide('bi-exp');
-  bulkImages = [];
-  
-  for(var i=0; i<prompts.length; i++) {
-    updProg('bi-prog', i, 'Processing image ' + (i+1) + ' of ' + prompts.length, (i/prompts.length)*100);
-    var finalPrompt = prompts[i] + (gStyle ? ', ' + gStyle : '');
-    var url = 'https://image.pollinations.ai/prompt/' + encodeURIComponent(finalPrompt) + '?width=' + w + '&height=' + h + '&nologo=true&seed=' + Math.floor(Math.random()*99999);
-    
-    bulkImages.push({prompt: finalPrompt, url: url});
-    var hCard = '<div class="img-grid-item"><img src="' + url + '" alt="Bulk visual"><div class="img-grid-info"><p>' + safeHtml(prompts[i]) + '</p><button class="btn btn-gray btn-sm" data-dl="' + i + '">Download Clean PNG</button></div></div>';
-    append('bi-results', hCard);
-  }
-  
-  updProg('bi-prog', prompts.length, 'Completed!', 100);
-  show('bi-exp');
-}
-
-// Event Bindings
-function initApp() {
+// Document Load Orchestration
+document.addEventListener('DOMContentLoaded', function() {
   initTabs();
-  loadSettings();
+  initSettingsEvents();
   initProviders();
-  
-  id('openSettings').addEventListener('click', function() { id('modal-settings').className = 'modal-bg open'; });
-  id('closeSettings').addEventListener('click', function() { id('modal-settings').className = 'modal-bg'; });
-  id('btn-save-settings').addEventListener('click', saveSettings);
-  
-  // Prompt Preview Action
-  id('btn-preview-prompt').addEventListener('click', function() {
-    var prev = id('img-prompt-preview');
-    if (prev.style.display === 'block') { prev.style.display = 'none'; return; }
-    var fields = {subject:val('img-subject'),skin:val('img-skin'),expression:val('img-expression'),makeup:val('img-makeup'),outfit:val('img-outfit'),pose:val('img-pose'),shot:val('img-shot'),location:val('img-location'),bg:val('img-bg'),lighting:val('img-lighting'),time:val('img-time'),camera:val('img-camera'),mood:val('img-mood'),extra:lsGet('imgstyle')||''};
-    prev.textContent = buildLocalPrompt(fields);
-    prev.style.display = 'block';
-  });
-  
-  id('btn-gen-image').addEventListener('click', generateSingleImage);
-  id('btn-dl-image').addEventListener('click', dlCleanImg);
-  id('btn-copy-prompt').addEventListener('click', function() {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(lastPrompt).then(function() {
-        id('img-status').innerHTML = '<div class="msg-ok">Prompt copied!</div>';
-        setTimeout(function() { id('img-status').innerHTML = ''; }, 2000);
-      });
-    }
-  });
-  
-  id('btn-gen-bulk-image').addEventListener('click', generateBulkImages);
-  
-  // Bulk single interceptor delegation
-  id('bi-results').addEventListener('click', function(e) {
-    var btn = e.target.closest('[data-dl]'); if (!btn) return;
-    var idx = parseInt(btn.getAttribute('data-dl'));
-    var imgObj = bulkImages[idx]; if (!imgObj) return;
-    
-    var ghostImg = new Image();
-    ghostImg.crossOrigin = "anonymous";
-    ghostImg.src = imgObj.url;
-    ghostImg.onload = function() {
-      var cvs = id('img-canvas');
-      cvs.width = ghostImg.width; cvs.height = ghostImg.height;
-      cvs.getContext('2d').drawImage(ghostImg, 0, 0);
-      cvs.toBlob(function(b) {
-        var a = document.createElement('a');
-        a.href = URL.createObjectURL(b); a.download = 'csp-bulk-' + idx + '.png';
-        document.body.appendChild(a); a.click(); document.body.removeChild(a);
-      }, 'image/png');
-    };
-  });
-  
-  // Universal Tab Fallback handlers for unbuilt structural generation elements
-  id('btn-gen-article').addEventListener('click', function() { alert('Article creation requested. Integrate writing endpoints or custom system tools as preferred.'); });
-  id('btn-gen-bulk-article').addEventListener('click', function() { alert('Bulk configuration running structural diagnostic pass checks.'); });
-  id('btn-gen-listicle').addEventListener('click', function() { alert('Listicle creation requested.'); });
-  id('btn-gen-bulk-listicle').addEventListener('click', function() { alert('Bulk listicle pipeline diagnostics.'); });
-}
-
-window.addEventListener('DOMContentLoaded', initApp);
+  initImagePromptBuilder();
+  loadSettings();
+});
 </script>
 </body>
 </html>
