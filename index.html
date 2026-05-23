@@ -1,789 +1,1133 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Content Studio Pro</title>
 <style>
-:root{--bg:#080c10;--s1:#0d1117;--s2:#161b22;--s3:#21262d;--s4:#30363d;--border:#30363d;--a1:#58a6ff;--a2:#f78166;--a3:#3fb950;--a4:#d2a8ff;--text:#e6edf3;--t2:#8b949e;--t3:#484f58;--r:10px;--r2:6px;}
 *{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
-.hdr{background:var(--s1);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:100;}
-.logo{font-weight:800;font-size:17px;color:var(--a1);}
-.tabs-bar{background:var(--s1);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 8px;}
-.tabs-bar::-webkit-scrollbar{display:none;}
-.tab{padding:11px 13px;cursor:pointer;font-size:12px;font-weight:600;color:var(--t3);border-bottom:2px solid transparent;white-space:nowrap;user-select:none;}
-.tab:hover{color:var(--t2);}
-.tab.on{color:var(--a1);border-bottom-color:var(--a1);}
-.main{display:flex;height:calc(100vh - 94px);overflow:hidden;}
-.panel{display:none;width:100%;height:100%;overflow:hidden;}
-.panel.on{display:flex;}
-.panel-col{display:flex;width:100%;height:100%;}
-.side{width:290px;min-width:290px;background:var(--s1);border-right:1px solid var(--border);overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
-.body{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px;}
-.img-panel{flex:1;overflow-y:auto;padding:20px;display:flex;justify-content:center;}
-.img-inner{width:100%;max-width:600px;display:flex;flex-direction:column;gap:16px;}
-label{display:block;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;}
-input,textarea,select{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:inherit;font-size:13px;padding:8px 10px;outline:none;}
-input:focus,textarea:focus,select:focus{border-color:var(--a1);}
-textarea{resize:vertical;line-height:1.5;}
-select option{background:var(--s2);}
-.frow{display:flex;flex-direction:column;gap:9px;}
-.f2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 15px;border-radius:var(--r2);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;border:none;white-space:nowrap;}
-.bp{background:var(--a1);color:#0d1117;}
-.bp:disabled{opacity:.4;cursor:not-allowed;}
-.bs{background:var(--s3);color:var(--text);border:1px solid var(--border);}
-.bg{background:#0d2b1a;color:var(--a3);border:1px solid #1a5c2e;}
-.bsm{padding:6px 11px;font-size:12px;}
-.bw{width:100%;}
-.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:13px;}
-.ct{font-weight:700;font-size:13px;margin-bottom:10px;}
-.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;}
-.bb{background:#0d2040;color:var(--a1);}
-.bp2{background:#1a0d30;color:var(--a4);}
-.bg2{background:#0d2015;color:var(--a3);}
-.br2{background:#2b0a0a;color:var(--a2);}
-.prog{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
-.prog-title{font-weight:700;font-size:13px;margin-bottom:12px;}
-.prog-track{background:var(--s3);border-radius:20px;height:5px;margin-bottom:12px;overflow:hidden;}
-.prog-fill{height:100%;background:linear-gradient(90deg,var(--a1),var(--a4));border-radius:20px;transition:width .4s;width:0%;}
-.prog-steps{display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto;}
-.pstep{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t3);padding:4px 7px;border-radius:4px;}
-.pstep.act{color:var(--a1);background:#0d1a30;}
-.pstep.done{color:var(--a3);}
-.pdot{width:6px;height:6px;border-radius:50%;background:var(--border);flex-shrink:0;}
-.pstep.act .pdot{background:var(--a1);}
-.pstep.done .pdot{background:var(--a3);}
-.obox{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:13px;}
-.oitem{display:flex;align-items:flex-start;gap:9px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;}
-.oitem:last-child{border-bottom:none;}
-.onum{font-weight:700;color:var(--a1);font-size:11px;min-width:24px;}
-.otext{color:var(--t2);line-height:1.4;}
-.chunk{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
-.chdr{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:var(--s3);border-bottom:1px solid var(--border);}
-.cbody{padding:13px;font-size:13px;line-height:1.7;color:var(--t2);max-height:260px;overflow-y:auto;}
-.ipbox{margin:10px 13px 13px;padding:10px;background:#100d20;border:1px solid #2a1f50;border-radius:var(--r2);font-size:12px;color:#9080c0;line-height:1.5;}
-.ipl{font-weight:700;font-size:10px;color:var(--a4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;}
-.bacard{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
-.bahdr{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:var(--s3);border-bottom:1px solid var(--border);}
-.babody{padding:13px;}
-.provs{display:flex;flex-wrap:wrap;gap:6px;}
-.pvb{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--s2);color:var(--t2);font-family:inherit;font-weight:600;font-size:11px;cursor:pointer;}
-.pvb.on{background:var(--a1);color:#0d1117;border-color:var(--a1);}
-.imgprev{width:100%;aspect-ratio:1;max-width:480px;background:var(--s2);border:2px dashed var(--border);border-radius:var(--r);display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0 auto;}
-.imgprev img{width:100%;height:100%;object-fit:contain;display:none;}
-.imgph{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--t3);font-size:12px;text-align:center;padding:20px;}
-.bigrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
-.bicard{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
-.bicard img{width:100%;aspect-ratio:1;object-fit:cover;display:block;}
-.bicardinfo{padding:7px 9px;}
-.bicardinfo p{font-size:11px;color:var(--t2);margin-bottom:5px;}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:999;overflow-y:auto;padding:20px;}
-.overlay.on{display:block;}
-.modal-wrap{display:flex;align-items:flex-start;justify-content:center;min-height:100%;}
-.modal{background:var(--s1);border:1px solid var(--border);border-radius:14px;width:100%;max-width:560px;margin:auto;}
-.mhdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--s1);border-radius:14px 14px 0 0;}
-.mtitle{font-weight:800;font-size:15px;}
-.mbody{padding:20px;display:flex;flex-direction:column;gap:16px;}
-.sgt{font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--a1);padding-bottom:6px;border-bottom:1px solid var(--border);}
-.sg{display:flex;flex-direction:column;gap:9px;}
-.msg{padding:8px 11px;border-radius:var(--r2);font-size:12px;font-weight:500;}
-.me{background:#200d0d;border:1px solid #5c1a1a;color:var(--a2);}
-.ms{background:#0d2015;border:1px solid #1a5c2e;color:var(--a3);}
-.mi{background:#0d1a30;border:1px solid #1a3a6c;color:var(--a1);}
-.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block;}
-@keyframes sp{to{transform:rotate(360deg);}}
-.exprow{display:flex;gap:7px;flex-wrap:wrap;}
-::-webkit-scrollbar{width:3px;height:3px;}
-::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+body{font-family:system-ui,-apple-system,sans-serif;background:#0d1117;color:#e6edf3;font-size:14px;}
+/* HEADER */
+.hdr{background:#161b22;border-bottom:1px solid #30363d;padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:52px;}
+.logo{font-weight:800;font-size:16px;color:#58a6ff;}
+/* TABS */
+.tabs{background:#161b22;border-bottom:1px solid #30363d;display:flex;overflow-x:scroll;-webkit-overflow-scrolling:touch;}
+.tabs::-webkit-scrollbar{display:none;}
+.tab{padding:12px 14px;font-size:12px;font-weight:600;color:#484f58;border-bottom:2px solid transparent;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.tab.active{color:#58a6ff;border-bottom-color:#58a6ff;}
+/* PANELS */
+.panel{display:none;padding:16px;overflow-y:auto;}
+.panel.active{display:block;}
+/* FORMS */
+.card{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:14px;margin-bottom:12px;}
+.card-title{font-weight:700;font-size:13px;margin-bottom:12px;color:#e6edf3;}
+.field{margin-bottom:10px;}
+.field label{display:block;font-size:11px;font-weight:600;color:#8b949e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;}
+.field input,.field textarea,.field select{width:100%;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#e6edf3;font-family:inherit;font-size:13px;padding:9px 11px;outline:none;-webkit-appearance:none;}
+.field textarea{resize:vertical;min-height:70px;line-height:1.5;}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='%238b949e'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:30px;}
+.field select option{background:#161b22;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+/* BUTTONS */
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px;border-radius:8px;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;border:none;margin-bottom:10px;-webkit-tap-highlight-color:transparent;}
+.btn-blue{background:#58a6ff;color:#0d1117;}
+.btn-green{background:#0d2b1a;color:#3fb950;border:1px solid #1a5c2e;}
+.btn-gray{background:#21262d;color:#e6edf3;border:1px solid #30363d;}
+.btn-sm{padding:9px 14px;font-size:12px;width:auto;margin-bottom:0;}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;}
+/* PROGRESS */
+.prog-box{background:#161b22;border:1px solid #30363d;border-radius:8px;padding:14px;margin-bottom:12px;}
+.prog-label{font-weight:700;font-size:13px;margin-bottom:10px;}
+.prog-track{background:#21262d;border-radius:10px;height:6px;margin-bottom:10px;overflow:hidden;}
+.prog-bar{height:100%;background:linear-gradient(90deg,#58a6ff,#d2a8ff);border-radius:10px;transition:width .3s;width:0%;}
+.prog-steps{display:flex;flex-direction:column;gap:4px;max-height:160px;overflow-y:auto;}
+.step{display:flex;align-items:center;gap:8px;font-size:11px;color:#484f58;padding:3px 0;}
+.step.cur{color:#58a6ff;}
+.step.done{color:#3fb950;}
+.dot{width:6px;height:6px;border-radius:50%;background:#30363d;flex-shrink:0;}
+.step.cur .dot{background:#58a6ff;}
+.step.done .dot{background:#3fb950;}
+/* RESULTS */
+.outline-box{background:#0d1117;border:1px solid #30363d;border-radius:8px;padding:12px;margin-bottom:12px;}
+.o-item{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #21262d;font-size:12px;}
+.o-item:last-child{border-bottom:none;}
+.o-num{color:#58a6ff;font-weight:700;min-width:22px;}
+.o-text{color:#8b949e;line-height:1.4;}
+.chunk-box{background:#161b22;border:1px solid #30363d;border-radius:8px;overflow:hidden;margin-bottom:10px;}
+.chunk-head{background:#21262d;padding:9px 13px;display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:12px;}
+.chunk-body{padding:13px;font-size:13px;line-height:1.7;color:#8b949e;max-height:250px;overflow-y:auto;}
+.img-prompt{margin:8px 13px 13px;padding:10px;background:#100d20;border:1px solid #2a1f50;border-radius:6px;font-size:11px;color:#9080c0;line-height:1.5;white-space:pre-wrap;}
+.img-prompt-label{font-weight:700;font-size:10px;color:#d2a8ff;text-transform:uppercase;margin-bottom:4px;}
+/* BADGES */
+.badge{font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;text-transform:uppercase;}
+.badge-blue{background:#0d2040;color:#58a6ff;}
+.badge-purple{background:#1a0d30;color:#d2a8ff;}
+.badge-green{background:#0d2015;color:#3fb950;}
+.badge-red{background:#2b0a0a;color:#f78166;}
+/* BULK ARTICLE CARD */
+.bulk-card{background:#0d1117;border:1px solid #30363d;border-radius:8px;overflow:hidden;margin-bottom:10px;}
+.bulk-card-head{background:#21262d;padding:9px 13px;display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:12px;}
+.bulk-card-body{padding:13px;}
+/* IMAGE */
+.img-preview{width:100%;aspect-ratio:1;max-width:400px;background:#161b22;border:2px dashed #30363d;border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0 auto 12px;}
+.img-preview img{width:100%;height:100%;object-fit:contain;}
+.img-ph{display:flex;flex-direction:column;align-items:center;gap:8px;color:#484f58;font-size:12px;text-align:center;padding:20px;}
+.img-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;}
+.img-grid-item{background:#161b22;border:1px solid #30363d;border-radius:8px;overflow:hidden;}
+.img-grid-item img{width:100%;aspect-ratio:1;object-fit:cover;display:block;}
+.img-grid-info{padding:8px;}
+.img-grid-info p{font-size:11px;color:#8b949e;margin-bottom:6px;}
 canvas{display:none;}
-@media(max-width:700px){
-  .side{width:100%;min-width:unset;border-right:none;border-bottom:1px solid var(--border);}
-  .panel-col{flex-direction:column;}
-  .main{height:auto;overflow:auto;}
-  .panel{height:auto;}
-  .panel.on{display:block;}
-  .body{min-height:10px;}
-  .f2{grid-template-columns:1fr;}
-}
+/* MESSAGES */
+.msg-err{background:#200d0d;border:1px solid #5c1a1a;color:#f78166;padding:10px 13px;border-radius:8px;font-size:12px;margin-bottom:10px;}
+.msg-ok{background:#0d2015;border:1px solid #1a5c2e;color:#3fb950;padding:10px 13px;border-radius:8px;font-size:12px;margin-bottom:10px;}
+.msg-info{background:#0d1a30;border:1px solid #1a3a6c;color:#58a6ff;padding:10px 13px;border-radius:8px;font-size:12px;margin-bottom:10px;}
+/* MODAL */
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:999;overflow-y:auto;padding:16px;}
+.modal-bg.open{display:block;}
+.modal{background:#161b22;border:1px solid #30363d;border-radius:12px;width:100%;max-width:540px;margin:0 auto;}
+.modal-head{display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid #30363d;}
+.modal-title{font-weight:800;font-size:15px;}
+.modal-body{padding:18px;display:flex;flex-direction:column;gap:14px;}
+.section-title{font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#58a6ff;padding-bottom:6px;border-bottom:1px solid #30363d;margin-bottom:2px;}
+/* SPINNER */
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:inline-block;}
+@keyframes spin{to{transform:rotate(360deg);}}
+/* PROMPT PREVIEW */
+.prompt-preview{background:#0d1117;border:1px solid #30363d;border-radius:6px;padding:12px;font-size:12px;color:#8b949e;line-height:1.6;white-space:pre-wrap;max-height:200px;overflow-y:auto;margin-bottom:10px;}
+/* PROVIDER BUTTONS */
+.prov-row{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;}
+.prov-btn{padding:7px 13px;border-radius:20px;border:1px solid #30363d;background:#21262d;color:#8b949e;font-family:inherit;font-weight:600;font-size:11px;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.prov-btn.active{background:#58a6ff;color:#0d1117;border-color:#58a6ff;}
 </style>
 </head>
 <body>
 
 <div class="hdr">
   <div class="logo">Content Studio Pro</div>
-  <button class="btn bs bsm" id="btn-settings">Settings</button>
+  <button class="btn btn-gray btn-sm" id="openSettings">Settings</button>
 </div>
 
-<div class="tabs-bar">
-  <div class="tab on" data-tab="0">Article</div>
-  <div class="tab" data-tab="1">Bulk Articles</div>
-  <div class="tab" data-tab="2">Listicle</div>
-  <div class="tab" data-tab="3">Bulk Listicles</div>
-  <div class="tab" data-tab="4">Image</div>
-  <div class="tab" data-tab="5">Bulk Images</div>
+<div class="tabs" id="tabsBar">
+  <div class="tab active" data-tab="article">Article</div>
+  <div class="tab" data-tab="bulk-article">Bulk Articles</div>
+  <div class="tab" data-tab="listicle">Listicle</div>
+  <div class="tab" data-tab="bulk-listicle">Bulk Listicles</div>
+  <div class="tab" data-tab="image">Image</div>
+  <div class="tab" data-tab="bulk-image">Bulk Images</div>
 </div>
 
-<div class="main">
+<!-- ARTICLE -->
 
-  <div class="panel on" data-panel="0">
-    <div class="panel-col">
-      <div class="side">
-        <div class="card"><div class="ct">Article Details</div>
-          <div class="frow">
-            <div><label>Topic</label><input type="text" id="a-topic" placeholder="e.g. Best SEO Strategies 2025"></div>
-            <div><label>Keywords</label><input type="text" id="a-kw" placeholder="e.g. SEO, rankings"></div>
-            <div><label>Audience</label><input type="text" id="a-aud" placeholder="e.g. Small business owners"></div>
-            <div class="f2">
-              <div><label>Tone</label><select id="a-tone"><option>Professional</option><option>Conversational</option><option>Educational</option><option>Authoritative</option><option>Friendly</option></select></div>
-              <div><label>Word Count</label><select id="a-wc"><option>1000-1500</option><option>1500-2000</option><option>2000-2500</option><option>2500-3000</option></select></div>
-            </div>
-          </div>
-        </div>
-        <div class="card"><div class="ct">Image Style</div>
-          <textarea id="a-imgstyle" placeholder="e.g. African female, Lagos setting, iPhone camera, photorealistic..." style="min-height:70px;"></textarea>
-        </div>
-        <button class="btn bp bw" id="btn-a-gen">Generate Article</button>
-        <div id="a-prog" style="display:none;"></div>
-        <div id="a-exp" style="display:none;">
-          <div class="card"><div class="ct">Export</div>
-            <div class="exprow">
-              <button class="btn bg bsm" id="btn-a-rtf">Download .docx</button>
-              <button class="btn bs bsm" id="btn-a-html">Download HTML</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="body" id="a-body"></div>
+<div class="panel active" id="panel-article">
+  <div class="card">
+    <div class="card-title">Article Details</div>
+    <div class="field"><label>Topic</label><input type="text" id="a-topic" placeholder="e.g. Best SEO Strategies 2025"></div>
+    <div class="field"><label>Keywords</label><input type="text" id="a-kw" placeholder="e.g. SEO, rankings, traffic"></div>
+    <div class="field"><label>Audience</label><input type="text" id="a-aud" placeholder="e.g. Small business owners"></div>
+    <div class="row2">
+      <div class="field"><label>Tone</label><select id="a-tone"><option>Professional</option><option>Conversational</option><option>Educational</option><option>Friendly</option></select></div>
+      <div class="field"><label>Word Count</label><select id="a-wc"><option>1000-1500</option><option>1500-2000</option><option>2000-2500</option><option>2500-3000</option></select></div>
     </div>
   </div>
-
-  <div class="panel" data-panel="1">
-    <div class="panel-col">
-      <div class="side">
-        <div class="card"><div class="ct">Bulk Article Topics</div>
-          <div class="frow">
-            <div><label>Topics - one per line</label><textarea id="ba-topics" placeholder="Best SEO Strategies&#10;How to Start a Blog&#10;Content Marketing Tips" style="min-height:120px;"></textarea></div>
-            <div><label>Audience</label><input type="text" id="ba-aud" placeholder="e.g. Digital marketers"></div>
-            <div><label>Tone</label><select id="ba-tone"><option>Professional</option><option>Conversational</option><option>Educational</option><option>Authoritative</option><option>Friendly</option></select></div>
-          </div>
-        </div>
-        <div class="card"><div class="ct">Image Style</div>
-          <textarea id="ba-imgstyle" placeholder="e.g. Photorealistic, natural lighting..." style="min-height:60px;"></textarea>
-        </div>
-        <button class="btn bp bw" id="btn-ba-gen">Generate All Articles</button>
-        <div id="ba-prog" style="display:none;"></div>
-        <div id="ba-exp" style="display:none;">
-          <div class="card"><div class="ct">Export All</div>
-            <div class="exprow">
-              <button class="btn bg bsm" id="btn-ba-sep">Separate Files</button>
-              <button class="btn bs bsm" id="btn-ba-comb">Combined File</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="body" id="ba-body"></div>
+  <div class="card">
+    <div class="card-title">Image Style</div>
+    <div class="field"><textarea id="a-imgstyle" placeholder="e.g. African female, Lagos setting, iPhone camera, photorealistic, no AI look..."></textarea></div>
+  </div>
+  <button class="btn btn-blue" id="btn-gen-article">Generate Article</button>
+  <div id="a-prog" style="display:none;"></div>
+  <div id="a-exp" style="display:none;">
+    <div class="btn-row">
+      <button class="btn btn-green btn-sm" id="btn-a-rtf">Download .docx</button>
+      <button class="btn btn-gray btn-sm" id="btn-a-html">Download HTML</button>
     </div>
   </div>
-
-  <div class="panel" data-panel="2">
-    <div class="panel-col">
-      <div class="side">
-        <div class="card"><div class="ct">Listicle Details</div>
-          <div class="frow">
-            <div><label>Format</label>
-              <select id="l-type"><option value="10 Best">10 Best</option><option value="15 Best">15 Best</option><option value="20 Top">20 Top</option><option value="25 Best">25 Best</option><option value="30 Top">30 Top</option><option value="50 Best">50 Best</option><option value="Custom">Custom...</option></select>
-            </div>
-            <div id="l-custom-wrap" style="display:none;"><label>Custom prefix</label><input type="text" id="l-custom" placeholder="7 Best"></div>
-            <div><label>Topic</label><input type="text" id="l-topic" placeholder="e.g. Project Management Tools"></div>
-            <div><label>Keywords</label><input type="text" id="l-kw" placeholder="e.g. project management"></div>
-            <div><label>Audience</label><input type="text" id="l-aud" placeholder="e.g. Remote managers"></div>
-            <div><label>Tone</label><select id="l-tone"><option>Professional</option><option>Conversational</option><option>Educational</option><option>Authoritative</option><option>Friendly</option></select></div>
-          </div>
-        </div>
-        <div class="card"><div class="ct">Image Style</div>
-          <textarea id="l-imgstyle" placeholder="e.g. Product screenshot..." style="min-height:60px;"></textarea>
-        </div>
-        <button class="btn bp bw" id="btn-l-gen">Generate Listicle</button> <div id="l-prog" style="display:none;"></div>
-        <div id="l-exp" style="display:none;">
-          <div class="card"><div class="ct">Export</div>
-            <div class="exprow">
-              <button class="btn bg bsm" id="btn-l-rtf">Download .docx</button>
-              <button class="btn bs bsm" id="btn-l-html">Download HTML</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="body" id="l-body"></div>
-    </div>
-  </div>
-
-  <div class="panel" data-panel="3">
-    <div class="panel-col">
-      <div class="side">
-        <div class="card"><div class="ct">Bulk Listicle Topics</div>
-          <div class="frow">
-            <div><label>Format</label>
-              <select id="bl-type"><option value="10 Best">10 Best</option><option value="15 Best">15 Best</option><option value="20 Top">20 Top</option><option value="25 Best">25 Best</option><option value="30 Top">30 Top</option><option value="50 Best">50 Best</option><option value="Custom">Custom...</option></select>
-            </div>
-            <div id="bl-custom-wrap" style="display:none;"><label>Custom prefix</label><input type="text" id="bl-custom" placeholder="7 Best"></div>
-            <div><label>Topics - one per line</label><textarea id="bl-topics" placeholder="Project Management Tools&#10;Email Marketing Software&#10;CRM Platforms" style="min-height:110px;"></textarea></div>
-            <div><label>Audience</label><input type="text" id="bl-aud" placeholder="e.g. Business owners"></div>
-          </div>
-        </div>
-        <div class="card"><div class="ct">Image Style</div>
-          <textarea id="bl-imgstyle" placeholder="e.g. Product mockup..." style="min-height:60px;"></textarea>
-        </div>
-        <button class="btn bp bw" id="btn-bl-gen">Generate All Listicles</button>
-        <div id="bl-prog" style="display:none;"></div>
-        <div id="bl-exp" style="display:none;">
-          <div class="card"><div class="ct">Export All</div>
-            <div class="exprow">
-              <button class="btn bg bsm" id="btn-bl-sep">Separate Files</button>
-              <button class="btn bs bsm" id="btn-bl-comb">Combined File</button>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="body" id="bl-body"></div>
-    </div>
-  </div>
-
-  <div class="panel" data-panel="4">
-    <div class="img-panel">
-      <div class="img-inner">
-        <div><div style="font-weight:800;font-size:17px;margin-bottom:3px;">AI Image Generator</div>
-          <div style="font-size:11px;color:var(--t3);">Ultra-realistic prompt builder - Canvas capture - Clean PNG</div>
-        </div>
-        <div class="card frow">
-          <div><label>Provider</label>
-            <div class="provs" id="img-provs">
-              <button class="pvb on" data-p="pollinations">Free - Pollinations</button>
-              <button class="pvb" data-p="huggingface">Free - HuggingFace</button>
-              <button class="pvb" data-p="dalle">DALL-E</button>
-              <button class="pvb" data-p="stability">Stability</button>
-              <button class="pvb" data-p="replicate">Replicate</button>
-            </div>
-          </div>
-          <div id="img-note" style="display:none;"></div>
-          <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:12px;">
-            <div style="font-weight:700;font-size:12px;margin-bottom:10px;color:var(--a4);">Ultra-Realistic Prompt Builder</div>
-            <div class="frow">
-              <div class="f2">
-                <div><label>Subject</label><input type="text" id="img-subject" placeholder="e.g. African female influencer"></div>
-                <div><label>Skin / Features</label><input type="text" id="img-skin" placeholder="e.g. dark skin, visible pores"></div>
-              </div>
-              <div class="f2">
-                <div><label>Expression</label><input type="text" id="img-expression" placeholder="e.g. confident, casual"></div>
-                <div><label>Makeup</label><select id="img-makeup"><option>None</option><option>Minimal</option><option>Natural</option><option>Full Glam</option></select></div>
-              </div>
-              <div><label>Outfit</label><input type="text" id="img-outfit" placeholder="e.g. white tank top, slightly wrinkled"></div>
-              <div class="f2">
-                <div><label>Pose / Angle</label><input type="text" id="img-pose" placeholder="e.g. selfie, slightly below face"></div>
-                <div><label>Shot Type</label><select id="img-shot"><option>Selfie</option><option>Portrait</option><option>Candid</option><option>Street</option><option>Product</option><option>Landscape</option></select></div>
-              </div>
-              <div><label>Location</label><input type="text" id="img-location" placeholder="e.g. small Lagos apartment, near window"></div>
-              <div><label>Background Details</label><input type="text" id="img-bg" placeholder="e.g. unmade bed, fan visible, charger on floor"></div>
-              <div class="f2">
-                <div><label>Lighting</label><input type="text" id="img-lighting" placeholder="e.g. natural daylight, overexposed"></div>
-                <div><label>Time of Day</label><select id="img-time"><option>Morning</option><option>Afternoon</option><option>Golden Hour</option><option>Night</option><option>Overcast</option></select></div>
-              </div>
-              <div class="f2">
-                <div><label>Camera</label><input type="text" id="img-camera" placeholder="e.g. iPhone 13 front camera"></div>
-                <div><label>Size</label><select id="img-size"><option value="512x512">512x512</option><option value="768x768">768x768</option><option value="1024x1024" selected>1024x1024</option><option value="1024x768">1024x768 Wide</option><option value="768x1024">768x1024 Tall</option></select></div>
-              </div>
-              <div><label>Mood / Story</label><input type="text" id="img-mood" placeholder='e.g. just woke up but still fine'></div>
-            </div>
-          </div>
-          <div style="display:flex;gap:8px;">
-            <button class="btn bp" id="btn-img-build" style="flex:1;">Build and Generate</button>
-            <button class="btn bs bsm" id="btn-img-preview">Preview Prompt</button>
-          </div>
-          <div id="img-prompt-preview" style="display:none;background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);padding:12px;font-size:12px;color:var(--t2);line-height:1.6;max-height:200px;overflow-y:auto;white-space:pre-wrap;"></div>
-          <div id="img-status" style="display:none;"></div>
-        </div>
-        <div class="imgprev" id="img-preview-box">
-          <div class="imgph" id="img-ph"><div style="font-size:48px;opacity:.2;">&#128444;</div><span>Image appears here</span></div>
-          <img id="img-result" crossorigin="anonymous" alt="Generated">
-        </div>
-        <canvas id="img-canvas"></canvas>
-        <div id="img-dl" style="display:none;">
-          <div class="card"><div class="ct">Ready - AI Metadata Stripped</div>
-            <p style="font-size:12px;color:var(--t2);margin-bottom:10px;">Canvas PNG - no AI EXIF data.</p>
-            <div class="exprow">
-              <button class="btn bg" id="btn-img-dl">Download Clean PNG</button>
-              <button class="btn bs bsm" id="btn-img-copy">Copy Prompt</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="panel" data-panel="5">
-    <div class="panel-col">
-      <div class="side">
-        <div class="card"><div class="ct">Bulk Images</div>
-          <div class="frow">
-            <div><label>Provider</label>
-              <div class="provs" id="bi-provs">
-                <button class="pvb on" data-bp="pollinations">Free - Pollinations</button>
-                <button class="pvb" data-bp="huggingface">Free - HuggingFace</button>
-                <button class="pvb" data-bp="dalle">DALL-E</button>
-                <button class="pvb" data-bp="stability">Stability</button>
-                <button class="pvb" data-bp="replicate">Replicate</button>
-              </div>
-            </div>
-            <div id="bi-note" style="display:none;"></div>
-            <div><label>Descriptions - one per line</label><textarea id="bi-prompts" placeholder="African woman in Lagos apartment morning&#10;Street food vendor busy market&#10;Modern office natural light" style="min-height:130px;"></textarea></div>
-            <div><label>Global Style</label><textarea id="bi-style-pref" placeholder="e.g. iPhone camera, no AI look, photorealistic..." style="min-height:60px;"></textarea></div>
-            <div><label>Size</label><select id="bi-size"><option value="512x512">512x512</option><option value="768x768">768x768</option><option value="1024x1024" selected>1024x1024</option></select></div>
-          </div>
-        </div>
-        <button class="btn bp bw" id="btn-bi-gen">Generate All Images</button>
-        <div id="bi-prog" style="display:none;"></div>
-        <div id="bi-exp" style="display:none;">
-          <div class="card"><div class="ct">Download All</div>
-            <button class="btn bg bsm bw" id="btn-bi-dl">Download All Images</button>
-          </div>
-        </div>
-      </div>
-      <div class="body" id="bi-body"></div>
-    </div>
-  </div>
-
+  <div id="a-results"></div>
 </div>
 
-<div class="overlay" id="overlay-settings">
-  <div class="modal-wrap">
-    <div class="modal">
-      <div class="mhdr">
-        <div class="mtitle">Settings</div>
-        <button class="btn bs bsm" id="btn-close-settings">Close</button>
+<!-- BULK ARTICLES -->
+
+<div class="panel" id="panel-bulk-article">
+  <div class="card">
+    <div class="card-title">Bulk Article Topics</div>
+    <div class="field"><label>Topics (one per line)</label><textarea id="ba-topics" placeholder="Best SEO Strategies&#10;How to Start a Blog&#10;Content Marketing Tips" style="min-height:120px;"></textarea></div>
+    <div class="field"><label>Audience</label><input type="text" id="ba-aud" placeholder="e.g. Digital marketers"></div>
+    <div class="field"><label>Tone</label><select id="ba-tone"><option>Professional</option><option>Conversational</option><option>Educational</option><option>Friendly</option></select></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Image Style</div>
+    <div class="field"><textarea id="ba-imgstyle" placeholder="e.g. Photorealistic, natural lighting..." style="min-height:60px;"></textarea></div>
+  </div>
+  <button class="btn btn-blue" id="btn-gen-bulk-article">Generate All Articles</button>
+  <div id="ba-prog" style="display:none;"></div>
+  <div id="ba-exp" style="display:none;">
+    <div class="btn-row">
+      <button class="btn btn-green btn-sm" id="btn-ba-sep">Separate Files</button>
+      <button class="btn btn-gray btn-sm" id="btn-ba-comb">Combined File</button>
+    </div>
+  </div>
+  <div id="ba-results"></div>
+</div>
+
+<!-- LISTICLE -->
+
+<div class="panel" id="panel-listicle">
+  <div class="card">
+    <div class="card-title">Listicle Details</div>
+    <div class="field"><label>Format</label>
+      <select id="l-type"><option value="10 Best">10 Best</option><option value="15 Best">15 Best</option><option value="20 Top">20 Top</option><option value="25 Best">25 Best</option><option value="30 Top">30 Top</option><option value="50 Best">50 Best</option><option value="Custom">Custom...</option></select>
+    </div>
+    <div id="l-custom-wrap" style="display:none;"><div class="field"><label>Custom Prefix</label><input type="text" id="l-custom" placeholder="7 Best"></div></div>
+    <div class="field"><label>Topic</label><input type="text" id="l-topic" placeholder="e.g. Project Management Tools"></div>
+    <div class="field"><label>Keywords</label><input type="text" id="l-kw" placeholder="e.g. project management"></div>
+    <div class="field"><label>Audience</label><input type="text" id="l-aud" placeholder="e.g. Remote managers"></div>
+    <div class="field"><label>Tone</label><select id="l-tone"><option>Professional</option><option>Conversational</option><option>Educational</option><option>Friendly</option></select></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Image Style</div>
+    <div class="field"><textarea id="l-imgstyle" placeholder="e.g. Product screenshot, clean background..." style="min-height:60px;"></textarea></div>
+  </div>
+  <button class="btn btn-blue" id="btn-gen-listicle">Generate Listicle</button>
+  <div id="l-prog" style="display:none;"></div>
+  <div id="l-exp" style="display:none;">
+    <div class="btn-row">
+      <button class="btn btn-green btn-sm" id="btn-l-rtf">Download .docx</button>
+      <button class="btn btn-gray btn-sm" id="btn-l-html">Download HTML</button>
+    </div>
+  </div>
+  <div id="l-results"></div>
+</div>
+
+<!-- BULK LISTICLES -->
+
+<div class="panel" id="panel-bulk-listicle">
+  <div class="card">
+    <div class="card-title">Bulk Listicle Topics</div>
+    <div class="field"><label>Format</label>
+      <select id="bl-type"><option value="10 Best">10 Best</option><option value="15 Best">15 Best</option><option value="20 Top">20 Top</option><option value="25 Best">25 Best</option><option value="30 Top">30 Top</option><option value="50 Best">50 Best</option><option value="Custom">Custom...</option></select>
+    </div>
+    <div id="bl-custom-wrap" style="display:none;"><div class="field"><label>Custom Prefix</label><input type="text" id="bl-custom" placeholder="7 Best"></div></div>
+    <div class="field"><label>Topics (one per line)</label><textarea id="bl-topics" placeholder="Project Management Tools&#10;Email Marketing Software&#10;CRM Platforms" style="min-height:110px;"></textarea></div>
+    <div class="field"><label>Audience</label><input type="text" id="bl-aud" placeholder="e.g. Business owners"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Image Style</div>
+    <div class="field"><textarea id="bl-imgstyle" placeholder="e.g. Product mockup..." style="min-height:60px;"></textarea></div>
+  </div>
+  <button class="btn btn-blue" id="btn-gen-bulk-listicle">Generate All Listicles</button>
+  <div id="bl-prog" style="display:none;"></div>
+  <div id="bl-exp" style="display:none;">
+    <div class="btn-row">
+      <button class="btn btn-green btn-sm" id="btn-bl-sep">Separate Files</button>
+      <button class="btn btn-gray btn-sm" id="btn-bl-comb">Combined File</button>
+    </div>
+  </div>
+  <div id="bl-results"></div>
+</div>
+
+<!-- IMAGE -->
+
+<div class="panel" id="panel-image">
+  <div class="card">
+    <div class="card-title">Image Provider</div>
+    <div class="prov-row" id="img-provs">
+      <button class="prov-btn active" data-prov="pollinations">Free - Pollinations</button>
+      <button class="prov-btn" data-prov="huggingface">Free - HuggingFace</button>
+      <button class="prov-btn" data-prov="dalle">DALL-E</button>
+      <button class="prov-btn" data-prov="stability">Stability AI</button>
+      <button class="prov-btn" data-prov="replicate">Replicate</button>
+    </div>
+    <div id="img-prov-note"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Ultra-Realistic Prompt Builder</div>
+    <div class="row2">
+      <div class="field"><label>Subject</label><input type="text" id="img-subject" placeholder="e.g. African female influencer"></div>
+      <div class="field"><label>Skin / Features</label><input type="text" id="img-skin" placeholder="e.g. dark skin, visible pores"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Expression</label><input type="text" id="img-expression" placeholder="e.g. confident, casual"></div>
+      <div class="field"><label>Makeup</label><select id="img-makeup"><option>None</option><option>Minimal</option><option>Natural</option><option>Full Glam</option></select></div>
+    </div>
+    <div class="field"><label>Outfit</label><input type="text" id="img-outfit" placeholder="e.g. white tank top, slightly wrinkled"></div>
+    <div class="row2">
+      <div class="field"><label>Pose</label><input type="text" id="img-pose" placeholder="e.g. selfie, slightly below face"></div>
+      <div class="field"><label>Shot Type</label><select id="img-shot"><option>Selfie</option><option>Portrait</option><option>Candid</option><option>Street</option><option>Product</option><option>Landscape</option></select></div>
+    </div>
+    <div class="field"><label>Location</label><input type="text" id="img-location" placeholder="e.g. small Lagos apartment near window"></div>
+    <div class="field"><label>Background Details</label><input type="text" id="img-bg" placeholder="e.g. unmade bed, fan visible, charger on floor"></div>
+    <div class="row2">
+      <div class="field"><label>Lighting</label><input type="text" id="img-lighting" placeholder="e.g. natural daylight, overexposed"></div>
+      <div class="field"><label>Time of Day</label><select id="img-time"><option>Morning</option><option>Afternoon</option><option>Golden Hour</option><option>Night</option><option>Overcast</option></select></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Camera</label><input type="text" id="img-camera" placeholder="e.g. iPhone 13 front camera"></div>
+      <div class="field"><label>Size</label><select id="img-size"><option value="512x512">512x512</option><option value="768x768">768x768</option><option value="1024x1024" selected>1024x1024</option><option value="1024x768">1024x768 Wide</option><option value="768x1024">768x1024 Tall</option></select></div>
+    </div>
+    <div class="field"><label>Mood / Story</label><input type="text" id="img-mood" placeholder="e.g. just woke up but still fine"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-blue btn-sm" id="btn-gen-image" style="flex:1;">Build and Generate</button>
+    <button class="btn btn-gray btn-sm" id="btn-preview-prompt">Preview Prompt</button>
+  </div>
+  <div id="img-prompt-preview" style="display:none;" class="prompt-preview"></div>
+  <div id="img-status"></div>
+  <div class="img-preview" id="img-preview-box">
+    <div class="img-ph"><div style="font-size:40px;opacity:.3;">&#128444;</div><span>Image appears here</span></div>
+    <img id="img-result" crossorigin="anonymous" alt="Generated" style="display:none;">
+  </div>
+  <canvas id="img-canvas"></canvas>
+  <div id="img-dl" style="display:none;">
+    <div class="card">
+      <div class="card-title">Ready - Metadata Stripped</div>
+      <p style="font-size:12px;color:#8b949e;margin-bottom:10px;">Canvas PNG with no AI EXIF data.</p>
+      <div class="btn-row">
+        <button class="btn btn-green btn-sm" id="btn-dl-image">Download Clean PNG</button>
+        <button class="btn btn-gray btn-sm" id="btn-copy-prompt">Copy Prompt</button>
       </div>
-      <div class="mbody">
-        <div class="sg"><div class="sgt">API Keys</div>
-          <div><label>Anthropic - Claude (Paid)</label><input type="password" id="s-claude" placeholder="sk-ant-..."></div>
-          <div><label>OpenAI - GPT + DALL-E (Paid)</label><input type="password" id="s-openai" placeholder="sk-..."></div>
-          <div><label>Groq - Free</label><input type="password" id="s-groq" placeholder="gsk_..."></div>
-          <div><label>Google Gemini - Free Tier</label><input type="password" id="s-gemini" placeholder="AIza..."></div>
-          <div><label>Mistral AI</label><input type="password" id="s-mistral" placeholder="..."></div>
-          <div><label>Cohere</label><input type="password" id="s-cohere" placeholder="..."></div>
-          <div><label>Stability AI - Images</label><input type="password" id="s-stability" placeholder="sk-..."></div>
-          <div><label>Hugging Face - Images</label><input type="password" id="s-hf" placeholder="hf_..."></div>
-          <div><label>Replicate - Images</label><input type="password" id="s-replicate" placeholder="r8_..."></div>
-        </div>
-        <div class="sg"><div class="sgt">Article Provider</div>
-          <select id="s-prov">
-            <option value="claude">Claude (Anthropic) - Paid</option>
-            <option value="openai">OpenAI GPT - Paid</option>
-            <option value="groq">Groq - Free</option>
-            <option value="gemini">Google Gemini - Free Tier</option>
-            <option value="mistral">Mistral AI - Free Tier</option>
-            <option value="cohere">Cohere - Free Tier</option>
-          </select>
-        </div>
-        <div class="sg"><div class="sgt">Writing Prompts</div>
-          <div><label>Writing Prompt 1 - First Write</label><textarea id="s-wp1" style="min-height:90px;"></textarea></div>
-          <div><label>Writing Prompt 2 - Rewrite</label><textarea id="s-wp2" style="min-height:90px;"></textarea></div>
-        </div>
-        <div class="sg"><div class="sgt">Default Image Style</div>
-          <textarea id="s-imgstyle" style="min-height:70px;" placeholder="e.g. iPhone camera, photorealistic, no AI look, natural lighting..."></textarea>
-        </div>
-        <button class="btn bp bw" id="btn-save-settings">Save Settings</button>
-        <div id="s-status" style="display:none;"></div>
-      </div>
+    </div>
+  </div>
+</div>
+
+<!-- BULK IMAGES -->
+
+<div class="panel" id="panel-bulk-image">
+  <div class="card">
+    <div class="card-title">Image Provider</div>
+    <div class="prov-row" id="bi-provs">
+      <button class="prov-btn active" data-bprov="pollinations">Free - Pollinations</button>
+      <button class="prov-btn" data-bprov="huggingface">Free - HuggingFace</button>
+      <button class="prov-btn" data-bprov="dalle">DALL-E</button>
+      <button class="prov-btn" data-bprov="stability">Stability AI</button>
+      <button class="prov-btn" data-bprov="replicate">Replicate</button>
+    </div>
+    <div id="bi-prov-note"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Bulk Image Generator</div>
+    <div class="field"><label>Descriptions (one per line)</label><textarea id="bi-prompts" placeholder="African woman in Lagos apartment morning&#10;Street food vendor busy market&#10;Modern office natural light" style="min-height:130px;"></textarea></div>
+    <div class="field"><label>Global Style</label><textarea id="bi-style" placeholder="e.g. iPhone camera, no AI look, photorealistic..." style="min-height:60px;"></textarea></div>
+    <div class="field"><label>Size</label><select id="bi-size"><option value="512x512">512x512</option><option value="768x768">768x768</option><option value="1024x1024" selected>1024x1024</option></select></div>
+  </div>
+  <button class="btn btn-blue" id="btn-gen-bulk-image">Generate All Images</button>
+  <div id="bi-prog" style="display:none;"></div>
+  <div id="bi-exp" style="display:none;">
+    <button class="btn btn-green" id="btn-dl-all-images">Download All Images</button>
+  </div>
+  <div id="bi-results"></div>
+</div>
+
+<!-- SETTINGS MODAL -->
+
+<div class="modal-bg" id="modal-settings">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Settings</div>
+      <button class="btn btn-gray btn-sm" id="closeSettings">Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="section-title">API Keys</div>
+      <div class="field"><label>Anthropic - Claude (Paid)</label><input type="password" id="s-claude" placeholder="sk-ant-..."></div>
+      <div class="field"><label>OpenAI - GPT + DALL-E (Paid)</label><input type="password" id="s-openai" placeholder="sk-..."></div>
+      <div class="field"><label>Groq - Free</label><input type="password" id="s-groq" placeholder="gsk_..."></div>
+      <div class="field"><label>Google Gemini - Free Tier</label><input type="password" id="s-gemini" placeholder="AIza..."></div>
+      <div class="field"><label>Mistral AI</label><input type="password" id="s-mistral" placeholder="..."></div>
+      <div class="field"><label>Cohere</label><input type="password" id="s-cohere" placeholder="..."></div>
+      <div class="field"><label>Stability AI - Images</label><input type="password" id="s-stability" placeholder="sk-..."></div>
+      <div class="field"><label>Hugging Face - Images</label><input type="password" id="s-hf" placeholder="hf_..."></div>
+      <div class="field"><label>Replicate - Images</label><input type="password" id="s-replicate" placeholder="r8_..."></div>
+      <div class="section-title">Article Provider</div>
+      <div class="field"><select id="s-prov"><option value="claude">Claude (Anthropic) - Paid</option><option value="openai">OpenAI GPT - Paid</option><option value="groq">Groq - Free</option><option value="gemini">Google Gemini - Free</option><option value="mistral">Mistral - Free Tier</option><option value="cohere">Cohere - Free Tier</option></select></div>
+      <div class="section-title">Writing Prompts</div>
+      <div class="field"><label>Prompt 1 - First Write</label><textarea id="s-wp1" style="min-height:90px;"></textarea></div>
+      <div class="field"><label>Prompt 2 - Rewrite</label><textarea id="s-wp2" style="min-height:90px;"></textarea></div>
+      <div class="section-title">Default Image Style</div>
+      <div class="field"><textarea id="s-imgstyle" style="min-height:70px;" placeholder="e.g. iPhone camera, photorealistic, no AI look..."></textarea></div>
+      <button class="btn btn-blue" id="btn-save-settings">Save Settings</button>
+      <div id="s-msg"></div>
     </div>
   </div>
 </div>
 
 <script>
-// ============================================================
-// CONTENT STUDIO PRO - Clean rewrite, no external dependencies
-// No backticks, no template literals, no HTML entities in JS
-// ============================================================
-
-var G = {
-  imgProv: 'pollinations',
-  biProv: 'pollinations',
-  lastPrompt: '',
-  article: { outline: [], chunks: [], imgPrompts: [] },
-  listicle: { outline: [], chunks: [], imgPrompts: [] },
-  bulkArticles: [],
-  bulkListicles: [],
-  bulkImages: []
-};
+// Global state
+var imgProv = 'pollinations';
+var biProv = 'pollinations';
+var lastPrompt = '';
+var articleData = {outline:[], chunks:[], imgPrompts:[]};
+var listicleData = {outline:[], chunks:[], imgPrompts:[]};
+var bulkArticles = [];
+var bulkListicles = [];
+var bulkImages = [];
 
 var MODELS = {
-  claude:  'claude-sonnet-4-5',
-  openai:  'gpt-4o',
-  groq:    'llama3-70b-8192',
-  gemini:  'gemini-1.5-flash',
+  claude: 'claude-sonnet-4-5',
+  openai: 'gpt-4o',
+  groq: 'llama3-70b-8192',
+  gemini: 'gemini-1.5-flash',
   mistral: 'mistral-small-latest',
-  cohere:  'command-r'
+  cohere: 'command-r'
 };
 
-var DEF_WP1 = 'Write this article section as an experienced human writer. Use natural flowing prose, short paragraphs of 2-3 sentences, active voice. Avoid phrases like In conclusion, It is worth noting, Delve into. Write like explaining to a smart friend.';
-var DEF_WP2 = 'Rewrite this content to sound more human and engaging. Vary sentence length. Add personality. Use contractions naturally. Make it feel written by a passionate expert. Keep all HTML formatting intact.';
+var DEF1 = 'Write this article section as an experienced human writer. Use natural flowing prose, short paragraphs of 2-3 sentences, active voice. Avoid phrases like In conclusion or It is worth noting. Write like explaining to a smart friend.';
+var DEF2 = 'Rewrite this content to sound more human and engaging. Vary sentence length. Add personality. Use contractions naturally. Keep all HTML formatting intact.';
 
-// ── HELPERS ──────────────────────────────────────────────
-function ge(id) { return document.getElementById(id); }
-function gv(id) { var e = ge(id); return e ? e.value.trim() : ''; }
+// Helpers
+function id(x) { return document.getElementById(x); }
+function val(x) { var e = id(x); return e ? e.value.trim() : ''; }
 function lsGet(k) { try { return localStorage.getItem(k); } catch(e) { return null; } }
 function lsSet(k, v) { try { localStorage.setItem(k, v); } catch(e) {} }
-function showEl(id, html) { var e = ge(id); if (!e) return; e.style.display = 'block'; if (html !== undefined) e.innerHTML = html; }
-function hideEl(id) { var e = ge(id); if (e) e.style.display = 'none'; }
-function safeText(s) {
-  return String(s)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+function show(x) { var e = id(x); if (e) e.style.display = 'block'; }
+function hide(x) { var e = id(x); if (e) e.style.display = 'none'; }
+function html(x, h) { var e = id(x); if (e) { e.style.display = 'block'; e.innerHTML = h; } }
+function safeHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
+function append(x, h) { var e = id(x); if (e) { e.style.display = 'block'; e.insertAdjacentHTML('beforeend', h); } }
 
-// ── TABS ─────────────────────────────────────────────────
-function switchTab(idx) {
+// Tabs
+function initTabs() {
   var tabs = document.querySelectorAll('.tab');
-  var panels = document.querySelectorAll('.panel');
   for (var i = 0; i < tabs.length; i++) {
-    tabs[i].classList.toggle('on', parseInt(tabs[i].getAttribute('data-tab')) === idx);
-  }
-  for (var j = 0; j < panels.length; j++) {
-    panels[j].classList.toggle('on', parseInt(panels[j].getAttribute('data-panel')) === idx);
+    tabs[i].addEventListener('click', function() {
+      var name = this.getAttribute('data-tab');
+      var allTabs = document.querySelectorAll('.tab');
+      var allPanels = document.querySelectorAll('.panel');
+      for (var j = 0; j < allTabs.length; j++) allTabs[j].classList.remove('active');
+      for (var j = 0; j < allPanels.length; j++) allPanels[j].classList.remove('active');
+      this.classList.add('active');
+      var panel = id('panel-' + name);
+      if (panel) panel.classList.add('active');
+    });
   }
 }
 
-// ── SETTINGS ─────────────────────────────────────────────
+// Settings
 function loadSettings() {
   var keys = ['claude','openai','groq','gemini','mistral','cohere','stability','hf','replicate'];
   for (var i = 0; i < keys.length; i++) {
-    var el = ge('s-' + keys[i]);
-    if (el) el.value = lsGet('k_' + keys[i]) || '';
+    var e = id('s-' + keys[i]);
+    if (e) e.value = lsGet('k_' + keys[i]) || '';
   }
-  ge('s-prov').value = lsGet('art_prov') || 'claude';
-  ge('s-wp1').value = lsGet('wp1') || DEF_WP1;
-  ge('s-wp2').value = lsGet('wp2') || DEF_WP2;
-  ge('s-imgstyle').value = lsGet('imgstyle') || '';
+  var prov = id('s-prov');
+  if (prov) prov.value = lsGet('art_prov') || 'claude';
+  var wp1 = id('s-wp1');
+  if (wp1) wp1.value = lsGet('wp1') || DEF1;
+  var wp2 = id('s-wp2');
+  if (wp2) wp2.value = lsGet('wp2') || DEF2;
+  var si = id('s-imgstyle');
+  if (si) si.value = lsGet('imgstyle') || '';
 }
 
 function saveSettings() {
   var keys = ['claude','openai','groq','gemini','mistral','cohere','stability','hf','replicate'];
   for (var i = 0; i < keys.length; i++) {
-    var el = ge('s-' + keys[i]);
-    if (el) lsSet('k_' + keys[i], el.value.trim());
+    var e = id('s-' + keys[i]);
+    if (e) lsSet('k_' + keys[i], e.value.trim());
   }
-  lsSet('art_prov', ge('s-prov').value);
-  lsSet('wp1', ge('s-wp1').value.trim());
-  lsSet('wp2', ge('s-wp2').value.trim());
-  lsSet('imgstyle', ge('s-imgstyle').value.trim());
-  showEl('s-status', '<div class="msg ms">Settings saved!</div>');
-  setTimeout(function() { hideEl('s-status'); }, 2500);
+  lsSet('art_prov', val('s-prov'));
+  lsSet('wp1', val('s-wp1'));
+  lsSet('wp2', val('s-wp2'));
+  lsSet('imgstyle', val('s-imgstyle'));
+  html('s-msg', '<div class="msg-ok">Settings saved!</div>');
+  setTimeout(function() { var e = id('s-msg'); if (e) e.innerHTML = ''; }, 2500);
 }
 
-function openSettings() { loadSettings(); ge('overlay-settings').classList.add('on'); }
-function closeSettings() { ge('overlay-settings').classList.remove('on'); }
-
-function handleLstType(prefix) {
-  var v = ge(prefix + '-type').value;
-  ge(prefix + '-custom-wrap').style.display = (v === 'Custom') ? 'block' : 'none';
-}
-
-function getLstTitle(prefix) {
-  var t = ge(prefix + '-type').value;
-  var topic = gv(prefix + '-topic');
-  if (t === 'Custom') { return (gv(prefix + '-custom') || '10 Best') + ' ' + topic; }
-  return t + ' ' + topic;
-}
-
-// ── AI CALL ──────────────────────────────────────────────
-async function callAI(system, user) {
+// AI Call
+async function callAI(sys, usr) {
   var prov = lsGet('art_prov') || 'claude';
   var key = '';
-  if (prov === 'claude')   key = lsGet('k_claude') || '';
-  if (prov === 'openai')   key = lsGet('k_openai') || '';
-  if (prov === 'groq')     key = lsGet('k_groq') || '';
-  if (prov === 'gemini')   key = lsGet('k_gemini') || '';
-  if (prov === 'mistral')  key = lsGet('k_mistral') || '';
-  if (prov === 'cohere')   key = lsGet('k_cohere') || '';
-
-  if (!key) {
-    throw new Error('No API key for ' + prov + '. Open Settings and add your key.');
-  }
-
+  if (prov === 'claude') key = lsGet('k_claude') || '';
+  else if (prov === 'openai') key = lsGet('k_openai') || '';
+  else if (prov === 'groq') key = lsGet('k_groq') || '';
+  else if (prov === 'gemini') key = lsGet('k_gemini') || '';
+  else if (prov === 'mistral') key = lsGet('k_mistral') || '';
+  else if (prov === 'cohere') key = lsGet('k_cohere') || '';
+  if (!key) throw new Error('No API key for ' + prov + '. Open Settings to add your key.');
   var model = MODELS[prov] || 'gpt-4o';
-  var resp, data;
-
+  var r, d;
   if (prov === 'claude') {
-    resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      },
-      body: JSON.stringify({ model: model, max_tokens: 3000, system: system, messages: [{ role: 'user', content: user }] })
-    });
-    if (!resp.ok) { data = await resp.json(); throw new Error(data.error ? data.error.message : 'Claude error ' + resp.status); }
-    data = await resp.json();
-    return data.content[0].text;
+    r = await fetch('https://api.anthropic.com/v1/messages', {method:'POST', headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({model:model,max_tokens:3000,system:sys,messages:[{role:'user',content:usr}]})});
+    if (!r.ok) { d = await r.json(); throw new Error(d.error ? d.error.message : 'Claude error ' + r.status); }
+    d = await r.json(); return d.content[0].text;
   }
-
   if (prov === 'openai') {
-    resp = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-      body: JSON.stringify({ model: model, max_tokens: 3000, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] })
-    });
-    if (!resp.ok) { data = await resp.json(); throw new Error(data.error ? data.error.message : 'OpenAI error ' + resp.status); }
-    data = await resp.json();
-    return data.choices[0].message.content;
+    r = await fetch('https://api.openai.com/v1/chat/completions', {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+key}, body:JSON.stringify({model:model,max_tokens:3000,messages:[{role:'system',content:sys},{role:'user',content:usr}]})});
+    if (!r.ok) { d = await r.json(); throw new Error(d.error ? d.error.message : 'OpenAI error ' + r.status); }
+    d = await r.json(); return d.choices[0].message.content;
   }
-
   if (prov === 'groq') {
-    resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-      body: JSON.stringify({ model: model, max_tokens: 3000, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] })
-    });
-    if (!resp.ok) { data = await resp.json(); throw new Error(data.error ? data.error.message : 'Groq error ' + resp.status); }
-    data = await resp.json();
-    return data.choices[0].message.content;
+    r = await fetch('https://api.groq.com/openai/v1/chat/completions', {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+key}, body:JSON.stringify({model:model,max_tokens:3000,messages:[{role:'system',content:sys},{role:'user',content:usr}]})});
+    if (!r.ok) { d = await r.json(); throw new Error(d.error ? d.error.message : 'Groq error ' + r.status); }
+    d = await r.json(); return d.choices[0].message.content;
   }
-
   if (prov === 'gemini') {
-    resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + key, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: system + '\n\n' + user }] }], generationConfig: { maxOutputTokens: 3000 } })
-    });
-    if (!resp.ok) { data = await resp.json(); throw new Error(data.error ? data.error.message : 'Gemini error ' + resp.status); }
-    data = await resp.json();
-    return data.candidates[0].content.parts[0].text;
+    r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + key, {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({contents:[{parts:[{text:sys+'\n\n'+usr}]}],generationConfig:{maxOutputTokens:3000}})});
+    if (!r.ok) { d = await r.json(); throw new Error(d.error ? d.error.message : 'Gemini error ' + r.status); }
+    d = await r.json(); return d.candidates[0].content.parts[0].text;
   }
-
   if (prov === 'mistral') {
-    resp = await fetch('https://api.mistral.ai/v1/chat/completions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-      body: JSON.stringify({ model: model, max_tokens: 3000, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] })
-    });
-    if (!resp.ok) { data = await resp.json(); throw new Error(data.error ? data.error.message : 'Mistral error ' + resp.status); }
-    data = await resp.json();
-    return data.choices[0].message.content;
+    r = await fetch('https://api.mistral.ai/v1/chat/completions', {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+key}, body:JSON.stringify({model:model,max_tokens:3000,messages:[{role:'system',content:sys},{role:'user',content:usr}]})});
+    if (!r.ok) { d = await r.json(); throw new Error(d.error ? d.error.message : 'Mistral error ' + r.status); }
+    d = await r.json(); return d.choices[0].message.content;
   }
-
   if (prov === 'cohere') {
-    resp = await fetch('https://api.cohere.ai/v1/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-      body: JSON.stringify({ model: model, message: user, preamble: system, max_tokens: 3000 })
-    });
-    if (!resp.ok) { data = await resp.json(); throw new Error(data.message || 'Cohere error ' + resp.status); }
-    data = await resp.json();
-    return data.text;
+    r = await fetch('https://api.cohere.ai/v1/chat', {method:'POST', headers:{'Content-Type':'application/json','Authorization':'Bearer '+key}, body:JSON.stringify({model:model,message:usr,preamble:sys,max_tokens:3000})});
+    if (!r.ok) { d = await r.json(); throw new Error(d.message || 'Cohere error ' + r.status); }
+    d = await r.json(); return d.text;
   }
   throw new Error('Unknown provider: ' + prov);
 }
 
-// ── PROGRESS ─────────────────────────────────────────────
-function mkProg(id, steps) {
-  var c = ge(id);
-  c.style.display = 'block';
-  var html = '<div class="prog"><div class="prog-title" id="' + id + '-t">Working...</div><div class="prog-track"><div class="prog-fill" id="' + id + '-b"></div></div><div class="prog-steps">';
+// Progress
+function mkProg(pid, steps) {
+  var e = id(pid);
+  e.style.display = 'block';
+  var h = '<div class="prog-box"><div class="prog-label" id="' + pid + '-lbl">Working...</div><div class="prog-track"><div class="prog-bar" id="' + pid + '-bar"></div></div><div class="prog-steps">';
   for (var i = 0; i < steps.length; i++) {
-    html += '<div class="pstep" id="' + id + '-s' + i + '"><div class="pdot"></div><span>' + safeText(steps[i]) + '</span></div>';
+    h += '<div class="step" id="' + pid + '-s' + i + '"><div class="dot"></div><span>' + safeHtml(steps[i]) + '</span></div>';
   }
-  html += '</div></div>';
-  c.innerHTML = html;
+  h += '</div></div>';
+  e.innerHTML = h;
 }
 
-function setStep(id, idx, total, lbl) {
-  var b = ge(id + '-b');
-  if (b) b.style.width = Math.round((idx + 1) / total * 100) + '%';
+function setStep(pid, idx, total, lbl) {
+  var bar = id(pid + '-bar');
+  if (bar) bar.style.width = Math.round((idx + 1) / total * 100) + '%';
   for (var i = 0; i < total; i++) {
-    var s = ge(id + '-s' + i);
+    var s = id(pid + '-s' + i);
     if (!s) continue;
-    s.classList.remove('act', 'done');
+    s.classList.remove('cur', 'done');
     if (i < idx) s.classList.add('done');
-    else if (i === idx) s.classList.add('act');
+    else if (i === idx) s.classList.add('cur');
   }
-  var t = ge(id + '-t');
-  if (t && lbl) t.textContent = lbl;
+  var lbl_el = id(pid + '-lbl');
+  if (lbl_el && lbl) lbl_el.textContent = lbl;
 }
 
-// ── OUTLINE ───────────────────────────────────────────────
-async function genOutline(topic, kw, aud, tone, isListicle, lstTitle) {
-  var sys, usr;
-  if (isListicle) {
-    sys = 'You are an SEO expert. Generate a 15-part listicle outline. Part 1=Introduction, Parts 2-14=list items with specific names, Part 15=Conclusion. Return ONLY a valid JSON array of exactly 15 objects with keys: num, title, type, summary. No markdown formatting.';
-    usr = 'Title: ' + lstTitle + '\nKeywords: ' + kw + '\nAudience: ' + aud;
-  } else {
-    sys = 'You are an SEO expert. Generate a 15-part article outline. Return ONLY a valid JSON array of exactly 15 objects with keys: num, title, type, summary. No markdown formatting.';
-    usr = 'Topic: ' + topic + '\nKeywords: ' + kw + '\nAudience: ' + aud + '\nTone: ' + tone;
+// Parse JSON safely
+function parseJSON(raw) {
+  var start = raw.indexOf('[');
+  var end = raw.lastIndexOf(']');
+  if (start !== -1 && end !== -1 && end > start) {
+    return JSON.parse(raw.substring(start, end + 1));
   }
-  var raw = await callAI(sys, usr);
-  raw = raw.replace(/^[\s\S]*?(\[)/, '[').replace(/\][^]*$/, ']');
   return JSON.parse(raw);
 }
 
-// ── IMAGE BUILDER & RUNNERS ──────────────────────────────
-function previewPrompt() {
-  var p = buildPromptStr();
-  var c = ge('img-prompt-preview');
-  c.style.display = 'block';
-  c.textContent = p;
-  G.lastPrompt = p;
+// Outline
+async function genOutline(topic, kw, aud, tone, isListicle, lstTitle) {
+  var sys, usr;
+  if (isListicle) {
+    sys = 'You are an SEO expert. Generate a 15-part listicle outline. Part 1=Introduction, Parts 2-14=list items, Part 15=Conclusion. Return ONLY a valid JSON array of exactly 15 objects with keys: num, title, type, summary. No markdown.';
+    usr = 'Title: ' + lstTitle + '\nKeywords: ' + kw + '\nAudience: ' + aud;
+  } else {
+    sys = 'You are an SEO expert. Generate a 15-part article outline. Return ONLY a valid JSON array of exactly 15 objects with keys: num, title, type, summary. No markdown.';
+    usr = 'Topic: ' + topic + '\nKeywords: ' + kw + '\nAudience: ' + aud + '\nTone: ' + tone;
+  }
+  var raw = await callAI(sys, usr);
+  return parseJSON(raw);
 }
 
-function buildPromptStr() {
-  var sub = gv('img-subject');
-  var skin = gv('img-skin');
-  var exp = gv('img-expression');
-  var mk = ge('img-makeup').value;
-  var outfit = gv('img-outfit');
-  var pose = gv('img-pose');
-  var shot = ge('img-shot').value;
-  var loc = gv('img-location');
-  var bg = gv('img-bg');
-  var lit = gv('img-lighting');
-  var time = ge('img-time').value;
-  var cam = gv('img-camera');
-  var mood = gv('img-mood');
-  var defStyle = lsGet('imgstyle') || '';
-
-  var parts = [];
-  if (shot) parts.push(shot + ' shot');
-  if (sub) parts.push('of ' + sub);
-  if (skin) parts.push('with ' + skin);
-  if (exp) parts.push('expression ' + exp);
-  if (mk && mk !== 'None') parts.push(mk + ' makeup');
-  if (outfit) parts.push('wearing ' + outfit);
-  if (pose) parts.push('posing in ' + pose);
-  if (loc) parts.push('located at ' + loc);
-  if (bg) parts.push('background features ' + bg);
-  if (lit) parts.push('lighting is ' + lit);
-  if (time) parts.push('during ' + time);
-  if (cam) parts.push('captured via ' + cam);
-  if (mood) parts.push('conveying a mood of ' + mood);
-  if (defStyle) parts.push(defStyle);
-
-  return parts.join(', ');
+// Image prompt builder
+function buildLocalPrompt(fields) {
+  var subject = fields.subject || 'person';
+  var skin = fields.skin || '';
+  var expression = fields.expression || 'natural';
+  var makeup = fields.makeup || 'Minimal';
+  var outfit = fields.outfit || 'casual clothes';
+  var pose = fields.pose || 'natural stance';
+  var shot = fields.shot || 'Candid';
+  var location = fields.location || 'indoor setting';
+  var bg = fields.bg || 'realistic background';
+  var lighting = fields.lighting || 'natural light';
+  var time = fields.time || 'Afternoon';
+  var camera = fields.camera || 'smartphone camera';
+  var mood = fields.mood || 'everyday moment';
+  var extra = fields.extra || '';
+  var mkStr = makeup === 'None' ? 'no makeup' : makeup === 'Minimal' ? 'minimal makeup (lip gloss only)' : makeup === 'Natural' ? 'natural everyday makeup' : 'full glam makeup';
+  var p = 'Ultra-realistic ' + shot.toLowerCase() + ' photo of ' + subject;
+  if (skin) p += ', ' + skin + ' with visible pores and natural skin texture, subtle imperfections';
+  p += ', ' + expression + ' expression, ' + mkStr + '.\n\n';
+  p += 'Outfit: ' + outfit + ', natural fabric texture, slightly worn.\n\n';
+  p += 'Pose: ' + pose + ', imperfect framing, natural body language, slightly off-center.\n\n';
+  p += 'Environment: ' + location + ', ' + time.toLowerCase() + ' light, ' + bg + '.\n\n';
+  p += 'Lighting: ' + lighting + ', realistic shadows, uneven light on face, no studio lighting.\n\n';
+  p += 'Camera: ' + camera + ', 4K, slight grain and noise, slight motion blur, skin texture preserved, no airbrushing, no beauty filter.\n\n';
+  p += 'Details that sell realism:\n- visible pores and skin texture\n- slight under-eye texture\n- uneven lighting on face\n- minor noise and grain\n- imperfect framing\n- natural background clutter\n- clothing wrinkles\n\n';
+  p += 'Mood: "' + mood + '"\n\n';
+  p += 'NO AI look, NO symmetry perfection, NO over-smoothing, NO plastic skin, NO studio lighting.';
+  if (extra) p += '\n\nAdditional style: ' + extra;
+  return p;
 }
 
-async function runSingleImage() {
-  var p = buildPromptStr();
-  if (!p) return alert('Please enter at least a subject or setup detail.');
-  G.lastPrompt = p;
-  
-  showEl('img-status', '<div class="msg mi"><span class="spin"></span> Requesting image...</div>');
-  hideEl('img-dl');
-  ge('img-ph').style.display = 'none';
-  var img = ge('img-result');
-  img.style.display = 'none';
+async function buildAIPrompt(description, stylePrefs) {
+  var sys = 'You are an expert photographer and image prompt writer. Write ultra-realistic prompts that make AI images look like real candid photographs taken by real people. Use this structure:\n[Subject with imperfections]\nOutfit: [details]\nPose: [imperfect angle]\nEnvironment: [specific real location with clutter]\nLighting: [natural only, specific source]\nCamera: [specific device, grain, 4K, no airbrushing]\nDetails that sell realism:\n- [bullet points]\nMood: "[one line]"\nNO AI look, NO symmetry perfection, NO over-smoothing.\nReturn ONLY the prompt text.';
+  var usr = 'Create an ultra-realistic image prompt for: ' + description;
+  if (stylePrefs) usr += '\nStyle preferences: ' + stylePrefs;
+  return await callAI(sys, usr);
+}
 
-  var size = ge('img-size').value;
-  var w = parseInt(size.split('x')[0]);
-  var h = parseInt(size.split('x')[1]);
+async function buildArticleImgPrompt(topic, sections, imgStyle) {
+  var sys = 'You are an expert at writing ultra-realistic photography prompts relevant to article content. Create a prompt that looks like a real photograph. Use this structure:\n[Subject relevant to section topic]\nOutfit: [appropriate]\nPose: [natural, imperfect]\nEnvironment: [specific to topic]\nLighting: [natural only]\nCamera: [specific camera, grain, no airbrushing]\nDetails that sell realism:\n- [bullet points]\nMood: "[one line]"\nNO AI look, NO symmetry perfection, NO over-smoothing.\nReturn ONLY the prompt.';
+  var usr = 'Article: ' + topic + '\nSections: ' + sections;
+  if (imgStyle) usr += '\nStyle: ' + imgStyle;
+  return await callAI(sys, usr);
+}
 
+// Chunk processing
+async function processChunk(outline, from, to, topic, aud, tone, imgStyle, isListicle, pid, stepOff, total) {
+  var secs = [];
+  for (var i = 0; i < outline.length; i++) {
+    if (outline[i].num >= from && outline[i].num <= to) secs.push(outline[i]);
+  }
+  var secTxt = '';
+  for (var i = 0; i < secs.length; i++) {
+    secTxt += 'Section ' + secs[i].num + ': ' + secs[i].title + '\nSummary: ' + secs[i].summary + '\n\n';
+  }
+  var wp1 = lsGet('wp1') || DEF1;
+  var wp2 = lsGet('wp2') || DEF2;
+  setStep(pid, stepOff, total, 'Writing sections ' + from + '-' + to);
+  var sys1 = wp1 + '\n\nTopic: "' + topic + '". Audience: ' + aud + '. Tone: ' + tone + '.';
+  if (isListicle) sys1 += ' This is a listicle - number each item as H2.';
+  var pass1 = await callAI(sys1, 'Write content for:\n\n' + secTxt + '\nUse HTML: h2, p, ul, li, strong, em.');
+  setStep(pid, stepOff + 1, total, 'Rewriting sections ' + from + '-' + to);
+  var pass2 = await callAI(wp2, 'Rewrite, keep all HTML:\n\n' + pass1 + '\nReturn only HTML.');
+  var secTitles = secs.map(function(s) { return s.title; }).join(', ');
+  var imgPrompt = await buildArticleImgPrompt(topic, secTitles, imgStyle);
+  return {content: pass2, imgPrompt: imgPrompt.trim()};
+}
+
+// Render
+function renderOutline(outline, resultsId) {
+  var h = '<div class="outline-box">';
+  for (var i = 0; i < outline.length; i++) {
+    var n = outline[i].num < 10 ? '0' + outline[i].num : '' + outline[i].num;
+    h += '<div class="o-item"><div class="o-num">' + n + '</div><div class="o-text"><strong>' + safeHtml(outline[i].title) + '</strong> - ' + safeHtml(outline[i].summary) + '</div></div>';
+  }
+  h += '</div>';
+  append(resultsId, h);
+}
+
+function renderChunk(from, to, content, imgPrompt, resultsId, badgeCls) {
+  var h = '<div class="chunk-box">' +
+    '<div class="chunk-head"><span>Sections ' + from + '-' + to + '</span><span class="badge ' + badgeCls + '">Humanized</span></div>' +
+    '<div class="chunk-body">' + content + '</div>' +
+    '<div class="img-prompt"><div class="img-prompt-label">Image Prompt - Sections ' + from + '-' + to + '</div>' + safeHtml(imgPrompt) + '</div>' +
+    '</div>';
+  append(resultsId, h);
+}
+
+// Single Article
+async function runArticle() {
+  var topic = val('a-topic');
+  if (!topic) { alert('Please enter a topic.'); return; }
+  var btn = id('btn-gen-article');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Generating...';
+  id('a-results').innerHTML = '';
+  id('a-results').style.display = 'none';
+  hide('a-exp');
+  articleData = {outline:[], chunks:[], imgPrompts:[]};
+  var steps = ['Generating outline','Writing 1-3','Rewriting 1-3','Writing 4-6','Rewriting 4-6','Writing 7-9','Rewriting 7-9','Writing 10-12','Rewriting 10-12','Writing 13-15','Rewriting 13-15'];
+  mkProg('a-prog', steps);
   try {
-    var url = await fetchImageBlobUrl(p, w, h, G.imgProv);
-    img.src = url;
-    img.style.display = 'block';
-    showEl('img-dl');
-    hideEl('img-status');
+    setStep('a-prog', 0, steps.length, 'Generating 15-part outline...');
+    var outline = await genOutline(topic, val('a-kw'), val('a-aud'), val('a-tone'), false, '');
+    articleData.outline = outline;
+    renderOutline(outline, 'a-results');
+    var pairs = [[1,3],[4,6],[7,9],[10,12],[13,15]];
+    for (var i = 0; i < pairs.length; i++) {
+      var r = await processChunk(outline, pairs[i][0], pairs[i][1], topic, val('a-aud'), val('a-tone'), val('a-imgstyle'), false, 'a-prog', 1 + i * 2, steps.length);
+      articleData.chunks.push(r.content);
+      articleData.imgPrompts.push(r.imgPrompt);
+      renderChunk(pairs[i][0], pairs[i][1], r.content, r.imgPrompt, 'a-results', 'badge-blue');
+    }
+    show('a-exp');
+    hide('a-prog');
   } catch(e) {
-    showEl('img-status', '<div class="msg me">' + safeText(e.message) + '</div>');
-    ge('img-ph').style.display = 'flex';
+    hide('a-prog');
+    append('a-results', '<div class="msg-err">' + safeHtml(e.message) + '</div>');
   }
+  btn.disabled = false;
+  btn.innerHTML = 'Generate Article';
 }
 
-async function fetchImageBlobUrl(prompt, w, h, provider) {
-  var seed = Math.floor(Math.random() * 1000000);
-  if (provider === 'pollinations') {
-    var url = 'https://image.pollinations.ai/p/' + encodeURIComponent(prompt) + '?width=' + w + '&height=' + h + '&seed=' + seed + '&nologo=true';
-    var r = await fetch(url);
-    var b = await r.blob();
-    return URL.createObjectURL(b);
+// Bulk Articles
+async function runBulkArticles() {
+  var raw = val('ba-topics');
+  if (!raw) { alert('Enter topics.'); return; }
+  var lines = raw.split('\n');
+  var topics = [];
+  for (var i = 0; i < lines.length; i++) { var t = lines[i].trim(); if (t) topics.push(t); }
+  if (!topics.length) { alert('No valid topics.'); return; }
+  var btn = id('btn-gen-bulk-article');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Generating...';
+  id('ba-results').innerHTML = '';
+  id('ba-results').style.display = 'none';
+  hide('ba-exp');
+  bulkArticles = [];
+  var steps = [];
+  for (var ti = 0; ti < topics.length; ti++) {
+    steps.push('Outline: ' + topics[ti].slice(0, 25));
+    for (var x = 0; x < 5; x++) steps.push('Write/Rewrite ' + (x*3+1) + '-' + (x*3+3));
   }
-  throw new Error('Selected image pipeline structure requires configured server key routines for direct ' + provider + ' binary streams.');
+  mkProg('ba-prog', steps);
+  var gs = 0;
+  for (var ti = 0; ti < topics.length; ti++) {
+    var topic = topics[ti];
+    var cardId = 'ba-card-' + ti;
+    var bodyId = 'ba-body-' + ti;
+    var badgeId = 'ba-badge-' + ti;
+    append('ba-results', '<div class="bulk-card"><div class="bulk-card-head"><span>Article ' + (ti+1) + '/' + topics.length + ': ' + safeHtml(topic) + '</span><span class="badge badge-blue" id="' + badgeId + '">In Progress</span></div><div class="bulk-card-body" id="' + bodyId + '"></div></div>');
+    try {
+      setStep('ba-prog', gs++, steps.length, 'Outline: ' + topic);
+      var outline = await genOutline(topic, '', val('ba-aud'), val('ba-tone'), false, '');
+      renderOutline(outline, bodyId);
+      var art = {title:topic, outline:outline, chunks:[], imgPrompts:[]};
+      var pairs = [[1,3],[4,6],[7,9],[10,12],[13,15]];
+      for (var i = 0; i < pairs.length; i++) {
+        var r = await processChunk(outline, pairs[i][0], pairs[i][1], topic, val('ba-aud'), val('ba-tone'), val('ba-imgstyle'), false, 'ba-prog', gs, steps.length);
+        gs++;
+        art.chunks.push(r.content);
+        art.imgPrompts.push(r.imgPrompt);
+        renderChunk(pairs[i][0], pairs[i][1], r.content, r.imgPrompt, bodyId, 'badge-blue');
+      }
+      bulkArticles.push(art);
+      var b = id(badgeId); if (b) { b.className = 'badge badge-green'; b.textContent = 'Done'; }
+    } catch(e) {
+      var b = id(badgeId); if (b) { b.className = 'badge badge-red'; b.textContent = 'Error'; }
+      var body = id(bodyId); if (body) body.insertAdjacentHTML('beforeend', '<div class="msg-err">' + safeHtml(e.message) + '</div>');
+      gs += 5;
+    }
+  }
+  show('ba-exp');
+  hide('ba-prog');
+  btn.disabled = false;
+  btn.innerHTML = 'Generate All Articles';
+}
+
+// Single Listicle
+async function runListicle() {
+  var topic = val('l-topic');
+  if (!topic) { alert('Enter a topic.'); return; }
+  var ltype = id('l-type').value;
+  var title = (ltype === 'Custom' ? (val('l-custom') || '10 Best') : ltype) + ' ' + topic;
+  var btn = id('btn-gen-listicle');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Generating...';
+  id('l-results').innerHTML = '';
+  id('l-results').style.display = 'none';
+  hide('l-exp');
+  listicleData = {outline:[], chunks:[], imgPrompts:[]};
+  var steps = ['Generating outline','Writing 1-3','Rewriting 1-3','Writing 4-6','Rewriting 4-6','Writing 7-9','Rewriting 7-9','Writing 10-12','Rewriting 10-12','Writing 13-15','Rewriting 13-15'];
+  mkProg('l-prog', steps);
+  try {
+    setStep('l-prog', 0, steps.length, 'Generating listicle outline...');
+    var outline = await genOutline(topic, val('l-kw'), val('l-aud'), val('l-tone'), true, title);
+    listicleData.outline = outline;
+    renderOutline(outline, 'l-results');
+    var pairs = [[1,3],[4,6],[7,9],[10,12],[13,15]];
+    for (var i = 0; i < pairs.length; i++) {
+      var r = await processChunk(outline, pairs[i][0], pairs[i][1], title, val('l-aud'), val('l-tone'), val('l-imgstyle'), true, 'l-prog', 1 + i * 2, steps.length);
+      listicleData.chunks.push(r.content);
+      listicleData.imgPrompts.push(r.imgPrompt);
+      renderChunk(pairs[i][0], pairs[i][1], r.content, r.imgPrompt, 'l-results', 'badge-purple');
+    }
+    show('l-exp');
+    hide('l-prog');
+  } catch(e) {
+    hide('l-prog');
+    append('l-results', '<div class="msg-err">' + safeHtml(e.message) + '</div>');
+  }
+  btn.disabled = false;
+  btn.innerHTML = 'Generate Listicle';
+}
+
+// Bulk Listicles
+async function runBulkListicles() {
+  var raw = val('bl-topics');
+  if (!raw) { alert('Enter topics.'); return; }
+  var lines = raw.split('\n');
+  var topics = [];
+  for (var i = 0; i < lines.length; i++) { var t = lines[i].trim(); if (t) topics.push(t); }
+  var bltype = id('bl-type').value;
+  var pfx = bltype === 'Custom' ? (val('bl-custom') || '10 Best') : bltype;
+  var btn = id('btn-gen-bulk-listicle');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spin"></span> Generating...';
+  id('bl-results').innerHTML = '';
+  id('bl-results').style.display = 'none';
+  hide('bl-exp');
+  bulkListicles = [];
+  var steps = [];
+  for (var ti = 0; ti < topics.length; ti++) {
+    steps.push('Outline: ' + pfx + ' ' + topics[ti].slice(0, 20));
+    for (var x = 0; x < 5; x++) steps.push('Write/Rewrite ' + (x*3+1) + '-' + (x*3+3));
+  }
+  mkProg('bl-prog', steps);
+  var gs = 0;
+  for (var ti = 0; ti < topics.length; ti++) {
+    var topic = topics[ti];
+    var fullTitle = pfx + ' ' + topic;
+    var bodyId = 'bl-body-' + ti;
+    var badgeId = 'bl-badge-' + ti;
+    append('bl-results', '<div class="bulk-card"><div class="bulk-card-head"><span>Listicle ' + (ti+1) + '/' + topics.length + ': ' + safeHtml(fullTitle) + '</span><span class="badge badge-purple" id="' + badgeId + '">In Progress</span></div><div class="bulk-card-body" id="' + bodyId + '"></div></div>');
+    try {
+      setStep('bl-prog', gs++, steps.length, 'Outline: ' + fullTitle);
+      var outline = await genOutline(topic, '', val('bl-aud'), 'Professional', true, fullTitle);
+      renderOutline(outline, bodyId);
+      var lst = {title:fullTitle, outline:outline, chunks:[], imgPrompts:[]};
+      var pairs = [[1,3],[4,6],[7,9],[10,12],[13,15]];
+      for (var i = 0; i < pairs.length; i++) {
+        var r = await processChunk(outline, pairs[i][0], pairs[i][1], fullTitle, val('bl-aud'), 'Professional', val('bl-imgstyle'), true, 'bl-prog', gs, steps.length);
+        gs++;
+        lst.chunks.push(r.content);
+        lst.imgPrompts.push(r.imgPrompt);
+        renderChunk(pairs[i][0], pairs[i][1], r.content, r.imgPrompt, bodyId, 'badge-purple');
+      }
+      bulkListicles.push(lst);
+      var b = id(badgeId); if (b) { b.className = 'badge badge-green'; b.textContent = 'Done'; }
+    } catch(e) {
+      var b = id(badgeId); if (b) { b.className = 'badge badge-red'; b.textContent = 'Error'; }
+      var body = id(bodyId); if (body) body.insertAdjacentHTML('beforeend', '<div class="msg-err">' + safeHtml(e.message) + '</div>');
+      gs += 5;
+    }
+  }
+  show('bl-exp');
+  hide('bl-prog');
+  btn.disabled = false;
+  btn.innerHTML = 'Generate All Listicles';
+}
+
+// Export
+function slugify(s) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 50); }
+
+function buildHTML(data, title) {
+  var body = '';
+  for (var i = 0; i < data.chunks.length; i++) {
+    var f = i * 3 + 1; var t = i * 3 + 3;
+    body += data.chunks[i] + '\n<div style="background:#f5f0ff;border-left:4px solid #7c6fff;padding:10px 14px;margin:16px 0;font-style:italic;color:#555;font-size:.85em;white-space:pre-wrap;">Image Prompt (' + f + '-' + t + '):\n' + safeHtml(data.imgPrompts[i] || '') + '</div>\n';
+  }
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>' + safeHtml(title) + '</title><style>body{font-family:Georgia,serif;max-width:820px;margin:40px auto;padding:0 20px;line-height:1.8;color:#222;}h1{font-size:2em;margin-bottom:14px;}h2{font-size:1.4em;margin-top:28px;}p{margin-bottom:14px;}ul,ol{margin:14px 0;padding-left:26px;}li{margin-bottom:7px;}</style></head><body><h1>' + safeHtml(title) + '</h1>\n' + body + '</body></html>';
+
+}
+
+function buildRTF(data, title) {
+function er(s) { return String(s).replace(/\/g,’\\’).replace(/{/g,’\{’).replace(/}/g,’\}’).replace(/[^\x00-\x7F]/g, function(c) { return ‘\u’ + c.charCodeAt(0) + ‘?’; }); }
+var r = ‘{\rtf1\ansi\deff0\n{\fonttbl{\f0\froman Times New Roman;}}\n\f0\fs24\n{\pard\qc\b\fs36 ’ + er(title) + ‘\par}\pard\fs24\n’;
+for (var ci = 0; ci < data.chunks.length; ci++) {
+var lines = data.chunks[ci]
+.replace(/<h2[^>]*>(.*?)</h2>/gi, ‘\n@@H2@@$1\n’)
+.replace(/<h3[^>]*>(.*?)</h3>/gi, ‘\n@@H3@@$1\n’)
+.replace(/<strong[^>]*>(.*?)</strong>/gi, ‘@@B@@$1@@/B@@’)
+.replace(/<em[^>]*>(.*?)</em>/gi, ‘@@I@@$1@@/I@@’)
+.replace(/<li[^>]*>(.*?)</li>/gi, ‘\n- $1’)
+.replace(/<[^>]+>/g, ‘’)
+.replace(/&/g,’&’).replace(/</g,’<’).replace(/>/g,’>’).replace(/ /g,’ ‘)
+.split(’\n’);
+for (var li = 0; li < lines.length; li++) {
+var line = lines[li].trim();
+if (!line) { r += ‘\par\n’; continue; }
+if (line.indexOf(’@@H2@@’) === 0) r += ‘{\pard\b\fs30 ’ + er(line.replace(’@@H2@@’,’’)) + ‘\par}\n’;
+else if (line.indexOf(’@@H3@@’) === 0) r += ‘{\pard\b\fs26 ’ + er(line.replace(’@@H3@@’,’’)) + ‘\par}\n’;
+else { var l = er(line).replace(/@@B@@(.*?)@@/B@@/g,’{\b $1}’).replace(/@@I@@(.*?)@@/I@@/g,’{\i $1}’); r += ’{\pard ’ + l + ‘\par}\n’; }
+}
+if (data.imgPrompts[ci]) { var f = ci*3+1; var t = ci*3+3; r += ‘{\pard\i Image Prompt (’ + f + ‘-’ + t + ’): ’ + er(data.imgPrompts[ci]) + ‘\par}\n’; }
+}
+return r + ‘}’;
+}
+
+function dlBlob(content, name, type) {
+var blob = new Blob([content], {type:type});
+var url = URL.createObjectURL(blob);
+var a = document.createElement(‘a’);
+a.href = url; a.download = name;
+document.body.appendChild(a); a.click(); document.body.removeChild(a);
+setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+}
+
+function exportSingle(type, fmt) {
+var data = type === ‘article’ ? articleData : listicleData;
+var topic = type === ‘article’ ? val(‘a-topic’) : val(‘l-topic’);
+if (!data.chunks.length) { alert(‘Nothing to export.’); return; }
+if (fmt === ‘html’) dlBlob(buildHTML(data, topic), slugify(topic) + ‘.html’, ‘text/html’);
+else dlBlob(buildRTF(data, topic), slugify(topic) + ‘.rtf’, ‘application/rtf’);
+}
+
+function exportBulk(type, mode) {
+var list = type === ‘article’ ? bulkArticles : bulkListicles;
+if (!list.length) { alert(‘Nothing to export.’); return; }
+if (mode === ‘separate’) {
+for (var i = 0; i < list.length; i++) {
+(function(d, idx) {
+setTimeout(function() {
+dlBlob(buildRTF(d, d.title), slugify(d.title) + ‘.rtf’, ‘application/rtf’);
+setTimeout(function() { dlBlob(buildHTML(d, d.title), slugify(d.title) + ‘.html’, ‘text/html’); }, 400);
+}, idx * 900);
+})(list[i], i);
+}
+} else {
+var h = ‘<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:Georgia,serif;max-width:820px;margin:40px auto;padding:0 20px;line-height:1.8;color:#222;}h1{font-size:2em;}.sep{border:none;border-top:3px solid #7c6fff;margin:50px 0;}</style></head><body>’;
+for (var i = 0; i < list.length; i++) {
+if (i > 0) h += ‘<hr class="sep">’;
+h += ‘<h1>’ + safeHtml(list[i].title) + ‘</h1>’ + list[i].chunks.join(’\n’);
+}
+h += ‘</body></html>’;
+dlBlob(h, ‘combined.html’, ‘text/html’);
+}
+}
+
+// Image fetch
+async function fetchImg(prompt, size, prov) {
+var parts = size.split(‘x’);
+var w = parseInt(parts[0]); var h = parseInt(parts[1]);
+var r, d;
+if (prov === ‘pollinations’) return ‘https://image.pollinations.ai/prompt/’ + encodeURIComponent(prompt) + ‘?width=’ + w + ‘&height=’ + h + ‘&nologo=true&seed=’ + Date.now();
+if (prov === ‘dalle’) {
+var key = lsGet(‘k_openai’); if (!key) throw new Error(‘OpenAI key missing. Add in Settings.’);
+r = await fetch(‘https://api.openai.com/v1/images/generations’, {method:‘POST’, headers:{‘Content-Type’:‘application/json’,‘Authorization’:’Bearer ’+key}, body:JSON.stringify({prompt:prompt,n:1,size:w>=1024?‘1024x1024’:‘512x512’,response_format:‘url’})});
+if (!r.ok) { d = await r.json(); throw new Error(d.error ? d.error.message : ‘DALL-E error’); }
+d = await r.json(); return d.data[0].url;
+}
+if (prov === ‘stability’) {
+var key = lsGet(‘k_stability’); if (!key) throw new Error(‘Stability key missing. Add in Settings.’);
+r = await fetch(‘https://api.stability.ai/v1/generation/stable-diffusion-xl-1024-v1-0/text-to-image’, {method:‘POST’, headers:{‘Content-Type’:‘application/json’,‘Authorization’:’Bearer ’+key,‘Accept’:‘application/json’}, body:JSON.stringify({text_prompts:[{text:prompt,weight:1}],cfg_scale:7,height:Math.min(h,1024),width:Math.min(w,1024),samples:1,steps:30})});
+if (!r.ok) { d = await r.json(); throw new Error(d.message || ‘Stability error’); }
+d = await r.json(); return ‘data:image/png;base64,’ + d.artifacts[0].base64;
+}
+if (prov === ‘huggingface’) {
+var key = lsGet(‘k_hf’); if (!key) throw new Error(‘HuggingFace key missing. Add in Settings.’);
+r = await fetch(‘https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0’, {method:‘POST’, headers:{‘Authorization’:’Bearer ’+key,‘Content-Type’:‘application/json’}, body:JSON.stringify({inputs:prompt,parameters:{width:Math.min(w,1024),height:Math.min(h,1024)}})});
+if (!r.ok) { d = await r.json(); throw new Error(d.error || ‘HuggingFace error’); }
+return URL.createObjectURL(await r.blob());
+}
+if (prov === ‘replicate’) {
+var key = lsGet(‘k_replicate’); if (!key) throw new Error(‘Replicate key missing. Add in Settings.’);
+r = await fetch(‘https://api.replicate.com/v1/models/stability-ai/sdxl/predictions’, {method:‘POST’, headers:{‘Authorization’:’Bearer ’+key,‘Content-Type’:‘application/json’}, body:JSON.stringify({input:{prompt:prompt,width:Math.min(w,1024),height:Math.min(h,1024)}})});
+if (!r.ok) { d = await r.json(); throw new Error(d.detail || ‘Replicate error’); }
+var pred = await r.json();
+for (var i = 0; i < 30; i++) {
+await new Promise(function(res) { setTimeout(res, 2000); });
+var poll = await fetch(‘https://api.replicate.com/v1/predictions/’ + pred.id, {headers:{‘Authorization’:’Bearer ’+key}});
+var res = await poll.json();
+if (res.status === ‘succeeded’) return res.output[0];
+if (res.status === ‘failed’) throw new Error(‘Replicate failed.’);
+}
+throw new Error(‘Replicate timed out.’);
+}
+throw new Error(‘Unknown image provider.’);
+}
+
+function loadToCanvas(src, canvas) {
+return new Promise(function(resolve) {
+var img = new Image(); img.crossOrigin = ‘anonymous’;
+img.onload = function() { canvas.width = img.naturalWidth || 512; canvas.height = img.naturalHeight || 512; canvas.getContext(‘2d’).drawImage(img, 0, 0); resolve(true); };
+img.onerror = function() { resolve(false); };
+img.src = src;
+});
+}
+
+async function runImage() {
+var btn = id(‘btn-gen-image’);
+btn.disabled = true; btn.innerHTML = ‘<span class="spin"></span> Generating…’;
+id(‘img-status’).innerHTML = ‘’;
+id(‘img-result’).style.display = ‘none’;
+var ph = document.querySelector(’.img-ph’); if (ph) ph.style.display = ‘flex’;
+hide(‘img-dl’);
+try {
+var fields = {
+subject: val(‘img-subject’), skin: val(‘img-skin’), expression: val(‘img-expression’),
+makeup: val(‘img-makeup’), outfit: val(‘img-outfit’), pose: val(‘img-pose’),
+shot: val(‘img-shot’), location: val(‘img-location’), bg: val(‘img-bg’),
+lighting: val(‘img-lighting’), time: val(‘img-time’), camera: val(‘img-camera’),
+mood: val(‘img-mood’), extra: lsGet(‘imgstyle’) || ‘’
+};
+var prompt = val(‘img-subject’) ? buildLocalPrompt(fields) : await buildAIPrompt(val(‘img-mood’) || ‘natural everyday moment’, fields.extra);
+lastPrompt = prompt;
+var url = await fetchImg(prompt, val(‘img-size’) || ‘1024x1024’, imgProv);
+var imgEl = id(‘img-result’);
+imgEl.src = url; imgEl.style.display = ‘block’;
+if (ph) ph.style.display = ‘none’;
+await loadToCanvas(url, id(‘img-canvas’));
+show(‘img-dl’);
+} catch(e) {
+id(‘img-status’).innerHTML = ‘<div class="msg-err">’ + safeHtml(e.message) + ‘</div>’;
+}
+btn.disabled = false; btn.innerHTML = ‘Build and Generate’;
 }
 
 function dlCleanImg() {
-  var img = ge('img-result');
-  var canvas = ge('img-canvas');
-  if (!img.src) return;
-  canvas.width = img.naturalWidth || img.width;
-  canvas.height = img.naturalHeight || img.height;
-  var ctx = canvas.getContext('2d');
-  ctx.drawImage(img, 0, 0);
-  
-  var a = document.createElement('a');
-  a.download = 'cleaned_canvas_image.png';
-  a.href = canvas.toDataURL('image/png');
-  a.click();
+var c = id(‘img-canvas’);
+if (!c.width) { var a = document.createElement(‘a’); a.href = id(‘img-result’).src; a.download = ‘image.png’; a.click(); return; }
+c.toBlob(function(blob) {
+if (!blob) { alert(‘Could not export.’); return; }
+var url = URL.createObjectURL(blob);
+var a = document.createElement(‘a’); a.href = url; a.download = ‘clean-img-’ + Date.now() + ‘.png’;
+document.body.appendChild(a); a.click(); document.body.removeChild(a);
+setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+}, ‘image/png’);
 }
 
-// ── INITIALIZATION & BINDINGS ─────────────────────────────
-document.addEventListener('DOMContentLoaded', function() {
-  loadSettings();
-
-  // Tab switching setup
-  var tabs = document.querySelectorAll('.tabs-bar .tab');
-  for (var i = 0; i < tabs.length; i++) {
-    (function(idx) {
-      tabs[idx].addEventListener('click', function() { switchTab(idx); });
-    })(i);
-  }
-
-  // Bind settings buttons
-  ge('btn-settings').addEventListener('click', openSettings);
-  ge('btn-close-settings').addEventListener('click', closeSettings);
-  ge('btn-save-settings').addEventListener('click', saveSettings);
-
-  // Listicle Custom selectors logic triggers
-  ge('l-type').addEventListener('change', function() { handleLstType('l'); });
-  ge('bl-type').addEventListener('change', function() { handleLstType('bl'); });
-
-  // Provider button toggle arrays configuration
-  var imgBtns = document.querySelectorAll('#img-provs .pvb');
-  for (var j = 0; j < imgBtns.length; j++) {
-    (function(btn) {
-      btn.addEventListener('click', function() {
-        for(var k=0; k<imgBtns.length; k++) imgBtns[k].classList.remove('on');
-        btn.classList.add('on');
-        G.imgProv = btn.getAttribute('data-p');
-      });
-    })(imgBtns[j]);
-  }
-
-  var biBtns = document.querySelectorAll('#bi-provs .pvb');
-  for (var m = 0; m < biBtns.length; m++) {
-    (function(btn) {
-      btn.addEventListener('click', function() {
-        for(var n=0; n<biBtns.length; n++) biBtns[n].classList.remove('on');
-        btn.classList.add('on');
-        G.biProv = btn.getAttribute('data-bp');
-        var notes = { dalle: 'Uses your OpenAI API key.', stability: 'Uses your Stability AI key.', huggingface: 'Uses your Hugging Face key.', replicate: 'Uses your Replicate key.' };
-        var note = notes[G.biProv];
-        if (note) showEl('bi-note', '<div class="msg mi">' + note + '</div>'); else hideEl('bi-note');
-      });
-    })(biBtns[m]);
-  }
-
-  // Single Image operational triggers
-  ge('btn-img-build').addEventListener('click', runSingleImage);
-  ge('btn-img-preview').addEventListener('click', previewPrompt);
-  ge('btn-img-dl').addEventListener('click', dlCleanImg);
-  ge('btn-img-copy').addEventListener('click', function() {
-    if (navigator.clipboard) {
-      navigator.clipboard.writeText(G.lastPrompt).then(function() {
-        showEl('img-status', '<div class="msg ms">Prompt copied!</div>');
-        setTimeout(function() { hideEl('img-status'); }, 2000);
-      });
-    }
-  });
+async function runBulkImages() {
+var raw = val(‘bi-prompts’);
+if (!raw) { alert(‘Enter descriptions.’); return; }
+var lines = raw.split(’\n’);
+var descs = [];
+for (var i = 0; i < lines.length; i++) { var d = lines[i].trim(); if (d) descs.push(d); }
+var size = val(‘bi-size’) || ‘1024x1024’;
+var stylePrefs = val(‘bi-style’) || lsGet(‘imgstyle’) || ‘’;
+var btn = id(‘btn-gen-bulk-image’);
+btn.disabled = true; btn.innerHTML = ‘<span class="spin"></span> Generating…’;
+id(‘bi-results’).innerHTML = ‘’;
+id(‘bi-results’).style.display = ‘none’;
+hide(‘bi-exp’);
+bulkImages = [];
+var steps = [];
+for (var i = 0; i < descs.length; i++) steps.push(’Image ’ + (i+1) + ’: ’ + descs[i].slice(0, 30));
+mkProg(‘bi-prog’, steps);
+var grid = ‘<div class="img-grid" id="bi-grid"></div>’;
+append(‘bi-results’, grid);
+for (var i = 0; i < descs.length; i++) {
+var cid = ‘bi-card-’ + i;
+var gridEl = id(‘bi-grid’);
+if (gridEl) gridEl.insertAdjacentHTML(‘beforeend’, ‘<div class="img-grid-item" id="' + cid + '"><div style="aspect-ratio:1;background:#21262d;display:flex;align-items:center;justify-content:center;color:#484f58;font-size:11px;">Pending…</div><div class="img-grid-info"><p>’ + safeHtml(descs[i]) + ‘</p></div></div>’);
+}
+for (var i = 0; i < descs.length; i++) {
+setStep(‘bi-prog’, i, steps.length, ’Generating image ’ + (i+1) + ‘/’ + descs.length);
+var card = id(‘bi-card-’ + i);
+try {
+var prompt = await buildAIPrompt(descs[i], stylePrefs);
+var url = await fetchImg(prompt, size, biProv);
+var cleanUrl = url;
+var tmpC = document.createElement(‘canvas’);
+var img2 = new Image(); img2.crossOrigin = ‘anonymous’;
+await new Promise(function(res) {
+img2.onload = function() { tmpC.width = img2.naturalWidth || 512; tmpC.height = img2.naturalHeight || 512; tmpC.getContext(‘2d’).drawImage(img2, 0, 0); try { cleanUrl = tmpC.toDataURL(‘image/png’); } catch(e) {} res(); };
+img2.onerror = function() { res(); };
+img2.src = url;
 });
+var idx = bulkImages.length;
+bulkImages.push({desc:descs[i], url:cleanUrl});
+if (card) card.innerHTML = ‘<img src="' + url + '" alt="' + safeHtml(descs[i]) + '" crossorigin="anonymous"><div class="img-grid-info"><p>’ + safeHtml(descs[i]) + ‘</p><button class="btn btn-green btn-sm" data-dl="' + idx + '">Download</button></div>’;
+} catch(e) {
+bulkImages.push({desc:descs[i], url:null});
+if (card) card.innerHTML = ‘<div style="aspect-ratio:1;background:#200d0d;display:flex;align-items:center;justify-content:center;color:#f78166;font-size:11px;padding:8px;text-align:center;">’ + safeHtml(e.message) + ‘</div><div class="img-grid-info"><p>’ + safeHtml(descs[i]) + ‘</p></div>’;
+}
+}
+show(‘bi-exp’); hide(‘bi-prog’);
+btn.disabled = false; btn.innerHTML = ‘Generate All Images’;
+}
+
+function dlAllImages() {
+var count = 0;
+for (var i = 0; i < bulkImages.length; i++) {
+if (!bulkImages[i].url) continue;
+(function(img, idx) {
+setTimeout(function() {
+var a = document.createElement(‘a’); a.href = img.url; a.download = ‘image-’ + (idx+1) + ‘.png’;
+document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}, count * 700);
+count++;
+})(bulkImages[i], i);
+}
+}
+
+// Wire everything up
+initTabs();
+
+// Settings
+id(‘openSettings’).addEventListener(‘click’, function() { loadSettings(); id(‘modal-settings’).classList.add(‘open’); });
+id(‘closeSettings’).addEventListener(‘click’, function() { id(‘modal-settings’).classList.remove(‘open’); });
+id(‘modal-settings’).addEventListener(‘click’, function(e) { if (e.target === id(‘modal-settings’)) id(‘modal-settings’).classList.remove(‘open’); });
+id(‘btn-save-settings’).addEventListener(‘click’, saveSettings);
+
+// Listicle type toggles
+id(‘l-type’).addEventListener(‘change’, function() { id(‘l-custom-wrap’).style.display = this.value === ‘Custom’ ? ‘block’ : ‘none’; });
+id(‘bl-type’).addEventListener(‘change’, function() { id(‘bl-custom-wrap’).style.display = this.value === ‘Custom’ ? ‘block’ : ‘none’; });
+
+// Article
+id(‘btn-gen-article’).addEventListener(‘click’, runArticle);
+id(‘btn-a-rtf’).addEventListener(‘click’, function() { exportSingle(‘article’,‘rtf’); });
+id(‘btn-a-html’).addEventListener(‘click’, function() { exportSingle(‘article’,‘html’); });
+
+// Bulk Articles
+id(‘btn-gen-bulk-article’).addEventListener(‘click’, runBulkArticles);
+id(‘btn-ba-sep’).addEventListener(‘click’, function() { exportBulk(‘article’,‘separate’); });
+id(‘btn-ba-comb’).addEventListener(‘click’, function() { exportBulk(‘article’,‘combined’); });
+
+// Listicle
+id(‘btn-gen-listicle’).addEventListener(‘click’, runListicle);
+id(‘btn-l-rtf’).addEventListener(‘click’, function() { exportSingle(‘listicle’,‘rtf’); });
+id(‘btn-l-html’).addEventListener(‘click’, function() { exportSingle(‘listicle’,‘html’); });
+
+// Bulk Listicles
+id(‘btn-gen-bulk-listicle’).addEventListener(‘click’, runBulkListicles);
+id(‘btn-bl-sep’).addEventListener(‘click’, function() { exportBulk(‘listicle’,‘separate’); });
+id(‘btn-bl-comb’).addEventListener(‘click’, function() { exportBulk(‘listicle’,‘combined’); });
+
+// Image providers
+var imgBtns = document.querySelectorAll(’#img-provs .prov-btn’);
+for (var i = 0; i < imgBtns.length; i++) {
+imgBtns[i].addEventListener(‘click’, function() {
+var all = document.querySelectorAll(’#img-provs .prov-btn’);
+for (var j = 0; j < all.length; j++) all[j].classList.remove(‘active’);
+this.classList.add(‘active’);
+imgProv = this.getAttribute(‘data-prov’);
+var notes = {dalle:‘Uses your OpenAI API key.’,stability:‘Uses your Stability AI key.’,huggingface:‘Uses your Hugging Face key.’,replicate:‘Uses your Replicate key.’};
+var note = notes[imgProv];
+id(‘img-prov-note’).innerHTML = note ? ‘<div class="msg-info">’ + note + ‘</div>’ : ‘’;
+});
+}
+
+var biBtns = document.querySelectorAll(’#bi-provs .prov-btn’);
+for (var i = 0; i < biBtns.length; i++) {
+biBtns[i].addEventListener(‘click’, function() {
+var all = document.querySelectorAll(’#bi-provs .prov-btn’);
+for (var j = 0; j < all.length; j++) all[j].classList.remove(‘active’);
+this.classList.add(‘active’);
+biProv = this.getAttribute(‘data-bprov’);
+var notes = {dalle:‘Uses your OpenAI API key.’,stability:‘Uses your Stability AI key.’,huggingface:‘Uses your Hugging Face key.’,replicate:‘Uses your Replicate key.’};
+var note = notes[biProv];
+id(‘bi-prov-note’).innerHTML = note ? ‘<div class="msg-info">’ + note + ‘</div>’ : ‘’;
+});
+}
+
+// Single Image
+id(‘btn-gen-image’).addEventListener(‘click’, runImage);
+id(‘btn-preview-prompt’).addEventListener(‘click’, function() {
+var prev = id(‘img-prompt-preview’);
+if (prev.style.display === ‘block’) { prev.style.display = ‘none’; return; }
+var fields = {subject:val(‘img-subject’),skin:val(‘img-skin’),expression:val(‘img-expression’),makeup:val(‘img-makeup’),outfit:val(‘img-outfit’),pose:val(‘img-pose’),shot:val(‘img-shot’),location:val(‘img-location’),bg:val(‘img-bg’),lighting:val(‘img-lighting’),time:val(‘img-time’),camera:val(‘img-camera’),mood:val(‘img-mood’),extra:lsGet(‘imgstyle’)||’’};
+prev.textContent = buildLocalPrompt(fields);
+prev.style.display = ‘block’;
+});
+id(‘btn-dl-image’).addEventListener(‘click’, dlCleanImg);
+id(‘btn-copy-prompt’).addEventListener(‘click’, function() {
+if (navigator.clipboard) {
+navigator.clipboard.writeText(lastPrompt).then(function() {
+id(‘img-status’).innerHTML = ‘<div class="msg-ok">Prompt copied!</div>’;
+setTimeout(function() { id(‘img-status’).innerHTML = ‘’; }, 2000);
+});
+}
+});
+
+// Bulk image download delegated
+id(‘bi-results’).addEventListener(‘click’, function(e) {
+var btn = e.target.closest(’[data-dl]’); if (!btn) return;
+var idx = parseInt(btn.getAttribute(‘data-dl’));
+var img = bulkImages[idx]; if (!img || !img.url) return;
+var a = document.createElement(‘a’); a.href = img.url; a.download = ‘image-’ + (idx+1) + ‘.png’;
+document.body.appendChild(a); a.click(); document.body.removeChild(a);
+});
+id(‘btn-gen-bulk-image’).addEventListener(‘click’, runBulkImages);
+id(‘btn-dl-all-images’).addEventListener(‘click’, dlAllImages);
+
+// Init
+loadSettings();
 </script>
+
 </body>
 </html>
