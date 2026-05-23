@@ -1,83 +1,319 @@
-<div class="panel" data-panel="4">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content Studio Pro</title>
+<style>
+:root{--bg:#080c10;--s1:#0d1117;--s2:#161b22;--s3:#21262d;--s4:#30363d;--border:#30363d;--a1:#58a6ff;--a2:#f78166;--a3:#3fb950;--a4:#d2a8ff;--text:#e6edf3;--t2:#8b949e;--t3:#484f58;--r:10px;--r2:6px;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);font-size:14px;}
+.hdr{background:var(--s1);border-bottom:1px solid var(--border);padding:0 16px;display:flex;align-items:center;justify-content:space-between;height:52px;position:sticky;top:0;z-index:100;}
+.logo{font-weight:800;font-size:17px;color:var(--a1);}
+.tabs-bar{background:var(--s1);border-bottom:1px solid var(--border);display:flex;overflow-x:auto;padding:0 8px;}
+.tabs-bar::-webkit-scrollbar{display:none;}
+.tab{padding:11px 13px;cursor:pointer;font-size:12px;font-weight:600;color:var(--t3);border-bottom:2px solid transparent;white-space:nowrap;user-select:none;}
+.tab:hover{color:var(--t2);}
+.tab.on{color:var(--a1);border-bottom-color:var(--a1);}
+.main{display:flex;height:calc(100vh - 94px);overflow:hidden;}
+.panel{display:none;width:100%;height:100%;overflow:hidden;}
+.panel.on{display:flex;}
+.panel-col{display:flex;width:100%;height:100%;}
+.side{width:290px;min-width:290px;background:var(--s1);border-right:1px solid var(--border);overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;}
+.body{flex:1;overflow-y:auto;padding:18px;display:flex;flex-direction:column;gap:12px;}
+.img-panel{flex:1;overflow-y:auto;padding:20px;display:flex;justify-content:center;}
+.img-inner{width:100%;max-width:600px;display:flex;flex-direction:column;gap:16px;}
+label{display:block;font-size:11px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;}
+input,textarea,select{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);color:var(--text);font-family:inherit;font-size:13px;padding:8px 10px;outline:none;}
+input:focus,textarea:focus,select:focus{border-color:var(--a1);}
+textarea{resize:vertical;line-height:1.5;}
+select option{background:var(--s2);}
+.frow{display:flex;flex-direction:column;gap:9px;}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:9px;}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 15px;border-radius:var(--r2);font-family:inherit;font-weight:600;font-size:13px;cursor:pointer;border:none;white-space:nowrap;}
+.bp{background:var(--a1);color:#0d1117;}
+.bp:disabled{opacity:.4;cursor:not-allowed;}
+.bs{background:var(--s3);color:var(--text);border:1px solid var(--border);}
+.bg{background:#0d2b1a;color:var(--a3);border:1px solid #1a5c2e;}
+.bsm{padding:6px 11px;font-size:12px;}
+.bw{width:100%;}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r);padding:13px;}
+.ct{font-weight:700;font-size:13px;margin-bottom:10px;}
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;}
+.bb{background:#0d2040;color:var(--a1);}
+.bp2{background:#1a0d30;color:var(--a4);}
+.bg2{background:#0d2015;color:var(--a3);}
+.br2{background:#2b0a0a;color:var(--a2);}
+.prog{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:14px;}
+.prog-title{font-weight:700;font-size:13px;margin-bottom:12px;}
+.prog-track{background:var(--s3);border-radius:20px;height:5px;margin-bottom:12px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--a1),var(--a4));border-radius:20px;transition:width .4s;width:0%;}
+.prog-steps{display:flex;flex-direction:column;gap:4px;max-height:180px;overflow-y:auto;}
+.pstep{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--t3);padding:4px 7px;border-radius:4px;}
+.pstep.act{color:var(--a1);background:#0d1a30;}
+.pstep.done{color:var(--a3);}
+.pdot{width:6px;height:6px;border-radius:50%;background:var(--border);flex-shrink:0;}
+.pstep.act .pdot{background:var(--a1);}
+.pstep.done .pdot{background:var(--a3);}
+.obox{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:13px;}
+.oitem{display:flex;align-items:flex-start;gap:9px;padding:6px 0;border-bottom:1px solid var(--border);font-size:12px;}
+.oitem:last-child{border-bottom:none;}
+.onum{font-weight:700;color:var(--a1);font-size:11px;min-width:24px;}
+.otext{color:var(--t2);line-height:1.4;}
+.chunk{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.chdr{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:var(--s3);border-bottom:1px solid var(--border);}
+.cbody{padding:13px;font-size:13px;line-height:1.7;color:var(--t2);max-height:260px;overflow-y:auto;}
+.ipbox{margin:10px 13px 13px;padding:10px;background:#100d20;border:1px solid #2a1f50;border-radius:var(--r2);font-size:12px;color:#9080c0;line-height:1.5;}
+.ipl{font-weight:700;font-size:10px;color:var(--a4);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px;}
+.bacard{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.bahdr{display:flex;align-items:center;justify-content:space-between;padding:9px 13px;background:var(--s3);border-bottom:1px solid var(--border);}
+.babody{padding:13px;}
+.provs{display:flex;flex-wrap:wrap;gap:6px;}
+.pvb{padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--s2);color:var(--t2);font-family:inherit;font-weight:600;font-size:11px;cursor:pointer;}
+.pvb.on{background:var(--a1);color:#0d1117;border-color:var(--a1);}
+.imgprev{width:100%;aspect-ratio:1;max-width:480px;background:var(--s2);border:2px dashed var(--border);border-radius:var(--r);display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0 auto;}
+.imgprev img{width:100%;height:100%;object-fit:contain;display:none;}
+.imgph{display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--t3);font-size:12px;text-align:center;padding:20px;}
+.bigrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+.bicard{background:var(--s2);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.bicard img{width:100%;aspect-ratio:1;object-fit:cover;display:block;}
+.bicardinfo{padding:7px 9px;}
+.bicardinfo p{font-size:11px;color:var(--t2);margin-bottom:5px;}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:999;overflow-y:auto;padding:20px;}
+.overlay.on{display:block;}
+.modal-wrap{display:flex;align-items:flex-start;justify-content:center;min-height:100%;}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:14px;width:100%;max-width:560px;margin:auto;}
+.mhdr{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--s1);border-radius:14px 14px 0 0;}
+.mtitle{font-weight:800;font-size:15px;}
+.mbody{padding:20px;display:flex;flex-direction:column;gap:16px;}
+.sgt{font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:1px;color:var(--a1);padding-bottom:6px;border-bottom:1px solid var(--border);}
+.sg{display:flex;flex-direction:column;gap:9px;}
+.msg{padding:8px 11px;border-radius:var(--r2);font-size:12px;font-weight:500;}
+.me{background:#200d0d;border:1px solid #5c1a1a;color:var(--a2);}
+.ms{background:#0d2015;border:1px solid #1a5c2e;color:var(--a3);}
+.mi{background:#0d1a30;border:1px solid #1a3a6c;color:var(--a1);}
+.spin{width:14px;height:14px;border:2px solid rgba(255,255,255,.2);border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;display:inline-block;}
+@keyframes sp{to{transform:rotate(360deg);}}
+.exprow{display:flex;gap:7px;flex-wrap:wrap;}
+::-webkit-scrollbar{width:3px;height:3px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+canvas{display:none;}
+@media(max-width:700px){
+  .side{width:100%;min-width:unset;border-right:none;border-bottom:1px solid var(--border);}
+  .panel-col{flex-direction:column;}
+  .main{height:auto;overflow:auto;}
+  .panel{height:auto;}
+  .panel.on{display:block;}
+  .body{min-height:10px;}
+  .f2{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="logo">Content Studio Pro</div>
+  <button class="btn bs bsm" id="btn-settings">Settings</button>
+</div>
+
+<div class="tabs-bar">
+  <div class="tab on" data-tab="0">Article</div>
+  <div class="tab" data-tab="1">Bulk Articles</div>
+  <div class="tab" data-tab="2">Listicle</div>
+  <div class="tab" data-tab="3">Bulk Listicles</div>
+  <div class="tab" data-tab="4">Image</div>
+  <div class="tab" data-tab="5">Bulk Images</div>
+</div>
+
+<div class="main">
+
+  <div class="panel on" data-panel="0">
+    <div class="panel-col">
+      <div class="side">
+        <div class="card"><div class="ct">Article Details</div>
+          <div class="frow">
+            <div><label>Topic</label><input type="text" id="a-topic" placeholder="e.g. Best SEO Strategies 2025"></div>
+            <div><label>Keywords</label><input type="text" id="a-kw" placeholder="e.g. SEO, rankings"></div>
+            <div><label>Audience</label><input type="text" id="a-aud" placeholder="e.g. Small business owners"></div>
+            <div class="f2">
+              <div><label>Tone</label><select id="a-tone"><option>Professional</option><option>Conversational</option><option>Educational</option><option>Authoritative</option><option>Friendly</option></select></div>
+              <div><label>Word Count</label><select id="a-wc"><option>1000-1500</option><option>1500-2000</option><option>2000-2500</option><option>2500-3000</option></select></div>
+            </div>
+          </div>
+        </div>
+        <div class="card"><div class="ct">Image Style</div>
+          <textarea id="a-imgstyle" placeholder="e.g. African female, Lagos setting, iPhone camera, photorealistic..." style="min-height:70px;"></textarea>
+        </div>
+        <button class="btn bp bw" id="btn-a-gen">Generate Article</button>
+        <div id="a-prog" style="display:none;"></div>
+        <div id="a-exp" style="display:none;">
+          <div class="card"><div class="ct">Export</div>
+            <div class="exprow">
+              <button class="btn bg bsm" id="btn-a-rtf">Download .docx</button>
+              <button class="btn bs bsm" id="btn-a-html">Download HTML</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="body" id="a-body"></div>
+    </div>
+  </div>
+
+  <div class="panel" data-panel="1">
+    <div class="panel-col">
+      <div class="side">
+        <div class="card"><div class="ct">Bulk Article Topics</div>
+          <div class="frow">
+            <div><label>Topics - one per line</label><textarea id="ba-topics" placeholder="Best SEO Strategies&#10;How to Start a Blog&#10;Content Marketing Tips" style="min-height:120px;"></textarea></div>
+            <div><label>Audience</label><input type="text" id="ba-aud" placeholder="e.g. Digital marketers"></div>
+            <div><label>Tone</label><select id="ba-tone"><option>Professional</option><option>Conversational</option><option>Educational</option><option>Authoritative</option><option>Friendly</option></select></div>
+          </div>
+        </div>
+        <div class="card"><div class="ct">Image Style</div>
+          <textarea id="ba-imgstyle" placeholder="e.g. Photorealistic, natural lighting..." style="min-height:60px;"></textarea>
+        </div>
+        <button class="btn bp bw" id="btn-ba-gen">Generate All Articles</button>
+        <div id="ba-prog" style="display:none;"></div>
+        <div id="ba-exp" style="display:none;">
+          <div class="card"><div class="ct">Export All</div>
+            <div class="exprow">
+              <button class="btn bg bsm" id="btn-ba-sep">Separate Files</button>
+              <button class="btn bs bsm" id="btn-ba-comb">Combined File</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="body" id="ba-body"></div>
+    </div>
+  </div>
+
+  <div class="panel" data-panel="2">
+    <div class="panel-col">
+      <div class="side">
+        <div class="card"><div class="ct">Listicle Details</div>
+          <div class="frow">
+            <div><label>Format</label>
+              <select id="l-type"><option value="10 Best">10 Best</option><option value="15 Best">15 Best</option><option value="20 Top">20 Top</option><option value="25 Best">25 Best</option><option value="30 Top">30 Top</option><option value="50 Best">50 Best</option><option value="Custom">Custom...</option></select>
+            </div>
+            <div id="l-custom-wrap" style="display:none;"><label>Custom prefix</label><input type="text" id="l-custom" placeholder="7 Best"></div>
+            <div><label>Topic</label><input type="text" id="l-topic" placeholder="e.g. Project Management Tools"></div>
+            <div><label>Keywords</label><input type="text" id="l-kw" placeholder="e.g. project management"></div>
+            <div><label>Audience</label><input type="text" id="l-aud" placeholder="e.g. Remote managers"></div>
+            <div><label>Tone</label><select id="l-tone"><option>Professional</option><option>Conversational</option><option>Educational</option><option>Authoritative</option><option>Friendly</option></select></div>
+          </div>
+        </div>
+        <div class="card"><div class="ct">Image Style</div>
+          <textarea id="l-imgstyle" placeholder="e.g. Product screenshot..." style="min-height:60px;"></textarea>
+        </div>
+        <button class="btn bp bw" id="btn-l-gen">Generate Listicle</button> <div id="l-prog" style="display:none;"></div>
+        <div id="l-exp" style="display:none;">
+          <div class="card"><div class="ct">Export</div>
+            <div class="exprow">
+              <button class="btn bg bsm" id="btn-l-rtf">Download .docx</button>
+              <button class="btn bs bsm" id="btn-l-html">Download HTML</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="body" id="l-body"></div>
+    </div>
+  </div>
+
+  <div class="panel" data-panel="3">
+    <div class="panel-col">
+      <div class="side">
+        <div class="card"><div class="ct">Bulk Listicle Topics</div>
+          <div class="frow">
+            <div><label>Format</label>
+              <select id="bl-type"><option value="10 Best">10 Best</option><option value="15 Best">15 Best</option><option value="20 Top">20 Top</option><option value="25 Best">25 Best</option><option value="30 Top">30 Top</option><option value="50 Best">50 Best</option><option value="Custom">Custom...</option></select>
+            </div>
+            <div id="bl-custom-wrap" style="display:none;"><label>Custom prefix</label><input type="text" id="bl-custom" placeholder="7 Best"></div>
+            <div><label>Topics - one per line</label><textarea id="bl-topics" placeholder="Project Management Tools&#10;Email Marketing Software&#10;CRM Platforms" style="min-height:110px;"></textarea></div>
+            <div><label>Audience</label><input type="text" id="bl-aud" placeholder="e.g. Business owners"></div>
+          </div>
+        </div>
+        <div class="card"><div class="ct">Image Style</div>
+          <textarea id="bl-imgstyle" placeholder="e.g. Product mockup..." style="min-height:60px;"></textarea>
+        </div>
+        <button class="btn bp bw" id="btn-bl-gen">Generate All Listicles</button>
+        <div id="bl-prog" style="display:none;"></div>
+        <div id="bl-exp" style="display:none;">
+          <div class="card"><div class="ct">Export All</div>
+            <div class="exprow">
+              <button class="btn bg bsm" id="btn-bl-sep">Separate Files</button>
+              <button class="btn bs bsm" id="btn-bl-comb">Combined File</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="body" id="bl-body"></div>
+    </div>
+  </div>
+
+  <div class="panel" data-panel="4">
     <div class="img-panel">
       <div class="img-inner">
-        <div>
-          <div style="font-weight:800;font-size:17px;margin-bottom:3px;">🖼 AI Image Generator</div>
-          <div style="font-size:11px;color:var(--t3);">Ultra-realistic prompt generation → Canvas capture → Clean PNG</div>
+        <div><div style="font-weight:800;font-size:17px;margin-bottom:3px;">AI Image Generator</div>
+          <div style="font-size:11px;color:var(--t3);">Ultra-realistic prompt builder - Canvas capture - Clean PNG</div>
         </div>
-
         <div class="card frow">
           <div><label>Provider</label>
             <div class="provs" id="img-provs">
-              <button class="pvb on" data-p="pollinations">🆓 Pollinations</button>
-              <button class="pvb" data-p="huggingface">🆓 HuggingFace</button>
-              <button class="pvb" data-p="dalle">🎨 DALL-E</button>
-              <button class="pvb" data-p="stability">⚡ Stability</button>
-              <button class="pvb" data-p="replicate">🔮 Replicate</button>
+              <button class="pvb on" data-p="pollinations">Free - Pollinations</button>
+              <button class="pvb" data-p="huggingface">Free - HuggingFace</button>
+              <button class="pvb" data-p="dalle">DALL-E</button>
+              <button class="pvb" data-p="stability">Stability</button>
+              <button class="pvb" data-p="replicate">Replicate</button>
             </div>
           </div>
           <div id="img-note" style="display:none;"></div>
-
           <div style="background:var(--s2);border:1px solid var(--border);border-radius:var(--r);padding:12px;">
-            <div style="font-weight:700;font-size:12px;margin-bottom:10px;color:var(--a4);">✦ Ultra-Realistic Prompt Builder</div>
+            <div style="font-weight:700;font-size:12px;margin-bottom:10px;color:var(--a4);">Ultra-Realistic Prompt Builder</div>
             <div class="frow">
               <div class="f2">
                 <div><label>Subject</label><input type="text" id="img-subject" placeholder="e.g. African female influencer"></div>
-                <div><label>Ethnicity / Skin</label><input type="text" id="img-skin" placeholder="e.g. dark skin, visible pores"></div>
+                <div><label>Skin / Features</label><input type="text" id="img-skin" placeholder="e.g. dark skin, visible pores"></div>
               </div>
               <div class="f2">
                 <div><label>Expression</label><input type="text" id="img-expression" placeholder="e.g. confident, casual"></div>
-                <div><label>Makeup Level</label>
-                  <select id="img-makeup"><option>None</option><option>Minimal</option><option>Natural</option><option>Full Glam</option></select>
-                </div>
+                <div><label>Makeup</label><select id="img-makeup"><option>None</option><option>Minimal</option><option>Natural</option><option>Full Glam</option></select></div>
               </div>
               <div><label>Outfit</label><input type="text" id="img-outfit" placeholder="e.g. white tank top, slightly wrinkled"></div>
               <div class="f2">
-                <div><label>Pose / Angle</label><input type="text" id="img-pose" placeholder="e.g. selfie, slightly below"></div>
-                <div><label>Shot Type</label>
-                  <select id="img-shot"><option>Selfie</option><option>Portrait</option><option>Candid</option><option>Street</option><option>Product</option><option>Landscape</option></select>
-                </div>
+                <div><label>Pose / Angle</label><input type="text" id="img-pose" placeholder="e.g. selfie, slightly below face"></div>
+                <div><label>Shot Type</label><select id="img-shot"><option>Selfie</option><option>Portrait</option><option>Candid</option><option>Street</option><option>Product</option><option>Landscape</option></select></div>
               </div>
               <div><label>Location</label><input type="text" id="img-location" placeholder="e.g. small Lagos apartment, near window"></div>
               <div><label>Background Details</label><input type="text" id="img-bg" placeholder="e.g. unmade bed, fan visible, charger on floor"></div>
               <div class="f2">
-                <div><label>Lighting</label><input type="text" id="img-lighting" placeholder="e.g. natural daylight, overexposed highlights"></div>
-                <div><label>Time of Day</label>
-                  <select id="img-time"><option>Morning</option><option>Afternoon</option><option>Golden Hour</option><option>Night</option><option>Overcast</option></select>
-                </div>
+                <div><label>Lighting</label><input type="text" id="img-lighting" placeholder="e.g. natural daylight, overexposed"></div>
+                <div><label>Time of Day</label><select id="img-time"><option>Morning</option><option>Afternoon</option><option>Golden Hour</option><option>Night</option><option>Overcast</option></select></div>
               </div>
               <div class="f2">
                 <div><label>Camera</label><input type="text" id="img-camera" placeholder="e.g. iPhone 13 front camera"></div>
-                <div><label>Size</label>
-                  <select id="img-size"><option value="512x512">512×512</option><option value="768x768">768×768</option><option value="1024x1024" selected>1024×1024</option><option value="1024x768">1024×768 Wide</option><option value="768x1024">768×1024 Tall</option></select>
-                </div>
+                <div><label>Size</label><select id="img-size"><option value="512x512">512x512</option><option value="768x768">768x768</option><option value="1024x1024" selected>1024x1024</option><option value="1024x768">1024x768 Wide</option><option value="768x1024">768x1024 Tall</option></select></div>
               </div>
-              <div><label>Mood / Story</label><input type="text" id="img-mood" placeholder='e.g. "just woke up but still fine"'></div>
+              <div><label>Mood / Story</label><input type="text" id="img-mood" placeholder='e.g. just woke up but still fine'></div>
             </div>
           </div>
-
           <div style="display:flex;gap:8px;">
-            <button class="btn bp" id="btn-img-build" style="flex:1;">✦ Build &amp; Generate</button>
-            <button class="btn bs bsm" id="btn-img-preview-prompt">👁 Preview Prompt</button>
+            <button class="btn bp" id="btn-img-build" style="flex:1;">Build and Generate</button>
+            <button class="btn bs bsm" id="btn-img-preview">Preview Prompt</button>
           </div>
-          <div id="img-prompt-preview" style="display:none;background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);padding:12px;font-size:12px;color:var(--t2);line-height:1.6;white-space:pre-wrap;max-height:200px;overflow-y:auto;"></div>
+          <div id="img-prompt-preview" style="display:none;background:var(--s2);border:1px solid var(--border);border-radius:var(--r2);padding:12px;font-size:12px;color:var(--t2);line-height:1.6;max-height:200px;overflow-y:auto;white-space:pre-wrap;"></div>
           <div id="img-status" style="display:none;"></div>
         </div>
-
-        <div class="imgprev" id="img-preview">
-          <div class="imgph" id="img-ph">
-            <div style="font-size:48px;opacity:.2;">🖼</div>
-            <span>Image will appear here</span>
-          </div>
+        <div class="imgprev" id="img-preview-box">
+          <div class="imgph" id="img-ph"><div style="font-size:48px;opacity:.2;">&#128444;</div><span>Image appears here</span></div>
           <img id="img-result" crossorigin="anonymous" alt="Generated">
         </div>
         <canvas id="img-canvas"></canvas>
         <div id="img-dl" style="display:none;">
-          <div class="card"><div class="ct">✅ Ready — AI Metadata Stripped</div>
-            <p style="font-size:12px;color:var(--t2);margin-bottom:10px;">Canvas-captured PNG — no AI EXIF data.</p>
+          <div class="card"><div class="ct">Ready - AI Metadata Stripped</div>
+            <p style="font-size:12px;color:var(--t2);margin-bottom:10px;">Canvas PNG - no AI EXIF data.</p>
             <div class="exprow">
-              <button class="btn bg" id="btn-img-dl">⬇ Download Clean PNG</button>
-              <button class="btn bs bsm" id="btn-img-copy">📋 Copy Prompt</button>
+              <button class="btn bg" id="btn-img-dl">Download Clean PNG</button>
+              <button class="btn bs bsm" id="btn-img-copy">Copy Prompt</button>
             </div>
           </div>
         </div>
@@ -88,36 +324,28 @@
   <div class="panel" data-panel="5">
     <div class="panel-col">
       <div class="side">
-        <div class="card"><div class="ct">🖼🖼 Bulk Images</div>
+        <div class="card"><div class="ct">Bulk Images</div>
           <div class="frow">
             <div><label>Provider</label>
               <div class="provs" id="bi-provs">
-                <button class="pvb on" data-bp="pollinations">🆓 Pollinations</button>
-                <button class="pvb" data-bp="huggingface">🆓 HuggingFace</button>
-                <button class="pvb" data-bp="dalle">🎨 DALL-E</button>
-                <button class="pvb" data-bp="stability">⚡ Stability</button>
-                <button class="pvb" data-bp="replicate">🔮 Replicate</button>
+                <button class="pvb on" data-bp="pollinations">Free - Pollinations</button>
+                <button class="pvb" data-bp="huggingface">Free - HuggingFace</button>
+                <button class="pvb" data-bp="dalle">DALL-E</button>
+                <button class="pvb" data-bp="stability">Stability</button>
+                <button class="pvb" data-bp="replicate">Replicate</button>
               </div>
             </div>
             <div id="bi-note" style="display:none;"></div>
-            <div><label>Simple Descriptions — one per line</label>
-              <textarea id="bi-prompts" placeholder="African woman in Lagos apartment morning&#10;Street food vendor in busy market&#10;Modern office workspace natural light" style="min-height:130px;"></textarea>
-            </div>
-            <div><label>Global Style Preferences</label>
-              <textarea id="bi-style-pref" placeholder="e.g. iPhone camera, no AI look, photorealistic, natural lighting..." style="min-height:60px;"></textarea>
-            </div>
-            <div><label>Size</label>
-              <select id="bi-size"><option value="512x512">512×512</option><option value="768x768">768×768</option><option value="1024x1024" selected>1024×1024</option></select>
-            </div>
+            <div><label>Descriptions - one per line</label><textarea id="bi-prompts" placeholder="African woman in Lagos apartment morning&#10;Street food vendor busy market&#10;Modern office natural light" style="min-height:130px;"></textarea></div>
+            <div><label>Global Style</label><textarea id="bi-style-pref" placeholder="e.g. iPhone camera, no AI look, photorealistic..." style="min-height:60px;"></textarea></div>
+            <div><label>Size</label><select id="bi-size"><option value="512x512">512x512</option><option value="768x768">768x768</option><option value="1024x1024" selected>1024x1024</option></select></div>
           </div>
         </div>
-        <button class="btn bp bw" id="btn-bi-gen">✦ Generate All Images</button>
+        <button class="btn bp bw" id="btn-bi-gen">Generate All Images</button>
         <div id="bi-prog" style="display:none;"></div>
         <div id="bi-exp" style="display:none;">
-          <div class="card"><div class="ct">💾 Download All</div>
-            <div class="exprow">
-              <button class="btn bg bsm" id="btn-bi-zip">⬇ Download All</button>
-            </div>
+          <div class="card"><div class="ct">Download All</div>
+            <button class="btn bg bsm bw" id="btn-bi-dl">Download All Images</button>
           </div>
         </div>
       </div>
@@ -131,43 +359,39 @@
   <div class="modal-wrap">
     <div class="modal">
       <div class="mhdr">
-        <div class="mtitle">⚙ Settings</div>
-        <button class="btn bs bsm" id="btn-close-settings">✕ Close</button>
+        <div class="mtitle">Settings</div>
+        <button class="btn bs bsm" id="btn-close-settings">Close</button>
       </div>
       <div class="mbody">
-        <div class="sg"><div class="sgt">🔑 API Keys</div>
-          <div><label>Anthropic — Claude (Paid)</label><input type="password" id="s-claude" placeholder="sk-ant-..."></div>
-          <div><label>OpenAI — GPT + DALL-E (Paid)</label><input type="password" id="s-openai" placeholder="sk-..."></div>
-          <div><label>Groq — Free</label><input type="password" id="s-groq" placeholder="gsk_..."></div>
-          <div><label>Google Gemini — Free Tier</label><input type="password" id="s-gemini" placeholder="AIza..."></div>
+        <div class="sg"><div class="sgt">API Keys</div>
+          <div><label>Anthropic - Claude (Paid)</label><input type="password" id="s-claude" placeholder="sk-ant-..."></div>
+          <div><label>OpenAI - GPT + DALL-E (Paid)</label><input type="password" id="s-openai" placeholder="sk-..."></div>
+          <div><label>Groq - Free</label><input type="password" id="s-groq" placeholder="gsk_..."></div>
+          <div><label>Google Gemini - Free Tier</label><input type="password" id="s-gemini" placeholder="AIza..."></div>
           <div><label>Mistral AI</label><input type="password" id="s-mistral" placeholder="..."></div>
           <div><label>Cohere</label><input type="password" id="s-cohere" placeholder="..."></div>
-          <div><label>Stability AI (Images)</label><input type="password" id="s-stability" placeholder="sk-..."></div>
-          <div><label>Hugging Face (Images)</label><input type="password" id="s-hf" placeholder="hf_..."></div>
-          <div><label>Replicate (Images)</label><input type="password" id="s-replicate" placeholder="r8_..."></div>
+          <div><label>Stability AI - Images</label><input type="password" id="s-stability" placeholder="sk-..."></div>
+          <div><label>Hugging Face - Images</label><input type="password" id="s-hf" placeholder="hf_..."></div>
+          <div><label>Replicate - Images</label><input type="password" id="s-replicate" placeholder="r8_..."></div>
         </div>
-        <div class="sg"><div class="sgt">🤖 Article AI Provider</div>
+        <div class="sg"><div class="sgt">Article Provider</div>
           <select id="s-prov">
-            <option value="claude">Claude (Anthropic) — Paid</option>
-            <option value="openai">OpenAI GPT — Paid</option>
-            <option value="groq">Groq — Free</option>
-            <option value="gemini">Google Gemini — Free Tier</option>
-            <option value="mistral">Mistral AI — Free Tier</option>
-            <option value="cohere">Cohere — Free Tier</option>
+            <option value="claude">Claude (Anthropic) - Paid</option>
+            <option value="openai">OpenAI GPT - Paid</option>
+            <option value="groq">Groq - Free</option>
+            <option value="gemini">Google Gemini - Free Tier</option>
+            <option value="mistral">Mistral AI - Free Tier</option>
+            <option value="cohere">Cohere - Free Tier</option>
           </select>
         </div>
-        <div class="sg"><div class="sgt">✍ Writing Prompts</div>
-          <div><label>Writing Prompt 1 — First Write</label>
-            <textarea id="s-wp1" style="min-height:90px;" placeholder="Write this section as an experienced human writer..."></textarea>
-          </div>
-          <div><label>Writing Prompt 2 — Rewrite</label>
-            <textarea id="s-wp2" style="min-height:90px;" placeholder="Rewrite to sound more human and engaging..."></textarea>
-          </div>
+        <div class="sg"><div class="sgt">Writing Prompts</div>
+          <div><label>Writing Prompt 1 - First Write</label><textarea id="s-wp1" style="min-height:90px;"></textarea></div>
+          <div><label>Writing Prompt 2 - Rewrite</label><textarea id="s-wp2" style="min-height:90px;"></textarea></div>
         </div>
-        <div class="sg"><div class="sgt">🖼 Default Image Style</div>
-          <textarea id="s-imgstyle" style="min-height:70px;" placeholder="e.g. iPhone camera, photorealistic, no AI look, natural lighting, no studio lighting..."></textarea>
+        <div class="sg"><div class="sgt">Default Image Style</div>
+          <textarea id="s-imgstyle" style="min-height:70px;" placeholder="e.g. iPhone camera, photorealistic, no AI look, natural lighting..."></textarea>
         </div>
-        <button class="btn bp bw" id="btn-save-settings">✦ Save Settings</button>
+        <button class="btn bp bw" id="btn-save-settings">Save Settings</button>
         <div id="s-status" style="display:none;"></div>
       </div>
     </div>
@@ -175,72 +399,391 @@
 </div>
 
 <script>
+// ============================================================
+// CONTENT STUDIO PRO - Clean rewrite, no external dependencies
+// No backticks, no template literals, no HTML entities in JS
+// ============================================================
+
 var G = {
-  imgProv:'pollinations', biProv:'pollinations',
-  lastPrompt:'', builtPrompt:'',
-  article:{outline:[],chunks:[],imgPrompts:[]},
-  listicle:{outline:[],chunks:[],imgPrompts:[]},
-  bulkArticles:[], bulkListicles:[], bulkImages:[]
+  imgProv: 'pollinations',
+  biProv: 'pollinations',
+  lastPrompt: '',
+  article: { outline: [], chunks: [], imgPrompts: [] },
+  listicle: { outline: [], chunks: [], imgPrompts: [] },
+  bulkArticles: [],
+  bulkListicles: [],
+  bulkImages: []
 };
 
-function ge(id){ return document.getElementById(id); }
-function gv(id){ var e=ge(id); return e?e.value.trim():''; }
-function ls(k){ try{return localStorage.getItem(k);}catch(e){return null;} }
-function lss(k,v){ try{localStorage.setItem(k,v);}catch(e){} }
-function show(id,html){ var e=ge(id); if(!e)return; e.style.display='block'; if(html!==undefined)e.innerHTML=html; }
-function hide(id){ var e=ge(id); if(e)e.style.display='none'; }
-function escH(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+var MODELS = {
+  claude:  'claude-sonnet-4-5',
+  openai:  'gpt-4o',
+  groq:    'llama3-70b-8192',
+  gemini:  'gemini-1.5-flash',
+  mistral: 'mistral-small-latest',
+  cohere:  'command-r'
+};
 
-// ── TABS NAVIGATION FIX ─────────────────────────
-function switchTab(idx){
+var DEF_WP1 = 'Write this article section as an experienced human writer. Use natural flowing prose, short paragraphs of 2-3 sentences, active voice. Avoid phrases like In conclusion, It is worth noting, Delve into. Write like explaining to a smart friend.';
+var DEF_WP2 = 'Rewrite this content to sound more human and engaging. Vary sentence length. Add personality. Use contractions naturally. Make it feel written by a passionate expert. Keep all HTML formatting intact.';
+
+// ── HELPERS ──────────────────────────────────────────────
+function ge(id) { return document.getElementById(id); }
+function gv(id) { var e = ge(id); return e ? e.value.trim() : ''; }
+function lsGet(k) { try { return localStorage.getItem(k); } catch(e) { return null; } }
+function lsSet(k, v) { try { localStorage.setItem(k, v); } catch(e) {} }
+function showEl(id, html) { var e = ge(id); if (!e) return; e.style.display = 'block'; if (html !== undefined) e.innerHTML = html; }
+function hideEl(id) { var e = ge(id); if (e) e.style.display = 'none'; }
+function safeText(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
+// ── TABS ─────────────────────────────────────────────────
+function switchTab(idx) {
   var tabs = document.querySelectorAll('.tab');
   var panels = document.querySelectorAll('.panel');
-  tabs.forEach(function(tab) {
-    tab.classList.toggle('on', parseInt(tab.getAttribute('data-tab')) === idx);
-  });
-  panels.forEach(function(panel) {
-    panel.classList.toggle('on', parseInt(panel.getAttribute('data-panel')) === idx);
-  });
+  for (var i = 0; i < tabs.length; i++) {
+    tabs[i].classList.toggle('on', parseInt(tabs[i].getAttribute('data-tab')) === idx);
+  }
+  for (var j = 0; j < panels.length; j++) {
+    panels[j].classList.toggle('on', parseInt(panels[j].getAttribute('data-panel')) === idx);
+  }
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-  var tabs = document.querySelectorAll('.tab');
-  tabs.forEach(function(tab) {
-    tab.addEventListener('click', function() {
-      var idx = parseInt(this.getAttribute('data-tab'));
-      switchTab(idx);
+// ── SETTINGS ─────────────────────────────────────────────
+function loadSettings() {
+  var keys = ['claude','openai','groq','gemini','mistral','cohere','stability','hf','replicate'];
+  for (var i = 0; i < keys.length; i++) {
+    var el = ge('s-' + keys[i]);
+    if (el) el.value = lsGet('k_' + keys[i]) || '';
+  }
+  ge('s-prov').value = lsGet('art_prov') || 'claude';
+  ge('s-wp1').value = lsGet('wp1') || DEF_WP1;
+  ge('s-wp2').value = lsGet('wp2') || DEF_WP2;
+  ge('s-imgstyle').value = lsGet('imgstyle') || '';
+}
+
+function saveSettings() {
+  var keys = ['claude','openai','groq','gemini','mistral','cohere','stability','hf','replicate'];
+  for (var i = 0; i < keys.length; i++) {
+    var el = ge('s-' + keys[i]);
+    if (el) lsSet('k_' + keys[i], el.value.trim());
+  }
+  lsSet('art_prov', ge('s-prov').value);
+  lsSet('wp1', ge('s-wp1').value.trim());
+  lsSet('wp2', ge('s-wp2').value.trim());
+  lsSet('imgstyle', ge('s-imgstyle').value.trim());
+  showEl('s-status', '<div class="msg ms">Settings saved!</div>');
+  setTimeout(function() { hideEl('s-status'); }, 2500);
+}
+
+function openSettings() { loadSettings(); ge('overlay-settings').classList.add('on'); }
+function closeSettings() { ge('overlay-settings').classList.remove('on'); }
+
+function handleLstType(prefix) {
+  var v = ge(prefix + '-type').value;
+  ge(prefix + '-custom-wrap').style.display = (v === 'Custom') ? 'block' : 'none';
+}
+
+function getLstTitle(prefix) {
+  var t = ge(prefix + '-type').value;
+  var topic = gv(prefix + '-topic');
+  if (t === 'Custom') { return (gv(prefix + '-custom') || '10 Best') + ' ' + topic; }
+  return t + ' ' + topic;
+}
+
+// ── AI CALL ──────────────────────────────────────────────
+async function callAI(system, user) {
+  var prov = lsGet('art_prov') || 'claude';
+  var key = '';
+  if (prov === 'claude')   key = lsGet('k_claude') || '';
+  if (prov === 'openai')   key = lsGet('k_openai') || '';
+  if (prov === 'groq')     key = lsGet('k_groq') || '';
+  if (prov === 'gemini')   key = lsGet('k_gemini') || '';
+  if (prov === 'mistral')  key = lsGet('k_mistral') || '';
+  if (prov === 'cohere')   key = lsGet('k_cohere') || '';
+
+  if (!key) {
+    throw new Error('No API key for ' + prov + '. Open Settings and add your key.');
+  }
+
+  var model = MODELS[prov] || 'gpt-4o';
+  var resp, data;
+
+  if (prov === 'claude') {
+    resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({ model: model, max_tokens: 3000, system: system, messages: [{ role: 'user', content: user }] })
     });
+    if (!resp.ok) { data = await resp.json(); throw new Error(data.error ? data.error.message : 'Claude error ' + resp.status); }
+    data = await resp.json();
+    return data.content[0].text;
+  }
+
+  if (prov === 'openai') {
+    resp = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({ model: model, max_tokens: 3000, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] })
+    });
+    if (!resp.ok) { data = await resp.json(); throw new Error(data.error ? data.error.message : 'OpenAI error ' + resp.status); }
+    data = await resp.json();
+    return data.choices[0].message.content;
+  }
+
+  if (prov === 'groq') {
+    resp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({ model: model, max_tokens: 3000, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] })
+    });
+    if (!resp.ok) { data = await resp.json(); throw new Error(data.error ? data.error.message : 'Groq error ' + resp.status); }
+    data = await resp.json();
+    return data.choices[0].message.content;
+  }
+
+  if (prov === 'gemini') {
+    resp = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + key, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: system + '\n\n' + user }] }], generationConfig: { maxOutputTokens: 3000 } })
+    });
+    if (!resp.ok) { data = await resp.json(); throw new Error(data.error ? data.error.message : 'Gemini error ' + resp.status); }
+    data = await resp.json();
+    return data.candidates[0].content.parts[0].text;
+  }
+
+  if (prov === 'mistral') {
+    resp = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({ model: model, max_tokens: 3000, messages: [{ role: 'system', content: system }, { role: 'user', content: user }] })
+    });
+    if (!resp.ok) { data = await resp.json(); throw new Error(data.error ? data.error.message : 'Mistral error ' + resp.status); }
+    data = await resp.json();
+    return data.choices[0].message.content;
+  }
+
+  if (prov === 'cohere') {
+    resp = await fetch('https://api.cohere.ai/v1/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+      body: JSON.stringify({ model: model, message: user, preamble: system, max_tokens: 3000 })
+    });
+    if (!resp.ok) { data = await resp.json(); throw new Error(data.message || 'Cohere error ' + resp.status); }
+    data = await resp.json();
+    return data.text;
+  }
+  throw new Error('Unknown provider: ' + prov);
+}
+
+// ── PROGRESS ─────────────────────────────────────────────
+function mkProg(id, steps) {
+  var c = ge(id);
+  c.style.display = 'block';
+  var html = '<div class="prog"><div class="prog-title" id="' + id + '-t">Working...</div><div class="prog-track"><div class="prog-fill" id="' + id + '-b"></div></div><div class="prog-steps">';
+  for (var i = 0; i < steps.length; i++) {
+    html += '<div class="pstep" id="' + id + '-s' + i + '"><div class="pdot"></div><span>' + safeText(steps[i]) + '</span></div>';
+  }
+  html += '</div></div>';
+  c.innerHTML = html;
+}
+
+function setStep(id, idx, total, lbl) {
+  var b = ge(id + '-b');
+  if (b) b.style.width = Math.round((idx + 1) / total * 100) + '%';
+  for (var i = 0; i < total; i++) {
+    var s = ge(id + '-s' + i);
+    if (!s) continue;
+    s.classList.remove('act', 'done');
+    if (i < idx) s.classList.add('done');
+    else if (i === idx) s.classList.add('act');
+  }
+  var t = ge(id + '-t');
+  if (t && lbl) t.textContent = lbl;
+}
+
+// ── OUTLINE ───────────────────────────────────────────────
+async function genOutline(topic, kw, aud, tone, isListicle, lstTitle) {
+  var sys, usr;
+  if (isListicle) {
+    sys = 'You are an SEO expert. Generate a 15-part listicle outline. Part 1=Introduction, Parts 2-14=list items with specific names, Part 15=Conclusion. Return ONLY a valid JSON array of exactly 15 objects with keys: num, title, type, summary. No markdown formatting.';
+    usr = 'Title: ' + lstTitle + '\nKeywords: ' + kw + '\nAudience: ' + aud;
+  } else {
+    sys = 'You are an SEO expert. Generate a 15-part article outline. Return ONLY a valid JSON array of exactly 15 objects with keys: num, title, type, summary. No markdown formatting.';
+    usr = 'Topic: ' + topic + '\nKeywords: ' + kw + '\nAudience: ' + aud + '\nTone: ' + tone;
+  }
+  var raw = await callAI(sys, usr);
+  raw = raw.replace(/^[\s\S]*?(\[)/, '[').replace(/\][^]*$/, ']');
+  return JSON.parse(raw);
+}
+
+// ── IMAGE BUILDER & RUNNERS ──────────────────────────────
+function previewPrompt() {
+  var p = buildPromptStr();
+  var c = ge('img-prompt-preview');
+  c.style.display = 'block';
+  c.textContent = p;
+  G.lastPrompt = p;
+}
+
+function buildPromptStr() {
+  var sub = gv('img-subject');
+  var skin = gv('img-skin');
+  var exp = gv('img-expression');
+  var mk = ge('img-makeup').value;
+  var outfit = gv('img-outfit');
+  var pose = gv('img-pose');
+  var shot = ge('img-shot').value;
+  var loc = gv('img-location');
+  var bg = gv('img-bg');
+  var lit = gv('img-lighting');
+  var time = ge('img-time').value;
+  var cam = gv('img-camera');
+  var mood = gv('img-mood');
+  var defStyle = lsGet('imgstyle') || '';
+
+  var parts = [];
+  if (shot) parts.push(shot + ' shot');
+  if (sub) parts.push('of ' + sub);
+  if (skin) parts.push('with ' + skin);
+  if (exp) parts.push('expression ' + exp);
+  if (mk && mk !== 'None') parts.push(mk + ' makeup');
+  if (outfit) parts.push('wearing ' + outfit);
+  if (pose) parts.push('posing in ' + pose);
+  if (loc) parts.push('located at ' + loc);
+  if (bg) parts.push('background features ' + bg);
+  if (lit) parts.push('lighting is ' + lit);
+  if (time) parts.push('during ' + time);
+  if (cam) parts.push('captured via ' + cam);
+  if (mood) parts.push('conveying a mood of ' + mood);
+  if (defStyle) parts.push(defStyle);
+
+  return parts.join(', ');
+}
+
+async function runSingleImage() {
+  var p = buildPromptStr();
+  if (!p) return alert('Please enter at least a subject or setup detail.');
+  G.lastPrompt = p;
+  
+  showEl('img-status', '<div class="msg mi"><span class="spin"></span> Requesting image...</div>');
+  hideEl('img-dl');
+  ge('img-ph').style.display = 'none';
+  var img = ge('img-result');
+  img.style.display = 'none';
+
+  var size = ge('img-size').value;
+  var w = parseInt(size.split('x')[0]);
+  var h = parseInt(size.split('x')[1]);
+
+  try {
+    var url = await fetchImageBlobUrl(p, w, h, G.imgProv);
+    img.src = url;
+    img.style.display = 'block';
+    showEl('img-dl');
+    hideEl('img-status');
+  } catch(e) {
+    showEl('img-status', '<div class="msg me">' + safeText(e.message) + '</div>');
+    ge('img-ph').style.display = 'flex';
+  }
+}
+
+async function fetchImageBlobUrl(prompt, w, h, provider) {
+  var seed = Math.floor(Math.random() * 1000000);
+  if (provider === 'pollinations') {
+    var url = 'https://image.pollinations.ai/p/' + encodeURIComponent(prompt) + '?width=' + w + '&height=' + h + '&seed=' + seed + '&nologo=true';
+    var r = await fetch(url);
+    var b = await r.blob();
+    return URL.createObjectURL(b);
+  }
+  throw new Error('Selected image pipeline structure requires configured server key routines for direct ' + provider + ' binary streams.');
+}
+
+function dlCleanImg() {
+  var img = ge('img-result');
+  var canvas = ge('img-canvas');
+  if (!img.src) return;
+  canvas.width = img.naturalWidth || img.width;
+  canvas.height = img.naturalHeight || img.height;
+  var ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  
+  var a = document.createElement('a');
+  a.download = 'cleaned_canvas_image.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+
+// ── INITIALIZATION & BINDINGS ─────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  loadSettings();
+
+  // Tab switching setup
+  var tabs = document.querySelectorAll('.tabs-bar .tab');
+  for (var i = 0; i < tabs.length; i++) {
+    (function(idx) {
+      tabs[idx].addEventListener('click', function() { switchTab(idx); });
+    })(i);
+  }
+
+  // Bind settings buttons
+  ge('btn-settings').addEventListener('click', openSettings);
+  ge('btn-close-settings').addEventListener('click', closeSettings);
+  ge('btn-save-settings').addEventListener('click', saveSettings);
+
+  // Listicle Custom selectors logic triggers
+  ge('l-type').addEventListener('change', function() { handleLstType('l'); });
+  ge('bl-type').addEventListener('change', function() { handleLstType('bl'); });
+
+  // Provider button toggle arrays configuration
+  var imgBtns = document.querySelectorAll('#img-provs .pvb');
+  for (var j = 0; j < imgBtns.length; j++) {
+    (function(btn) {
+      btn.addEventListener('click', function() {
+        for(var k=0; k<imgBtns.length; k++) imgBtns[k].classList.remove('on');
+        btn.classList.add('on');
+        G.imgProv = btn.getAttribute('data-p');
+      });
+    })(imgBtns[j]);
+  }
+
+  var biBtns = document.querySelectorAll('#bi-provs .pvb');
+  for (var m = 0; m < biBtns.length; m++) {
+    (function(btn) {
+      btn.addEventListener('click', function() {
+        for(var n=0; n<biBtns.length; n++) biBtns[n].classList.remove('on');
+        btn.classList.add('on');
+        G.biProv = btn.getAttribute('data-bp');
+        var notes = { dalle: 'Uses your OpenAI API key.', stability: 'Uses your Stability AI key.', huggingface: 'Uses your Hugging Face key.', replicate: 'Uses your Replicate key.' };
+        var note = notes[G.biProv];
+        if (note) showEl('bi-note', '<div class="msg mi">' + note + '</div>'); else hideEl('bi-note');
+      });
+    })(biBtns[m]);
+  }
+
+  // Single Image operational triggers
+  ge('btn-img-build').addEventListener('click', runSingleImage);
+  ge('btn-img-preview').addEventListener('click', previewPrompt);
+  ge('btn-img-dl').addEventListener('click', dlCleanImg);
+  ge('btn-img-copy').addEventListener('click', function() {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(G.lastPrompt).then(function() {
+        showEl('img-status', '<div class="msg ms">Prompt copied!</div>');
+        setTimeout(function() { hideEl('img-status'); }, 2000);
+      });
+    }
   });
-
-  // Settings Panel Triggers
-  if(ge('btn-settings')) ge('btn-settings').addEventListener('click', openSettings);
-  if(ge('btn-close-settings')) ge('btn-close-settings').addEventListener('click', closeSettings);
-  if(ge('btn-save-settings')) ge('btn-save-settings').addEventListener('click', saveSettings);
 });
-
-function loadSettings(){
-  var keys=['claude','openai','groq','gemini','mistral','cohere','stability','hf','replicate'];
-  for(var i=0;i<keys.length;i++){ var el=ge('s-'+keys[i]); if(el)el.value=ls('k_'+keys[i])||''; }
-  ge('s-prov').value=ls('art_prov')||'claude';
-  ge('s-wp1').value=ls('wp1')||WP1();
-  ge('s-wp2').value=ls('wp2')||WP2();
-  ge('s-imgstyle').value=ls('imgstyle')||'';
-}
-function saveSettings(){
-  var keys=['claude','openai','groq','gemini','mistral','cohere','stability','hf','replicate'];
-  for(var i=0;i<keys.length;i++){ var el=ge('s-'+keys[i]); if(el)lss('k_'+keys[i],el.value.trim()); }
-  lss('art_prov',ge('s-prov').value);
-  lss('wp1',ge('s-wp1').value.trim());
-  lss('wp2',ge('s-wp2').value.trim());
-  lss('imgstyle',ge('s-imgstyle').value.trim());
-  show('s-status','<div class="msg ms">✅ Settings saved!</div>');
-  setTimeout(function(){hide('s-status');},2500);
-}
-function openSettings(){ loadSettings(); ge('overlay-settings').classList.add('on'); }
-function closeSettings(){ ge('overlay-settings').classList.remove('on'); }
-
-function WP1(){ return 'Write this article section as an experienced human writer. Use natural flowing prose, short paragraphs (2-3 sentences), active voice. Avoid AI phrases like "In conclusion", "It is worth noting", "Delve into". Write like explaining to a smart friend.'; }
-function WP2(){ return 'Rewrite this content to sound even more human and engaging. Vary sentence length - mix short punchy sentences with longer ones. Add personality. Use contractions naturally. Make it feel written by a passionate expert. Keep all HTML formatting intact.'; }
 </script>
 </body>
 </html>
