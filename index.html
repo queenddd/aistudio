@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -118,6 +117,12 @@ canvas{display:none;}
   <div class="tab" data-tab="bulk-image">Bulk Images</div>
 </div>
 
+<div id="status-bar" style="display:none;position:sticky;top:52px;z-index:90;background:#0d2040;border-bottom:2px solid #58a6ff;padding:10px 16px;align-items:center;gap:10px;">
+  <div class="spin"></div>
+  <div id="status-bar-text" style="font-size:13px;font-weight:600;color:#58a6ff;flex:1;"></div>
+  <div id="status-bar-pct" style="font-size:12px;color:#8b949e;"></div>
+</div>
+
 <div class="panel active" id="panel-article">
   <div class="card">
     <div class="card-title">Article Details</div>
@@ -182,7 +187,158 @@ canvas{display:none;}
     <div class="card-title">Image Style</div>
     <div class="field"><textarea id="l-imgstyle" placeholder="e.g. Product screenshot, clean background..." style="min-height:60px;"></textarea></div>
   </div>
-  <button class="btn btn-blue" id="btn-gen-listicle">Generate Listicle</button> <div id="l-prog" style="display:none;"></div> <div id="l-exp" style="display:none;"> <div class="btn-row"> <button class="btn btn-green btn-sm" id="btn-l-rtf">Download .docx</button> <button class="btn btn-gray btn-sm" id="btn-l-html">Download HTML</button> </div> </div> <div id="l-results"></div> </div> <div class="panel" id="panel-bulk-listicle"> <div class="card"> <div class="card-title">Bulk Listicle Topics</div> <div class="field"><label>Format</label> <select id="bl-type"><option value="10 Best">10 Best</option><option value="15 Best">15 Best</option><option value="20 Top">20 Top</option><option value="25 Best">25 Best</option><option value="30 Top">30 Top</option><option value="50 Best">50 Best</option><option value="Custom">Custom...</option></select> </div> <div id="bl-custom-wrap" style="display:none;"><div class="field"><label>Custom Prefix</label><input type="text" id="bl-custom" placeholder="7 Best"></div></div> <div class="field"><label>Topics (one per line)</label><textarea id="bl-topics" placeholder="Project Management Tools&#10;Email Marketing Software&#10;CRM Platforms" style="min-height:110px;"></textarea></div> <div class="field"><label>Audience</label><input type="text" id="bl-aud" placeholder="e.g. Business owners"></div> </div> <div class="card"> <div class="card-title">Image Style</div> <div class="field"><textarea id="bl-imgstyle" placeholder="e.g. Product mockup..." style="min-height:60px;"></textarea></div> </div> <button class="btn btn-blue" id="btn-gen-bulk-listicle">Generate All Listicles</button> <div id="bl-prog" style="display:none;"></div> <div id="bl-exp" style="display:none;"> <div class="btn-row"> <button class="btn btn-green btn-sm" id="btn-bl-sep">Separate Files</button> <button class="btn btn-gray btn-sm" id="btn-bl-comb">Combined File</button> </div> </div> <div id="bl-results"></div> </div> <div class="panel" id="panel-image"> <div class="card"> <div class="card-title">Image Provider</div> <div class="prov-row" id="img-provs"> <button class="prov-btn active" data-prov="pollinations">Free - Pollinations</button> <button class="prov-btn" data-prov="huggingface">Free - HuggingFace</button> <button class="prov-btn" data-prov="dalle">DALL-E</button> <button class="prov-btn" data-prov="stability">Stability AI</button> <button class="prov-btn" data-prov="replicate">Replicate</button> </div> <div id="img-prov-note"></div> </div> <div class="card"> <div class="card-title">Ultra-Realistic Prompt Builder</div> <div class="row2"> <div class="field"><label>Subject</label><input type="text" id="img-subject" placeholder="e.g. African female influencer"></div> <div class="field"><label>Skin / Features</label><input type="text" id="img-skin" placeholder="e.g. dark skin, visible pores"></div> </div> <div class="row2"> <div class="field"><label>Expression</label><input type="text" id="img-expression" placeholder="e.g. confident, casual"></div> <div class="field"><label>Makeup</label><select id="img-makeup"><option>None</option><option>Minimal</option><option>Natural</option><option>Full Glam</option></select></div> </div> <div class="field"><label>Outfit</label><input type="text" id="img-outfit" placeholder="e.g. white tank top, slightly wrinkled"></div> <div class="row2"> <div class="field"><label>Pose</label><input type="text" id="img-pose" placeholder="e.g. selfie, slightly below face"></div> <div class="field"><label>Shot Type</label><select id="img-shot"><option>Selfie</option><option>Portrait</option><option>Candid</option><option>Street</option><option>Product</option><option>Landscape</option></select></div> </div> <div class="field"><label>Location</label><input type="text" id="img-location" placeholder="e.g. small Lagos apartment near window"></div> <div class="field"><label>Background Details</label><input type="text" id="img-bg" placeholder="e.g. unmade bed, fan visible, charger on floor"></div> <div class="row2"> <div class="field"><label>Lighting</label><input type="text" id="img-lighting" placeholder="e.g. natural daylight, overexposed"></div> <div class="field"><label>Time of Day</label><select id="img-time"><option>Morning</option><option>Afternoon</option><option>Golden Hour</option><option>Night</option><option>Overcast</option></select></div> </div> <div class="row2"> <div class="field"><label>Camera</label><input type="text" id="img-camera" placeholder="e.g. iPhone 13 front camera"></div> <div class="field"><label>Size</label><select id="img-size"><option value="512x512">512x512</option><option value="768x768">768x768</option><option value="1024x1024" selected>1024x1024</option><option value="1024x768">1024x768 Wide</option><option value="768x1024">768x1024 Tall</option></select></div> </div> <div class="field"><label>Mood / Story</label><input type="text" id="img-mood" placeholder="e.g. just woke up but still fine"></div> </div> <div class="btn-row"> <button class="btn btn-blue btn-sm" id="btn-gen-image" style="flex:1;">Build and Generate</button> <button class="btn btn-gray btn-sm" id="btn-preview-prompt">Preview Prompt</button> </div> <div id="img-prompt-preview" style="display:none;" class="prompt-preview"></div> <div id="img-status"></div> <div class="img-preview" id="img-preview-box"> <div class="img-ph"><div style="font-size:40px;opacity:.3;">&#128444;</div><span>Image appears here</span></div> <img id="img-result" crossorigin="anonymous" alt="Generated" style="display:none;"> </div> <canvas id="img-canvas"></canvas> <div id="img-dl" style="display:none;"> <div class="card"> <div class="card-title">Ready - Metadata Stripped</div> <p style="font-size:12px;color:#8b949e;margin-bottom:10px;">Canvas PNG with no AI EXIF data.</p> <div class="btn-row"> <button class="btn btn-green btn-sm" id="btn-dl-image">Download Clean PNG</button> <button class="btn btn-gray btn-sm" id="btn-copy-prompt">Copy Prompt</button> </div> </div> </div> </div> <div class="panel" id="panel-bulk-image"> <div class="card"> <div class="card-title">Image Provider</div> <div class="prov-row" id="bi-provs"> <button class="prov-btn active" data-bprov="pollinations">Free - Pollinations</button> <button class="prov-btn" data-bprov="huggingface">Free - HuggingFace</button> <button class="prov-btn" data-bprov="dalle">DALL-E</button> <button class="prov-btn" data-bprov="stability">Stability AI</button> <button class="prov-btn" data-bprov="replicate">Replicate</button> </div> <div id="bi-prov-note"></div> </div> <div class="card"> <div class="card-title">Bulk Image Generator</div> <div class="field"><label>Descriptions (one per line)</label><textarea id="bi-prompts" placeholder="African woman in Lagos apartment morning&#10;Street food vendor busy market&#10;Modern office natural light" style="min-height:130px;"></textarea></div> <div class="field"><label>Global Style</label><textarea id="bi-style" placeholder="e.g. iPhone camera, no AI look, photorealistic..." style="min-height:60px;"></textarea></div> <div class="field"><label>Size</label><select id="bi-size"><option value="512x512">512x512</option><option value="768x768">768x768</option><option value="1024x1024" selected>1024x1024</option></select></div> </div> <button class="btn btn-blue" id="btn-gen-bulk-image">Generate All Images</button> <div id="bi-prog" style="display:none;"></div> <div id="bi-exp" style="display:none;"> <button class="btn btn-green" id="btn-dl-all-images">Download All Images</button> </div> <div id="bi-results"></div> </div> <div class="modal-bg" id="modal-settings"> <div class="modal"> <div class="modal-head"> <div class="modal-title">Settings</div> <button class="btn btn-gray btn-sm" id="closeSettings">Close</button> </div> <div class="modal-body"> <div class="section-title">API Keys</div> <div class="field"><label>Anthropic - Claude (Paid)</label><input type="password" id="s-claude" placeholder="sk-ant-..."></div> <div class="field"><label>OpenAI - GPT + DALL-E (Paid)</label><input type="password" id="s-openai" placeholder="sk-..."></div> <div class="field"><label>Groq - Free</label><input type="password" id="s-groq" placeholder="gsk_..."></div> <div class="field"><label>Google Gemini - Free Tier</label><input type="password" id="s-gemini" placeholder="AIza..."></div> <div class="field"><label>Mistral AI</label><input type="password" id="s-mistral" placeholder="..."></div> <div class="field"><label>Cohere</label><input type="password" id="s-cohere" placeholder="..."></div> <div class="field"><label>Stability AI - Images</label><input type="password" id="s-stability" placeholder="sk-..."></div> <div class="field"><label>Hugging Face - Images</label><input type="password" id="s-hf" placeholder="hf_..."></div> <div class="field"><label>Replicate - Images</label><input type="password" id="s-replicate" placeholder="r8_..."></div> <div class="section-title">Article Provider</div> <div class="field"><select id="s-prov"><option value="claude">Claude (Anthropic) - Paid</option><option value="openai">OpenAI GPT - Paid</option><option value="groq">Groq - Free</option><option value="gemini">Google Gemini - Free</option><option value="mistral">Mistral - Free Tier</option><option value="cohere">Cohere - Free Tier</option></select></div> <div class="section-title">Writing Prompts</div> <div class="field"><label>Prompt 1 - First Write</label><textarea id="s-wp1" style="min-height:90px;"></textarea></div> <div class="field"><label>Prompt 2 - Rewrite</label><textarea id="s-wp2" style="min-height:90px;"></textarea></div> <div class="section-title">Default Image Style</div> <div class="field"><textarea id="s-imgstyle" style="min-height:70px;" placeholder="e.g. iPhone camera, photorealistic, no AI look..."></textarea></div> <button class="btn btn-blue" id="btn-save-settings">Save Settings</button> <div id="s-msg"></div> </div> </div> </div>
+  <button class="btn btn-blue" id="btn-gen-listicle">Generate Listicle</button> <div id="l-prog" style="display:none;"></div>
+  <div id="l-exp" style="display:none;">
+    <div class="btn-row">
+      <button class="btn btn-green btn-sm" id="btn-l-rtf">Download .docx</button>
+      <button class="btn btn-gray btn-sm" id="btn-l-html">Download HTML</button>
+    </div>
+  </div>
+  <div id="l-results"></div>
+</div>
+
+<div class="panel" id="panel-bulk-listicle">
+  <div class="card">
+    <div class="card-title">Bulk Listicle Topics</div>
+    <div class="field"><label>Format</label>
+      <select id="bl-type"><option value="10 Best">10 Best</option><option value="15 Best">15 Best</option><option value="20 Top">20 Top</option><option value="25 Best">25 Best</option><option value="30 Top">30 Top</option><option value="50 Best">50 Best</option><option value="Custom">Custom...</option></select>
+    </div>
+    <div id="bl-custom-wrap" style="display:none;"><div class="field"><label>Custom Prefix</label><input type="text" id="bl-custom" placeholder="7 Best"></div></div>
+    <div class="field"><label>Topics (one per line)</label><textarea id="bl-topics" placeholder="Project Management Tools&#10;Email Marketing Software&#10;CRM Platforms" style="min-height:110px;"></textarea></div>
+    <div class="field"><label>Audience</label><input type="text" id="bl-aud" placeholder="e.g. Business owners"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Image Style</div>
+    <div class="field"><textarea id="bl-imgstyle" placeholder="e.g. Product mockup..." style="min-height:60px;"></textarea></div>
+  </div>
+  <button class="btn btn-blue" id="btn-gen-bulk-listicle">Generate All Listicles</button>
+  <div id="bl-prog" style="display:none;"></div>
+  <div id="bl-exp" style="display:none;">
+    <div class="btn-row">
+      <button class="btn btn-green btn-sm" id="btn-bl-sep">Separate Files</button>
+      <button class="btn btn-gray btn-sm" id="btn-bl-comb">Combined File</button>
+    </div>
+  </div>
+  <div id="bl-results"></div>
+</div>
+
+<div class="panel" id="panel-image">
+  <div class="card">
+    <div class="card-title">Image Provider</div>
+    <div class="prov-row" id="img-provs">
+      <button class="prov-btn active" data-prov="pollinations">Free - Pollinations</button>
+      <button class="prov-btn" data-prov="huggingface">Free - HuggingFace</button>
+      <button class="prov-btn" data-prov="dalle">DALL-E</button>
+      <button class="prov-btn" data-prov="stability">Stability AI</button>
+      <button class="prov-btn" data-prov="replicate">Replicate</button>
+    </div>
+    <div id="img-prov-note"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Ultra-Realistic Prompt Builder</div>
+    <div class="row2">
+      <div class="field"><label>Subject</label><input type="text" id="img-subject" placeholder="e.g. African female influencer"></div>
+      <div class="field"><label>Skin / Features</label><input type="text" id="img-skin" placeholder="e.g. dark skin, visible pores"></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Expression</label><input type="text" id="img-expression" placeholder="e.g. confident, casual"></div>
+      <div class="field"><label>Makeup</label><select id="img-makeup"><option>None</option><option>Minimal</option><option>Natural</option><option>Full Glam</option></select></div>
+    </div>
+    <div class="field"><label>Outfit</label><input type="text" id="img-outfit" placeholder="e.g. white tank top, slightly wrinkled"></div>
+    <div class="row2">
+      <div class="field"><label>Pose</label><input type="text" id="img-pose" placeholder="e.g. selfie, slightly below face"></div>
+      <div class="field"><label>Shot Type</label><select id="img-shot"><option>Selfie</option><option>Portrait</option><option>Candid</option><option>Street</option><option>Product</option><option>Landscape</option></select></div>
+    </div>
+    <div class="field"><label>Location</label><input type="text" id="img-location" placeholder="e.g. small Lagos apartment near window"></div>
+    <div class="field"><label>Background Details</label><input type="text" id="img-bg" placeholder="e.g. unmade bed, fan visible, charger on floor"></div>
+    <div class="row2">
+      <div class="field"><label>Lighting</label><input type="text" id="img-lighting" placeholder="e.g. natural daylight, overexposed"></div>
+      <div class="field"><label>Time of Day</label><select id="img-time"><option>Morning</option><option>Afternoon</option><option>Golden Hour</option><option>Night</option><option>Overcast</option></select></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Camera</label><input type="text" id="img-camera" placeholder="e.g. iPhone 13 front camera"></div>
+      <div class="field"><label>Size</label><select id="img-size"><option value="512x512">512x512</option><option value="768x768">768x768</option><option value="1024x1024" selected>1024x1024</option><option value="1024x768">1024x768 Wide</option><option value="768x1024">768x1024 Tall</option></select></div>
+    </div>
+    <div class="field"><label>Mood / Story</label><input type="text" id="img-mood" placeholder="e.g. just woke up but still fine"></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-blue btn-sm" id="btn-gen-image" style="flex:1;">Build and Generate</button>
+    <button class="btn btn-gray btn-sm" id="btn-preview-prompt">Preview Prompt</button>
+  </div>
+  <div id="img-prompt-preview" style="display:none;" class="prompt-preview"></div>
+  <div id="img-status"></div>
+  <div class="img-preview" id="img-preview-box">
+    <div class="img-ph"><div style="font-size:40px;opacity:.3;">&#128444;</div><span>Image appears here</span></div>
+    <img id="img-result" crossorigin="anonymous" alt="Generated" style="display:none;">
+  </div>
+  <canvas id="img-canvas"></canvas>
+  <div id="img-dl" style="display:none;">
+    <div class="card">
+      <div class="card-title">Ready - Metadata Stripped</div>
+      <p style="font-size:12px;color:#8b949e;margin-bottom:10px;">Canvas PNG with no AI EXIF data.</p>
+      <div class="btn-row">
+        <button class="btn btn-green btn-sm" id="btn-dl-image">Download Clean PNG</button>
+        <button class="btn btn-gray btn-sm" id="btn-copy-prompt">Copy Prompt</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="panel" id="panel-bulk-image">
+  <div class="card">
+    <div class="card-title">Image Provider</div>
+    <div class="prov-row" id="bi-provs">
+      <button class="prov-btn active" data-bprov="pollinations">Free - Pollinations</button>
+      <button class="prov-btn" data-bprov="huggingface">Free - HuggingFace</button>
+      <button class="prov-btn" data-bprov="dalle">DALL-E</button>
+      <button class="prov-btn" data-bprov="stability">Stability AI</button>
+      <button class="prov-btn" data-bprov="replicate">Replicate</button>
+    </div>
+    <div id="bi-prov-note"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Bulk Image Generator</div>
+    <div class="field"><label>Descriptions (one per line)</label><textarea id="bi-prompts" placeholder="African woman in Lagos apartment morning&#10;Street food vendor busy market&#10;Modern office natural light" style="min-height:130px;"></textarea></div>
+    <div class="field"><label>Global Style</label><textarea id="bi-style" placeholder="e.g. iPhone camera, no AI look, photorealistic..." style="min-height:60px;"></textarea></div>
+    <div class="field"><label>Size</label><select id="bi-size"><option value="512x512">512x512</option><option value="768x768">768x768</option><option value="1024x1024" selected>1024x1024</option></select></div>
+  </div>
+  <button class="btn btn-blue" id="btn-gen-bulk-image">Generate All Images</button>
+  <div id="bi-prog" style="display:none;"></div>
+  <div id="bi-exp" style="display:none;">
+    <button class="btn btn-green" id="btn-dl-all-images">Download All Images</button>
+  </div>
+  <div id="bi-results"></div>
+</div>
+
+<div class="modal-bg" id="modal-settings">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Settings</div>
+      <button class="btn btn-gray btn-sm" id="closeSettings">Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="section-title">API Keys</div>
+      <div class="field"><label>Anthropic - Claude (Paid)</label><input type="password" id="s-claude" placeholder="sk-ant-..."></div>
+      <div class="field"><label>OpenAI - GPT + DALL-E (Paid)</label><input type="password" id="s-openai" placeholder="sk-..."></div>
+      <div class="field"><label>Groq - Free</label><input type="password" id="s-groq" placeholder="gsk_..."></div>
+      <div class="field"><label>Google Gemini - Free Tier</label><input type="password" id="s-gemini" placeholder="AIza..."></div>
+      <div class="field"><label>Mistral AI</label><input type="password" id="s-mistral" placeholder="..."></div>
+      <div class="field"><label>Cohere</label><input type="password" id="s-cohere" placeholder="..."></div>
+      <div class="field"><label>Stability AI - Images</label><input type="password" id="s-stability" placeholder="sk-..."></div>
+      <div class="field"><label>Hugging Face - Images</label><input type="password" id="s-hf" placeholder="hf_..."></div>
+      <div class="field"><label>Replicate - Images</label><input type="password" id="s-replicate" placeholder="r8_..."></div>
+      <div class="section-title">Article Provider</div>
+      <div class="field"><select id="s-prov"><option value="claude">Claude (Anthropic) - Paid</option><option value="openai">OpenAI GPT - Paid</option><option value="groq">Groq - Free</option><option value="gemini">Google Gemini - Free</option><option value="mistral">Mistral - Free Tier</option><option value="cohere">Cohere - Free Tier</option></select></div>
+      <div class="section-title">Writing Prompts</div>
+      <div class="field"><label>Prompt 1 - First Write</label><textarea id="s-wp1" style="min-height:90px;"></textarea></div>
+      <div class="field"><label>Prompt 2 - Rewrite</label><textarea id="s-wp2" style="min-height:90px;"></textarea></div>
+      <div class="section-title">Default Image Style</div>
+      <div class="field"><textarea id="s-imgstyle" style="min-height:70px;" placeholder="e.g. iPhone camera, photorealistic, no AI look..."></textarea></div>
+      <button class="btn btn-blue" id="btn-save-settings">Save Settings</button>
+      <div id="s-msg"></div>
+    </div>
+  </div>
+</div>
 
 <script>
 // Global state
@@ -237,7 +393,15 @@ function initTabs() {
   }
 }
 
-// Settings
+// Settings Modal controls
+function initModal() {
+  var openBtn = id('openSettings');
+  var closeBtn = id('closeSettings');
+  var modal = id('modal-settings');
+  if(openBtn) openBtn.addEventListener('click', function() { if(modal) modal.classList.add('open'); });
+  if(closeBtn) closeBtn.addEventListener('click', function() { if(modal) modal.classList.remove('open'); });
+}
+
 function loadSettings() {
   var keys = ['claude','openai','groq','gemini','mistral','cohere','stability','hf','replicate'];
   for (var i = 0; i < keys.length; i++) {
@@ -268,7 +432,20 @@ function saveSettings() {
   setTimeout(function() { var e = id('s-msg'); if (e) e.innerHTML = ''; }, 2500);
 }
 
-// AI Call
+// Global UI Status Bar Controls
+function showStatusBar(text, pct) {
+  var bar = id('status-bar');
+  if (!bar) return;
+  bar.style.display = 'flex';
+  html('status-bar-text', text);
+  html('status-bar-pct', pct !== undefined ? pct + '%' : '');
+}
+function hideStatusBar() {
+  var bar = id('status-bar');
+  if (bar) bar.style.display = 'none';
+}
+
+// AI Call Implementation
 async function callAI(sys, usr) {
   var prov = lsGet('art_prov') || 'claude';
   var key = '';
@@ -314,9 +491,10 @@ async function callAI(sys, usr) {
   throw new Error('Unknown provider: ' + prov);
 }
 
-// Progress
+// Progress Bar Generators
 function mkProg(pid, steps) {
   var e = id(pid);
+  if (!e) return;
   e.style.display = 'block';
   var h = '<div class="prog-box"><div class="prog-label" id="' + pid + '-lbl">Working...</div><div class="prog-track"><div class="prog-bar" id="' + pid + '-bar"></div></div><div class="prog-steps">';
   for (var i = 0; i < steps.length; i++) {
@@ -324,6 +502,7 @@ function mkProg(pid, steps) {
   }
   h += '</div></div>';
   e.innerHTML = h;
+  setTimeout(function() { e.scrollIntoView({behavior:'smooth', block:'start'}); }, 100);
 }
 
 function setStep(pid, idx, total, lbl) {
@@ -340,67 +519,146 @@ function setStep(pid, idx, total, lbl) {
   if (lbl_el && lbl) lbl_el.textContent = lbl;
 }
 
-// Parse JSON safely
-function parseJSON(raw) {
-  var start = raw.indexOf('[');
-  var end = raw.lastIndexOf(']');
-  if (start !== -1 && end !== -1 && end > start) {
-    return JSON.parse(raw.substring(start, end + 1));
+// Custom Prefix Triggers for Listicles
+function initCustomPrefixes() {
+  var lType = id('l-type');
+  if (lType) {
+    lType.addEventListener('change', function() {
+      id('l-custom-wrap').style.display = this.value === 'Custom' ? 'block' : 'none';
+    });
   }
-  return JSON.parse(raw);
+  var blType = id('bl-type');
+  if (blType) {
+    blType.addEventListener('change', function() {
+      id('bl-custom-wrap').style.display = this.value === 'Custom' ? 'block' : 'none';
+    });
+  }
 }
 
-// Outline
-async function genOutline(topic, kw, aud, tone, isListicle, lstTitle) {
-  var sys, usr;
-  if (isListicle) {
-    sys = 'You are an SEO expert. Generate a 15-part listicle outline. Part 1=Introduction, Parts 2-14=list items, Part 15=Conclusion. Return ONLY a valid JSON array of exactly 15 objects with keys: num, title, type, summary. No markdown.';
-    usr = 'Title: ' + lstTitle + '\nKeywords: ' + kw + '\nAudience: ' + aud;
-  } else {
-    sys = 'You are an SEO expert. Generate a 15-part article outline. Return ONLY a valid JSON array of exactly 15 objects with keys: num, title, type, summary. No markdown.';
-    usr = 'Topic: ' + topic + '\nKeywords: ' + kw + '\nAudience: ' + aud + '\nTone: ' + tone;
-  }
-  var raw = await callAI(sys, usr);
-  return parseJSON(raw);
+// Prompt Previewer Engine
+function buildLocalPrompt(f) {
+  var arr = [];
+  if (f.shot) arr.push(f.shot + " shot");
+  if (f.subject) arr.push("of " + f.subject);
+  if (f.skin) arr.push("featuring " + f.skin);
+  if (f.expression) arr.push("expression: " + f.expression);
+  if (f.makeup && f.makeup !== 'None') arr.push("makeup: " + f.makeup);
+  if (f.outfit) arr.push("wearing " + f.outfit);
+  if (f.pose) arr.push("posed in " + f.pose);
+  if (f.location) arr.push("at " + f.location);
+  if (f.bg) arr.push("background elements: " + f.bg);
+  if (f.lighting) arr.push("light profile: " + f.lighting);
+  if (f.time) arr.push("time context: " + f.time);
+  if (f.camera) arr.push("captured with " + f.camera);
+  if (f.mood) arr.push("mood profile: " + f.mood);
+  if (f.extra) arr.push(f.extra);
+  return arr.join(', ');
 }
 
-// Button generation event handler hook
-function initActionButtons() {
-  var btnGenArticle = id('btn-gen-article');
-  if (btnGenArticle) {
-    btnGenArticle.addEventListener('click', async function() {
-      var topic = val('a-topic');
-      if (!topic) { alert('Please enter a topic.'); return; }
-      html('a-results', '<div class="msg-info">Generating layout...</div>');
-      try {
-        var outline = await genOutline(topic, val('a-kw'), val('a-aud'), val('a-tone'), false, '');
-        html('a-results', '<div class="msg-ok">Outline built successfully! (Further steps execution logic placeholder)</div>');
-      } catch (err) {
-        html('a-results', '<div class="msg-err">Error: ' + err.message + '</div>');
+// Exif-Stripping Canvas Downloader 
+function dlCleanImg() {
+  var img = id('img-result');
+  var canvas = id('img-canvas');
+  if (!img || !canvas || img.style.display === 'none') return;
+  var ctx = canvas.getContext('2d');
+  canvas.width = img.naturalWidth || img.width || 1024;
+  canvas.height = img.naturalHeight || img.height || 1024;
+  ctx.drawImage(img, 0, 0);
+  try {
+    var dataUrl = canvas.toDataURL('image/png');
+    var a = document.createElement('a');
+    a.href = dataUrl;
+    a.download = 'csp_image_' + Date.now() + '.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch(e) {
+    alert("Cross-Origin security restrictions prevented direct canvas stripping. Use browser save-as options instead.");
+  }
+}
+
+// Dynamic Provider Button Switching
+function initProviderSwitches() {
+  var pBtns = document.querySelectorAll('#img-provs .prov-btn');
+  for (var i = 0; i < pBtns.length; i++) {
+    pBtns[i].addEventListener('click', function() {
+      for (var j = 0; j < pBtns.length; j++) pBtns[j].classList.remove('active');
+      this.classList.add('active');
+      imgProv = this.getAttribute('data-prov');
+    });
+  }
+  var bpBtns = document.querySelectorAll('#bi-provs .prov-btn');
+  for (var i = 0; i < bpBtns.length; i++) {
+    bpBtns[i].addEventListener('click', function() {
+      for (var j = 0; j < bpBtns.length; j++) bpBtns[j].classList.remove('active');
+      this.classList.add('active');
+      biProv = this.getAttribute('data-bprov');
+    });
+  }
+}
+
+// Main Setup Routine on DOM Load
+document.addEventListener('DOMContentLoaded', function() {
+  initTabs();
+  initModal();
+  loadSettings();
+  initCustomPrefixes();
+  initProviderSwitches();
+
+  var saveBtn = id('btn-save-settings');
+  if (saveBtn) saveBtn.addEventListener('click', saveSettings);
+
+  // Single Image Event Hookups
+  var previewBtn = id('btn-preview-prompt');
+  if (previewBtn) {
+    previewBtn.addEventListener('click', function() {
+      var prev = id('img-prompt-preview');
+      if (!prev) return;
+      if (prev.style.display === 'block') { prev.style.display = 'none'; return; }
+      var fields = {
+        subject: val('img-subject'), skin: val('img-skin'), expression: val('img-expression'),
+        makeup: val('img-makeup'), outfit: val('img-outfit'), pose: val('img-pose'),
+        shot: val('img-shot'), location: val('img-location'), bg: val('img-bg'),
+        lighting: val('img-lighting'), time: val('img-time'), camera: val('img-camera'),
+        mood: val('img-mood'), extra: lsGet('imgstyle') || ''
+      };
+      prev.textContent = buildLocalPrompt(fields);
+      prev.style.display = 'block';
+    });
+  }
+
+  var dlBtn = id('btn-dl-image');
+  if (dlBtn) dlBtn.addEventListener('click', dlCleanImg);
+
+  var copyBtn = id('btn-copy-prompt');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', function() {
+      if (navigator.clipboard && lastPrompt) {
+        navigator.clipboard.writeText(lastPrompt).then(function() {
+          html('img-status', '<div class="msg-ok">Prompt copied!</div>');
+          setTimeout(function() { var s = id('img-status'); if(s) s.innerHTML = ''; }, 2000);
+        });
       }
     });
   }
 
-  // Setup modal triggers
-  var openSet = id('openSettings');
-  if (openSet) {
-    openSet.addEventListener('click', function() { id('modal-settings').classList.add('open'); });
+  // Bulk Image Dynamic Delegation Hook
+  var biRes = id('bi-results');
+  if (biRes) {
+    biRes.addEventListener('click', function(e) {
+      var btn = e.target.closest('[data-dl]');
+      if (!btn) return;
+      var idx = parseInt(btn.getAttribute('data-dl'), 10);
+      var imgObj = bulkImages[idx];
+      if (!imgObj) return;
+      var a = document.createElement('a');
+      a.href = imgObj.url;
+      a.download = 'bulk_csp_' + idx + '.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    });
   }
-  var closeSet = id('closeSettings');
-  if (closeSet) {
-    closeSet.addEventListener('click', function() { id('modal-settings').classList.remove('open'); });
-  }
-  var saveSet = id('btn-save-settings');
-  if (saveSet) {
-    saveSet.addEventListener('click', saveSettings);
-  }
-}
-
-// CRITICAL FIX: Run startup functions safely after DOM load
-window.addEventListener('DOMContentLoaded', function() {
-  initTabs();
-  loadSettings();
-  initActionButtons();
 });
 </script>
 </body>
