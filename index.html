@@ -186,7 +186,8 @@ canvas{display:none;}
     <div class="field"><label>Tone</label><select id="ba-tone"><option>Professional</option><option>Conversational</option><option>Educational</option><option>Friendly</option></select></div>
     <div class="field"><label>Image Style</label><textarea id="ba-imgstyle" placeholder="e.g. Photorealistic, natural lighting, no AI look..." style="min-height:60px;"></textarea></div>
   </div>
-  <button class="btn-primary" id="btnGenBulkArt">Generate All Articles</button> <div id="ba-export" style="display:none;" class="export-card">
+  <button class="btn-primary" id="btnGenBulkArt">Generate All Articles</button>
+  <div id="ba-export" style="display:none;" class="export-card">
     <div class="export-title">Articles Ready - Export Below</div>
     <div class="btn-row">
       <button class="btn-green" id="btnBASep">Download Separate Files</button>
@@ -364,8 +365,8 @@ canvas{display:none;}
         <option value="cohere">Cohere - Free Tier</option>
       </select></div>
       <div class="section-label">Writing Prompts</div>
-      <div class="field"><label>Prompt 1 - First Write (customise your writing style)</label><textarea id="s-wp1" style="min-height:90px;" placeholder="Default prompt is already set. Edit here to customise your writing style..."></textarea></div>
-      <div class="field"><label>Prompt 2 - Rewrite (customise rewriting style)</label><textarea id="s-wp2" style="min-height:90px;" placeholder="Default prompt is already set. Edit here to customise your rewriting style..."></textarea></div>
+      <div class="field"><label>Prompt 1 - First Write</label><textarea id="s-wp1" style="min-height:90px;"></textarea></div>
+      <div class="field"><label>Prompt 2 - Rewrite</label><textarea id="s-wp2" style="min-height:90px;"></textarea></div>
       <div class="section-label">Default Image Style</div>
       <div class="field"><textarea id="s-imgstyle" style="min-height:70px;" placeholder="e.g. iPhone camera, photorealistic, no AI look, natural lighting..."></textarea></div>
       <button class="btn-primary" id="btnSaveSettings">Save Settings</button>
@@ -394,8 +395,8 @@ var MODELS = {
   cohere:'command-r'
 };
 
-var WP1 = 'You are an expert human content writer with 10+ years of experience. Write REAL, detailed, genuinely useful content for the given article sections. Rules:\n1. Write in natural flowing prose - short paragraphs of 2-3 sentences maximum\n2. Use active voice always\n3. Include specific facts, real examples, actionable tips\n4. NEVER write placeholder, generic or filler content\n5. Each section must have a proper H2 heading from the outline title\n6. Write at least 150-200 words per section\n7. Avoid phrases like: In conclusion, It is worth noting, Delve into, It goes without saying\n8. Write like a knowledgeable friend explaining something valuable\n9. Use HTML tags properly: h2 for headings, p for paragraphs, ul/li for lists, strong for emphasis';
-var WP2 = 'You are an expert editor who rewrites content to sound authentically human. Rewrite the given content following these rules:\n1. Vary sentence length dramatically - mix very short sentences with longer ones\n2. Use contractions naturally (you\'re, it\'s, don\'t, we\'ve)\n3. Add personality and a conversational tone\n4. Start some sentences with And, But, Or for natural flow\n5. Remove any robotic or stiff phrasing\n6. Keep ALL HTML tags exactly as they are - do not add or remove any HTML\n7. Do not add new information - only rewrite what is there\n8. Return ONLY the rewritten HTML content, nothing else';
+var WP1 = 'You are an expert human writer. Write REAL, highly detailed, comprehensive content. Use natural flowing prose, active voice, and short cohesive paragraphs. Inject real localized data, strategic insights, and precise structural execution. Avoid generic filler.';
+var WP2 = 'Rewrite this completely to read like an ultra-realistic, highly engaging human author. Inject distinct stylistic layout shifts, natural structural configurations, and clear conversational transitions. Preserve all HTML elements and structural code anchors perfectly. Return only the clean rewritten body code.';
 
 // HELPERS
 function el(id) { return document.getElementById(id); }
@@ -426,14 +427,10 @@ function initTabs() {
       item.onclick = function() {
         var panelId = item.getAttribute('data-panel');
         var allItems = el('tabBar').getElementsByClassName('tab-item');
-        for (var j = 0; j < allItems.length; j++) {
-          allItems[j].className = 'tab-item';
-        }
+        for (var j = 0; j < allItems.length; j++) { allItems[j].className = 'tab-item'; }
         item.className = 'tab-item act';
         var panels = document.getElementsByClassName('panel');
-        for (var j = 0; j < panels.length; j++) {
-          panels[j].className = 'panel';
-        }
+        for (var j = 0; j < panels.length; j++) { panels[j].className = 'panel'; }
         var target = el(panelId);
         if (target) target.className = 'panel act';
         window.scrollTo(0, 0);
@@ -469,62 +466,366 @@ function saveSettings() {
   setTimeout(function() { el('settingsMsg').innerHTML = ''; }, 2500);
 }
 
-// STUB LOGIC WRAPPERS FOR REMAINING ENGINE FUNCTIONS
-async function genArticle() {
-  var topic = val('a-topic');
-  if(!topic) { alert('Please enter a topic.'); return; }
-  showStatus('Generating Article...', 'Analyzing inputs', 20);
-  setTimeout(function() {
-    showStatus('Finishing Up...', 'Formatting HTML structure', 80);
-    setTimeout(function() {
-      hideStatus();
-      setHtml('a-results', '<div class="msg-ok"><h3>' + safe(topic) + '</h3><p>Article generated successfully using mock workflow setup.</p></div>');
-      showEl('a-export');
-    }, 1200);
-  }, 1200);
+// AI CALL ENGINE
+async function callAI(sys, usr) {
+  var prov = lsGet('art_prov') || 'claude';
+  var key = lsGet('k_' + prov);
+  if (!key) throw new Error('No API key found for ' + prov + '. Please update in Settings.');
+  var model = MODELS[prov] || 'gpt-4o';
+  var r, d;
+
+  if (prov === 'claude') {
+    r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body: JSON.stringify({model:model, max_tokens:4000, system:sys, messages:[{role:'user',content:usr}]})
+    });
+    if (!r.ok) { d = await r.json(); throw new Error(d.error ? d.error.message : 'Claude API structural failure ' + r.status); }
+    d = await r.json(); return d.content[0].text;
+  }
+  if (prov === 'openai') {
+    r = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body: JSON.stringify({model:model, max_tokens:4000, messages:[{role:'system',content:sys},{role:'user',content:usr}]})
+    });
+    if (!r.ok) { d = await r.json(); throw new Error(d.error ? d.error.message : 'OpenAI connectivity breakdown ' + r.status); }
+    d = await r.json(); return d.choices[0].message.content;
+  }
+  if (prov === 'groq') {
+    r = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body: JSON.stringify({model:model, max_tokens:4000, messages:[{role:'system',content:sys},{role:'user',content:usr}]})
+    });
+    if (!r.ok) { d = await r.json(); throw new Error(d.error ? d.error.message : 'Groq operational failure ' + r.status); }
+    d = await r.json(); return d.choices[0].message.content;
+  }
+  if (prov === 'gemini') {
+    r = await fetch('https://generativelanguage.googleapis.com/v1beta/models/' + model + ':generateContent?key=' + key, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({contents:[{parts:[{text:sys+'\n\n'+usr}]}], generationConfig:{maxOutputTokens:4000}})
+    });
+    if (!r.ok) { d = await r.json(); throw new Error(d.error ? d.error.message : 'Gemini computational failure ' + r.status); }
+    d = await r.json(); return d.candidates[0].content.parts[0].text;
+  }
+  if (prov === 'mistral') {
+    r = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body: JSON.stringify({model:model, max_tokens:4000, messages:[{role:'system',content:sys},{role:'user',content:usr}]})
+    });
+    if (!r.ok) { d = await r.json(); throw new Error(d.error ? d.error.message : 'Mistral API error ' + r.status); }
+    d = await r.json(); return d.choices[0].message.content;
+  }
+  if (prov === 'cohere') {
+    r = await fetch('https://api.cohere.ai/v1/chat', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json','Authorization':'Bearer '+key},
+      body: JSON.stringify({model:model, message:usr, preamble:sys, max_tokens:4000})
+    });
+    if (!r.ok) { d = await r.json(); throw new Error(d.message || 'Cohere computational runtime crash ' + r.status); }
+    d = await r.json(); return d.text;
+  }
+  throw new Error('Unsupported processing provider specified.');
 }
 
-function genBulkListicles() { alert('Bulk listicle generation triggered.'); }
-function genImage() { alert('Image builder triggered.'); }
-function exportDoc(type, ext) { alert('Exporting ' + type + ' as ' + ext); }
-function exportBulk(type, mode) { alert('Exporting bulk ' + type + ' via ' + mode); }
-function dlCleanImage() { alert('Downloading cleaned PNG metadata asset.'); }
-function buildPromptLocal(fields) { return 'Prompt Subject: ' + fields.subject + ' Mood: ' + fields.mood; }
+// FORMAT PARSERS
+function parseOutline(raw) {
+  var t = String.fromCharCode(96); var tr = t + t + t;
+  var cleaned = ''; var lines = raw.split('\n');
+  for (var i = 0; i < lines.length; i++) {
+    var line = lines[i]; if (line.indexOf(tr) === 0) continue; cleaned += line + '\n';
+  }
+  cleaned = cleaned.trim();
+  var start = cleaned.indexOf('['); var end = cleaned.lastIndexOf(']');
+  if (start === -1 || end === -1) throw new Error('Failed to find structure array parameters in the payload context.');
+  return JSON.parse(cleaned.substring(start, end + 1));
+}
 
-// WIRE UP TRIGGERS ON WINDOW LOAD
-window.onload = function() {
-  // Initialize Tabs
-  initTabs();
+// MAIN EXECUTION ENGINE
+async function genArticle() {
+  var topic = val('a-topic'); var kw = val('a-kw'); var aud = val('a-aud');
+  var tone = val('a-tone'); var wc = val('a-wc'); var stylePref = val('a-imgstyle') || lsGet('imgstyle');
+  if (!topic) { alert('A topic parameter must be assigned.'); return; }
+
+  try {
+    setHtml('a-results', ''); hideEl('a-export');
+    showStatus('Constructing Strategic Outline...', 'Analyzing competitive frameworks & structural components...', 10);
+
+    var outlineSys = 'You are an elite SEO strategist. Design a comprehensive outline strictly consisting of exactly 15 sequential components matching search query intents. Optimize layouts natively with LSI targets. Return exactly a valid JSON array matching this format: [{"title":"Structural Heading Topic","focus":"Keywords & SEO strategy instructions","image_prompt":"Detailed photographic description incorporating subject details"}]';
+    var outlineUsr = 'Topic: ' + topic + '\nKeywords: ' + kw + '\nAudience: ' + aud + '\nTone: ' + tone + '\nWord Count Context: ' + wc + '\nImage Preference Details: ' + stylePref;
+
+    var rawOutline = await callAI(outlineSys, outlineUsr);
+    articleData.outline = parseOutline(rawOutline);
+
+    if (articleData.outline.length !== 15) {
+      showStatus('Calibrating Structural Array...', 'Re-mapping distribution schema to 15 parts...', 25);
+      outlineUsr += '\nCRITICAL RE-ASSIGNMENT: Adjust formatting configurations immediately to present exactly 15 indexed parts.';
+      rawOutline = await callAI(outlineSys, outlineUsr);
+      articleData.outline = parseOutline(rawOutline);
+    }
+
+    setHtml('a-results', '<div class="card"><div class="card-title">SEO Blueprint Framework Built</div><div id="a-outline-list" class="outline-box"></div></div>');
+    for (var i = 0; i < articleData.outline.length; i++) {
+      addHtml('a-outline-list', '<div class="o-row"><div class="o-num">' + (i + 1) + '</div><div class="o-text"><strong>' + safe(articleData.outline[i].title) + '</strong><br>' + safe(articleData.outline[i].focus) + '</div></div>');
+    }
+
+    articleData.chunks = []; articleData.imgPrompts = [];
+    var sysWriter = lsGet('wp1') || WP1; var sysRewriter = lsGet('wp2') || WP2;
+
+    for (var i = 0; i < articleData.outline.length; i++) {
+      var progress = Math.round(30 + ((i / 15) * 65));
+      showStatus('Executing Section Engine...', 'Processing Component ' + (i + 1) + ' of 15...', progress);
+
+      var partContext = 'Section Location: ' + (i + 1) + ' of 15\nTitle: ' + articleData.outline[i].title + '\nSEO Directives: ' + articleData.outline[i].focus + '\nGlobal Context: ' + topic + ' | Keywords: ' + kw + ' | Target: ' + aud;
+      var rawSection = await callAI(sysWriter, partContext);
+      var refinedSection = await callAI(sysRewriter, 'Original Section Text Context:\n' + rawSection);
+
+      var activePrompt = articleData.outline[i].image_prompt || (topic + ', ' + stylePref);
+      articleData.chunks.push(refinedSection);
+      articleData.imgPrompts.push(activePrompt);
+
+      var chunkHtml = '<div class="chunk-card"><div class="chunk-head"><div class="chunk-title">Part ' + (i + 1) + ': ' + safe(articleData.outline[i].title) + '</div><div class="chunk-actions"><button class="copy-btn" id="cpC-' + i + '">Copy Body</button><button class="copy-btn purple" id="cpP-' + i + '">Copy Prompt</button></div></div><div class="chunk-body">' + refinedSection + '</div><div class="img-prompt-box"><div class="img-prompt-label">Injected Image Prompt Target Component</div><div class="img-prompt-text">' + safe(activePrompt) + '</div></div></div>';
+      addHtml('a-results', chunkHtml);
+
+      (function(idx) {
+        el('cpC-' + idx).onclick = function() { navigator.clipboard.writeText(articleData.chunks[idx]); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy Body', 2000); };
+        el('cpP-' + idx).onclick = function() { navigator.clipboard.writeText(articleData.imgPrompts[idx]); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy Prompt', 2000); };
+      })(i);
+    }
+
+    hideStatus(); showEl('a-export');
+  } catch (err) {
+    hideStatus(); setHtml('a-results', '<div class="msg-err">Execution Interrupted: ' + safe(err.message) + '</div>');
+  }
+}
+
+// LISTICLE PROCESSING ENGINE
+async function genListicle() {
+  var lType = val('l-type'); var lCust = val('l-custom');
+  var formatPrefix = (lType === 'Custom') ? lCust : lType;
+  var topic = val('l-topic'); var kw = val('l-kw'); var aud = val('l-aud');
+  var tone = val('l-tone'); var stylePref = val('l-imgstyle') || lsGet('imgstyle');
+  if (!topic) { alert('A topic framework criteria must be defined.'); return; }
+
+  try {
+    setHtml('l-results', ''); hideEl('l-export');
+    showStatus('Compiling Semantic Structural Elements...', 'Assembling multi-part schema indices...', 10);
+
+    var listSys = 'You are an advanced publishing strategist. Construct a coherent sequence schema containing exactly 15 parts to layout the requested listicle theme natively mapped with search configurations. Return precisely a valid JSON array format: [{"title":"Section Identifier","focus":"SEO tracking target points","image_prompt":"Photorealistic setting outline"}]';
+    var listUsr = 'Format: ' + formatPrefix + '\nTopic: ' + topic + '\nKeywords: ' + kw + '\nAudience: ' + aud + '\nTone: ' + tone + '\nStyle Details: ' + stylePref;
+
+    var rawList = await callAI(listSys, listUsr);
+    listicleData.outline = parseOutline(rawList);
+
+    if (listicleData.outline.length !== 15) {
+      showStatus('Balancing Segment Distribution...', 'Enforcing precise 15-part operational alignment...', 25);
+      listUsr += '\nCRITICAL INSTRUCTION: Re-render layout matrices to equal exactly 15 sequential blocks.';
+      rawList = await callAI(listSys, listUsr);
+      listicleData.outline = parseOutline(rawList);
+    }
+
+    setHtml('l-results', '<div class="card"><div class="card-title">Listicle Engine Structural Layout Matrix Established</div><div id="l-outline-list" class="outline-box"></div></div>');
+    for (var i = 0; i < listicleData.outline.length; i++) {
+      addHtml('l-outline-list', '<div class="o-row"><div class="o-num">' + (i + 1) + '</div><div class="o-text"><strong>' + safe(listicleData.outline[i].title) + '</strong><br>' + safe(listicleData.outline[i].focus) + '</div></div>');
+    }
+
+    listicleData.chunks = []; listicleData.imgPrompts = [];
+    var sysWriter = lsGet('wp1') || WP1; var sysRewriter = lsGet('wp2') || WP2;
+
+    for (var i = 0; i < listicleData.outline.length; i++) {
+      var progress = Math.round(30 + ((i / 15) * 65));
+      showStatus('Iterating Segment Generation Chain...', 'Processing Item Structure ' + (i + 1) + ' of 15...', progress);
+
+      var contextStr = 'Position Array Block: ' + (i + 1) + ' of 15\nSegment Head: ' + listicleData.outline[i].title + '\nRequirements: ' + listicleData.outline[i].focus + '\nScope: ' + topic + ' | Key Metrics: ' + kw;
+      var rawOutput = await callAI(sysWriter, contextStr);
+      var fineOutput = await callAI(sysRewriter, 'Source Section Structure Context:\n' + rawOutput);
+
+      var activePrompt = listicleData.outline[i].image_prompt || (topic + ', ' + stylePref);
+      listicleData.chunks.push(fineOutput);
+      listicleData.imgPrompts.push(activePrompt);
+
+      var listicleHtml = '<div class="chunk-card"><div class="chunk-head"><div class="chunk-title">Part ' + (i + 1) + ': ' + safe(listicleData.outline[i].title) + '</div><div class="chunk-actions"><button class="copy-btn" id="cpLC-' + i + '">Copy Body</button><button class="copy-btn purple" id="cpLP-' + i + '">Copy Prompt</button></div></div><div class="chunk-body">' + fineOutput + '</div><div class="img-prompt-box"><div class="img-prompt-label">Contextual Target Prompt</div><div class="img-prompt-text">' + safe(activePrompt) + '</div></div></div>';
+      addHtml('l-results', listicleHtml);
+
+      (function(idx) {
+        el('cpLC-' + idx).onclick = function() { navigator.clipboard.writeText(listicleData.chunks[idx]); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy Body', 2000); };
+        el('cpLP-' + idx).onclick = function() { navigator.clipboard.writeText(listicleData.imgPrompts[idx]); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy Prompt', 2000); };
+      })(i);
+    }
+
+    hideStatus(); showEl('l-export');
+  } catch(err) {
+    hideStatus(); setHtml('l-results', '<div class="msg-err">Listicle Engine Operational Exception: ' + safe(err.message) + '</div>');
+  }
+}
+
+// BULK PROCESSING ENGINE RUNTIMES
+async function genBulkArticles() {
+  var topicsText = val('ba-topics'); var aud = val('ba-aud');
+  var tone = val('ba-tone'); var stylePref = val('ba-imgstyle') || lsGet('imgstyle');
+  if (!topicsText) { alert('Specify minimum of one execution theme string context path.'); return; }
+  var arr = topicsText.split('\n'); var topics = [];
+  for (var i = 0; i < arr.length; i++) { if (arr[i].trim()) topics.push(arr[i].trim()); }
+
+  try {
+    setHtml('ba-results', ''); hideEl('ba-export'); bulkArticles = [];
+    var sysWriter = lsGet('wp1') || WP1; var sysRewriter = lsGet('wp2') || WP2;
+
+    for (var t = 0; t < topics.length; t++) {
+      var currentTopic = topics[t];
+      var wrapperId = 'ba-wrap-' + t; var trackingId = 'ba-track-' + t;
+      var summaryHtml = '<div class="bulk-wrap"><div class="bulk-wrap-head"><div>Bulk Task ' + (t + 1) + ': ' + safe(currentTopic) + '</div><span class="badge badge-blue" id="' + trackingId + '">Processing Array...</span></div><div class="bulk-wrap-body" id="' + wrapperId + '" style="display:none;"></div></div>';
+      addHtml('ba-results', summaryHtml);
+
+      showStatus('Deploying Cluster Models...', 'Evaluating Theme ' + (t + 1) + ' of ' + topics.length, Math.round((t / topics.length) * 100));
+
+      var rawOutline = await callAI('You are an expert SEO architect. Construct a valid structural array tracking outline containing exactly 15 structural points for: ' + currentTopic + '. Output format requirement: [{"title":"Header Title","focus":"Target metrics","image_prompt":"Visual layout context"}]', 'Target Content Framework Matrix: ' + currentTopic);
+      var outline = parseOutline(rawOutline);
+
+      var compositeContent = ''; var articlePrompts = [];
+      for (var i = 0; i < outline.length; i++) {
+        var secRaw = await callAI(sysWriter, 'Section index part ' + (i + 1) + ' of 15. Header: ' + outline[i].title + ' | Context: ' + outline[i].focus + ' | Master Topic: ' + currentTopic);
+        var secFine = await callAI(sysRewriter, 'Original source framework string text context:\n' + secRaw);
+        compositeContent += '<h2>' + outline[i].title + '</h2>\n' + secFine + '\n';
+        articlePrompts.push(outline[i].image_prompt || (currentTopic + ', ' + stylePref));
+      }
+
+      bulkArticles.push({topic: currentTopic, body: compositeContent, prompts: articlePrompts});
+      el(trackingId).className = 'badge badge-green'; el(trackingId).textContent = 'Completed';
+      setHtml(wrapperId, '<h4>Compiled Body Length Matrix Metrics:</h4><p>' + compositeContent.substring(0, 300) + '...</p>');
+      el(wrapperId).style.display = 'block';
+    }
+    hideStatus(); showEl('ba-export');
+  } catch(err) {
+    hideStatus(); alert('Bulk Processing Loop Pipeline Failed: ' + err.message);
+  }
+}
+
+async function genBulkListicles() {
+  var bType = val('bl-type'); var bCust = val('bl-custom');
+  var pfx = (bType === 'Custom') ? bCust : bType;
+  var topicsText = val('bl-topics'); var aud = val('bl-aud'); var stylePref = val('bl-imgstyle') || lsGet('imgstyle');
+  if (!topicsText) { alert('Assign parameters to evaluate structural properties.'); return; }
+  var arr = topicsText.split('\n'); var topics = [];
+  for (var i = 0; i < arr.length; i++) { if (arr[i].trim()) topics.push(arr[i].trim()); }
+
+  try {
+    setHtml('bl-results', ''); hideEl('bl-export'); bulkListicles = [];
+    var sysWriter = lsGet('wp1') || WP1; var sysRewriter = lsGet('wp2') || WP2;
+
+    for (var t = 0; t < topics.length; t++) {
+      var currentTopic = topics[t];
+      var wrapperId = 'bl-wrap-' + t; var trackingId = 'bl-track-' + t;
+      var summaryHtml = '<div class="bulk-wrap"><div class="bulk-wrap-head"><div>Bulk Listicle Run ' + (t + 1) + ': ' + safe(currentTopic) + '</div><span class="badge badge-blue" id="' + trackingId + '">Executing Layout Arrays...</span></div><div class="bulk-wrap-body" id="' + wrapperId + '" style="display:none;"></div></div>';
+      addHtml('bl-results', summaryHtml);
+
+      showStatus('Iterating List Matrix Structuring...', 'Parsing Block Configuration ' + (t + 1) + ' of ' + topics.length, Math.round((t / topics.length) * 100));
+
+      var rawOutline = await callAI('You are an expert technical publisher. Create a valid structural array mapping index of exactly 15 sequential components for a listicle on ' + currentTopic + '. Output structural schema: [{"title":"Header Title","focus":"Target focus points","image_prompt":"Detailed environment parameters"} ]', 'Target Data Structure Context: ' + currentTopic);
+      var outline = parseOutline(rawOutline);
+
+      var compositeContent = ''; var listiclePrompts = [];
+      for (var i = 0; i < outline.length; i++) {
+        var secRaw = await callAI(sysWriter, 'List structural element item position trace index layer ' + (i + 1) + ' of 15. Heading Title: ' + outline[i].title + ' | Operational direct targeting requirements: ' + outline[i].focus + ' | Master Framework Element: ' + currentTopic);
+        var secFine = await callAI(sysRewriter, 'Raw processing block payload context string text:\n' + secRaw);
+        compositeContent += '<h2>' + outline[i].title + '</h2>\n' + secFine + '\n';
+        listiclePrompts.push(outline[i].image_prompt || (currentTopic + ', ' + stylePref));
+      }
+
+      bulkListicles.push({topic: currentTopic, body: compositeContent, prompts: listiclePrompts});
+      el(trackingId).className = 'badge badge-green'; el(trackingId).textContent = 'Assembled Successfully';
+      setHtml(wrapperId, '<h4>Generated Component Stream Content:</h4><p>' + compositeContent.substring(0, 300) + '...</p>');
+      el(wrapperId).style.display = 'block';
+    }
+    hideStatus(); showEl('bl-export');
+  } catch(err) {
+    hideStatus(); alert('Bulk List Operational Matrix Fault: ' + err.message);
+  }
+}
+
+// SINGLE IMAGE GENERATOR FRAMEWORK
+function buildPromptLocal(f) {
+  var parts = [];
+  if (f.shot) parts.push(f.shot + ' shot');
+  if (f.pose) parts.push('of ' + f.subject + ', ' + f.pose);
+  else parts.push('of ' + f.subject);
+  if (f.skin) parts.push('featuring ' + f.skin);
+  if (f.expression) parts.push('with a ' + f.expression + ' expression');
+  if (f.makeup && f.makeup !== 'None') parts.push(f.makeup + ' makeup look');
+  if (f.outfit) parts.push('wearing ' + f.outfit);
+  if (f.location) parts.push('shot on location in ' + f.location);
+  if (f.bg) parts.push('background detail elements include ' + f.bg);
+  if (f.lighting) parts.push('illuminated via ' + f.lighting);
+  if (f.time) parts.push('during the ' + f.time);
+  if (f.camera) parts.push('captured using ' + f.camera);
+  if (f.mood) parts.push('evoking a ' + f.mood + ' setting');
+  if (f.extra) parts.push(f.extra);
+  return parts.join(', ') + ', photorealistic, high fidelity realism, hyper-detailed texture surfaces, natural processing parameters, no artifacts.';
+}
+
+async function genImage() {
+  var fields = {
+    subject: val('img-subject') || 'Subject entity', skin: val('img-skin'), expression: val('img-expression'),
+    makeup: val('img-makeup'), outfit: val('img-outfit'), pose: val('img-pose'), shot: val('img-shot'),
+    location: val('img-location'), bg: val('img-bg'), lighting: val('img-lighting'), time: val('img-time'),
+    camera: val('img-camera'), mood: val('img-mood'), extra: val('s-imgstyle') || lsGet('imgstyle')
+  };
   
-  // Settings Loading & Event Handlers
-  loadSettings();
-  el('openSettings').onclick = function() {
-    loadSettings();
-    el('modalSettings').classList.add('show');
-  };
-  el('closeSettings').onclick = function() {
-    el('modalSettings').classList.remove('show');
-  };
-  el('btnSaveSettings').onclick = saveSettings;
-
-  // Article Generation Integration
-  el('btnGenArticle').onclick = genArticle;
-
-  // Remaining Application Listeners
-  el('btnGenBulkLst').onclick = genBulkListicles;
-  el('btnBLSep').onclick = function() { exportBulk('listicle','separate'); };
-  el('btnBLComb').onclick = function() { exportBulk('listicle','combined'); };
-  el('btnGenImage').onclick = genImage;
-  el('btnDlImage').onclick = dlCleanImage;
+  var targetPrompt = buildPromptLocal(fields); lastPrompt = targetPrompt;
+  var dims = val('img-size').split('x'); var w = parseInt(dims[0]) || 1024; var h = parseInt(dims[1]) || 1024;
   
-  el('btnPreviewPrompt').onclick = function() {
-    var prev = el('imgPromptPreview');
-    if (prev.style.display === 'block') { prev.style.display = 'none'; return; }
-    var fields = {subject:val('img-subject'),skin:val('img-skin'),expression:val('img-expression'),makeup:val('img-makeup'),outfit:val('img-outfit'),pose:val('img-pose'),shot:val('img-shot'),location:val('img-location'),bg:val('img-bg'),lighting:val('img-lighting'),time:val('img-time'),camera:val('img-camera'),mood:val('img-mood'),extra:lsGet('imgstyle')};
-    prev.textContent = buildPromptLocal(fields);
-    prev.style.display = 'block';
-  };
-};
-</script>
-</body>
-</html>
+  setHtml('imgStatus', '<div class="msg-info"><div class="spin"></div>Contacting image compute array nodes...</div>');
+  hideEl('imgResult'); el('imgPreviewBox').style.display = 'flex'; hideEl('imgDownload');
+
+  try {
+    var url = '';
+    if (imgProv === 'pollinations') {
+      url = 'https://image.pollinations.ai/p/' + encodeURIComponent(targetPrompt) + '?width=' + w + '&height=' + h + '&seed=' + Math.floor(Math.random()*100000) + '&nologo=true;';
+      el('imgResult').src = url;
+    } else if (imgProv === 'huggingface') {
+      var hfKey = lsGet('k_hf'); if (!hfKey) throw new Error('HuggingFace integration token is missing in configuration.');
+      var response = await fetch('https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0', {
+        method: 'POST', headers: {'Authorization': 'Bearer ' + hfKey, 'Content-Type': 'application/json'},
+        body: JSON.stringify({inputs: targetPrompt})
+      });
+      if (!response.ok) throw new Error('Inference compute reported error: ' + response.status);
+      var blob = await response.blob(); url = URL.createObjectURL(blob); el('imgResult').src = url;
+    } else {
+      throw new Error('The selected image rendering pipeline is under maintenance. Please use Pollinations/HuggingFace.');
+    }
+  } catch(err) {
+    setHtml('imgStatus', '<div class="msg-err">Image Engine Exception: ' + safe(err.message) + '</div>');
+  }
+}
+
+// IMAGE CLEAN PARSING MATRICES
+function dlCleanImage() {
+  var img = el('imgResult'); var canvas = el('imgCanvas'); var ctx = canvas.getContext('2d');
+  canvas.width = img.naturalWidth || img.width; canvas.height = img.naturalHeight || img.height;
+  try {
+    ctx.drawImage(img, 0, 0);
+    var cleanDataUrl = canvas.toDataURL('image/png');
+    var a = document.createElement('a'); a.href = cleanDataUrl; a.download = 'stripped-asset-' + Date.now() + '.png';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  } catch(e) {
+    alert('Cross-Origin tracking restriction detected. Downloading source absolute direct mapping track instead.');
+    var a = document.createElement('a'); a.href = img.src; a.download = 'content-asset.png'; a.target = '_blank';
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  }
+}
+
+// BULK IMAGE ENGINE RUNTIMES
+async function genBulkImages() {
+  var linesText = val('bi-descs'); var globalStyle = val('bi-style') || lsGet('imgstyle');
+  if (!linesText) { alert('Provide entry description items.'); return; }
+  var lines = linesText.split('\n'); var prompts = [];
+  for (var i = 0; i < lines.length; i++) { if (lines[i].trim()) prompts.push(lines[i].trim()); }
+
+  setHtml('bi-results', '<div class="img-grid" id="biGrid"></div>'); hideEl('bi-export'); bulkImages = [];
+
+  for (var i = 0; i < prompts.length; i++) {
+    var rawText = prompts[i]; var finalPrompt = rawText + ', ' + globalStyle + ', highly photorealistic realism, ultra detail parameters, sharp focal definition clarity.';
+    var uniqueCardId = 'bi-img-card-' + i;
