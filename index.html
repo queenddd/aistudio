@@ -591,8 +591,8 @@ async function genArticle() {
       addHtml('a-results', chunkHtml);
 
       (function(idx) {
-        el('cpC-' + idx).onclick = function() { navigator.clipboard.writeText(articleData.chunks[idx]); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy Body', 2000); };
-        el('cpP-' + idx).onclick = function() { navigator.clipboard.writeText(articleData.imgPrompts[idx]); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy Prompt', 2000); };
+        el('cpC-' + idx).onclick = function() { navigator.clipboard.writeText(articleData.chunks[idx]); this.textContent = 'Copied!'; setTimeout(function() { el('cpC-' + idx).textContent = 'Copy Body'; }, 2000); };
+        el('cpP-' + idx).onclick = function() { navigator.clipboard.writeText(articleData.imgPrompts[idx]); this.textContent = 'Copied!'; setTimeout(function() { el('cpP-' + idx).textContent = 'Copy Prompt'; }, 2000); };
       })(i);
     }
 
@@ -651,8 +651,8 @@ async function genListicle() {
       addHtml('l-results', listicleHtml);
 
       (function(idx) {
-        el('cpLC-' + idx).onclick = function() { navigator.clipboard.writeText(listicleData.chunks[idx]); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy Body', 2000); };
-        el('cpLP-' + idx).onclick = function() { navigator.clipboard.writeText(listicleData.imgPrompts[idx]); this.textContent = 'Copied!'; setTimeout(() => this.textContent = 'Copy Prompt', 2000); };
+        el('cpLC-' + idx).onclick = function() { navigator.clipboard.writeText(listicleData.chunks[idx]); this.textContent = 'Copied!'; setTimeout(function() { el('cpLC-' + idx).textContent = 'Copy Body'; }, 2000); };
+        el('cpLP-' + idx).onclick = function() { navigator.clipboard.writeText(listicleData.imgPrompts[idx]); this.textContent = 'Copied!'; setTimeout(function() { el('cpLP-' + idx).textContent = 'Copy Prompt'; }, 2000); };
       })(i);
     }
 
@@ -829,3 +829,143 @@ async function genBulkImages() {
   for (var i = 0; i < prompts.length; i++) {
     var rawText = prompts[i]; var finalPrompt = rawText + ', ' + globalStyle + ', highly photorealistic realism, ultra detail parameters, sharp focal definition clarity.';
     var uniqueCardId = 'bi-img-card-' + i;
+    var cardHtml = '<div class="img-grid-card"><div class="img-preview-box" style="aspect-ratio:1;border:none;border-bottom:1px solid #30363d;"><div class="img-placeholder" id="bi-load-' + i + '"><div class="spin"></div></div><img id="' + uniqueCardId + '" style="display:none;width:100%;height:100%;object-fit:cover;" crossorigin="anonymous"></div><div class="img-grid-info"><p>' + safe(rawText) + '</p></div></div>';
+    addHtml('biGrid', cardHtml);
+
+    var computedUrl = 'https://image.pollinations.ai/p/' + encodeURIComponent(finalPrompt) + '?width=1024&height=1024&seed=' + Math.floor(Math.random()*99999) + '&nologo=true';
+    (function(imgId, loadId, srcUrl, pText) {
+      var targetImg = el(imgId); var targetLoad = el(loadId);
+      targetImg.onload = function() { targetLoad.style.display = 'none'; targetImg.style.display = 'block'; };
+      targetImg.src = srcUrl; bulkImages.push({prompt: pText, url: srcUrl});
+    })(uniqueCardId, 'bi-load-' + i, computedUrl, finalPrompt);
+  }
+  showEl('bi-export');
+}
+
+// EXPORT DOWNLOAD COMPONENT SYSTEM ARCHITECTURE
+function exportDoc(type, format) {
+  var data = (type === 'listicle') ? listicleData : articleData;
+  if (!data.chunks || data.chunks.length === 0) { alert('No valid data target found to process.'); return; }
+  var aggregateHtml = '<html><head><meta charset="UTF-8"></head><body>';
+  for (var i = 0; i < data.chunks.length; i++) {
+    aggregateHtml += '<h1>' + (data.outline[i] ? data.outline[i].title : 'Section Part ' + (i + 1)) + '</h1>\n' + data.chunks[i] + '\n';
+  }
+  aggregateHtml += '</body></html>';
+
+  var blob;
+  if (format === 'html') {
+    blob = new Blob([aggregateHtml], {type: 'text/html;charset=utf-8'});
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = type + '-document-' + Date.now() + '.html';
+    a.click();
+  } else {
+    blob = new Blob([aggregateHtml], {type: 'application/msword'});
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = type + '-document-' + Date.now() + '.doc';
+    a.click();
+  }
+}
+
+// BULK EXPORT ENGINE
+function exportBulk(type, mode) {
+  var list = (type === 'listicle') ? bulkListicles : bulkArticles;
+  if (list.length === 0) { alert('The localized variable data collection index matrix is null.'); return; }
+
+  if (mode === 'combined') {
+    var combinedHtml = '<html><head><meta charset="UTF-8"></head><body>';
+    for (var i = 0; i < list.length; i++) {
+      combinedHtml += '<h1>' + list[i].topic + '</h1>\n' + list[i].body + '<hr>\n';
+    }
+    combinedHtml += '</body></html>';
+    var blob = new Blob([combinedHtml], {type: 'text/html;charset=utf-8'});
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'combined-bulk-' + type + '-export.html';
+    a.click();
+  } else {
+    for (var i = 0; i < list.length; i++) {
+      var singleHtml = '<html><head><meta charset="UTF-8"></head><body><h1>' + list[i].topic + '</h1>\n' + list[i].body + '</body></html>';
+      var blob = new Blob([singleHtml], {type: 'text/html;charset=utf-8'});
+      var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = type + '-' + (i + 1) + '.html';
+      a.click();
+    }
+  }
+}
+
+// COMPONENT INTERACTION EVENT BINDINGS
+window.onload = function() {
+  initTabs(); loadSettings();
+
+  el('openSettings').onclick = function() { el('modalSettings').className = 'modal-overlay show'; };
+  el('closeSettings').onclick = function() { el('modalSettings').className = 'modal-overlay'; };
+  el('btnSaveSettings').onclick = saveSettings;
+
+  el('l-type').onchange = function() { el('l-custom-wrap').style.display = (this.value === 'Custom') ? 'block' : 'none'; };
+  el('bl-type').onchange = function() { el('bl-custom-wrap').style.display = (this.value === 'Custom') ? 'block' : 'none'; };
+
+  // Article
+  el('btnGenArticle').onclick = genArticle;
+  el('btnARtf').onclick = function() { exportDoc('article', 'rtf'); };
+  el('btnAHtml').onclick = function() { exportDoc('article', 'html'); };
+
+  // Bulk Articles
+  el('btnGenBulkArt').onclick = genBulkArticles;
+  el('btnBASep').onclick = function() { exportBulk('article', 'separate'); };
+  el('btnBAComb').onclick = function() { exportBulk('article', 'combined'); };
+
+  // Listicle
+  el('btnGenListicle').onclick = genListicle;
+  el('btnLRtf').onclick = function() { exportDoc('listicle', 'rtf'); };
+  el('btnLHtml').onclick = function() { exportDoc('listicle', 'html'); };
+
+  // Bulk Listicles
+  el('btnGenBulkLst').onclick = genBulkListicles;
+  el('btnBLSep').onclick = function() { exportBulk('listicle', 'separate'); };
+  el('btnBLComb').onclick = function() { exportBulk('listicle', 'combined'); };
+
+  // Image
+  el('btnGenImage').onclick = genImage;
+  el('btnPreviewPrompt').onclick = function() {
+    var previewBox = el('imgPromptPreview');
+    if (previewBox.style.display === 'block') { previewBox.style.display = 'none'; return; }
+    var fields = {
+      subject: val('img-subject') || 'Entity subject context text description', skin: val('img-skin'), expression: val('img-expression'),
+      makeup: val('img-makeup'), outfit: val('img-outfit'), pose: val('img-pose'), shot: val('img-shot'),
+      location: val('img-location'), bg: val('img-bg'), lighting: val('img-lighting'), time: val('img-time'),
+      camera: val('img-camera'), mood: val('img-mood'), extra: val('s-imgstyle') || lsGet('imgstyle')
+    };
+    previewBox.textContent = buildPromptLocal(fields); previewBox.style.display = 'block';
+  };
+
+  el('imgResult').onload = function() { setHtml('imgStatus', ''); el('imgPlaceholder'); showEl('imgDownload'); };
+  el('btnDlImage').onclick = dlCleanImage;
+  el('btnCopyPrompt').onclick = function() { navigator.clipboard.writeText(lastPrompt); this.textContent = 'Copied!'; setTimeout(function() { el('btnCopyPrompt').textContent = 'Copy Prompt'; }, 2000); };
+
+  // Bulk Images
+  el('btnGenBulkImg').onclick = genBulkImages;
+  el('btnDlAllImgs').onclick = function() {
+    for(var i = 0; i < bulkImages.length; i++) {
+      var a = document.createElement('a'); a.href = bulkImages[i].url; a.download = 'bulk-asset-' + i + '.jpg'; a.target = '_blank';
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+  };
+
+  var providerButtons = el('imgProvRow').getElementsByClassName('prov-btn');
+  for (var i = 0; i < providerButtons.length; i++) {
+    (function(b) {
+      b.onclick = function() {
+        for (var j = 0; j < providerButtons.length; j++) { providerButtons[j].className = 'prov-btn'; }
+        b.className = 'prov-btn act'; imgProv = b.getAttribute('data-prov');
+      };
+    })(providerButtons[i]);
+  }
+
+  var bulkProviderButtons = el('biProvRow').getElementsByClassName('prov-btn');
+  for (var i = 0; i < bulkProviderButtons.length; i++) {
+    (function(b) {
+      b.onclick = function() {
+        for (var j = 0; j < bulkProviderButtons.length; j++) { bulkProviderButtons[j].className = 'prov-btn'; }
+        b.className = 'prov-btn act'; biProv = b.getAttribute('data-bprov');
+      };
+    })(bulkProviderButtons[i]);
+  }
+};
+</script>
+</body>
+</html>
